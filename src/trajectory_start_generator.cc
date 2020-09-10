@@ -1,5 +1,17 @@
 #include "trajectory_start_generator.hh"
 
+FixedPointTrajectoryStartGenerator::
+FixedPointTrajectoryStartGenerator(const Point& pt)
+  : pt_(pt)
+{
+}
+
+Point
+FixedPointTrajectoryStartGenerator::generate()
+{
+  return this->pt_;
+}
+
 RandomBoxTrajectoryStartGenerator::
 RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box& box)
   : ng_(ng)

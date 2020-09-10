@@ -7,7 +7,7 @@
 # include "trajectory_start_generator.hh"
 # include "trajectory_end_condition.hh"
 # include "trajectory_recorder.hh"
-
+# include "collider.hh"
 
 class TrajectoryGenerator
 {
@@ -16,6 +16,7 @@ public:
 		      Motion& motion_model,
 		      TrajectoryEndCondition& traj_end,
 		      TrajectoryRecorder& traj_rec,
+		      Collider& collider,
 		      double dt);
 
   Trajectory generate();
@@ -25,6 +26,7 @@ protected:
   Motion& motion_model_;
   TrajectoryEndCondition& traj_end_;
   TrajectoryRecorder& traj_rec_;
+  Collider& collider_;
   double dt_;
 };
 
