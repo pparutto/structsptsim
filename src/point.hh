@@ -20,4 +20,6 @@ Orientation orientation(const Point& p1, const Point& p2, const Point& p3);
 
 double norm(const Vec& v);
 
+std::ostream& operator<< (std::ostream& os, const Point& pt);
+
 #endif /// !POINT_HH

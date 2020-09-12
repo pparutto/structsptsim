@@ -4,11 +4,15 @@
 # include "point.hh"
 # include "segment.hh"
 
+class Box;
+
 class Shape
 {
 public:
   virtual bool inside(const Point& p) const = 0;
   virtual PointEnsemble boundary() const = 0;
+
+  virtual Box bounding_box() const = 0;
 };
 
 class Box: public Shape
@@ -19,12 +23,12 @@ public:
 
   virtual bool inside(const Point& p) const override;
   virtual PointEnsemble boundary() const override;
+  virtual Box bounding_box() const override;
 
   const Point& lower_left() const { return this->lower_left_; }
   const Point& upper_right() const { return this->upper_right_; }
   double width() const { return this->width_; }
   double height() const { return this->height_; }
-
 protected:
   Point lower_left_;
   Point upper_right_;
@@ -39,10 +43,15 @@ public:
 
   virtual bool inside(const Point& p) const override;
   virtual PointEnsemble boundary() const override;
+  virtual Box bounding_box() const override;
+
+  const PointEnsemble& pts() const { return this->pts_; };
 
   Segment intersect_with(const Segment& s1) const;
 protected:
   PointEnsemble pts_;
 };
+
+std::ostream& operator<< (std::ostream& os, const Polygon& poly);
 
 #endif /// !SHAPE_HH

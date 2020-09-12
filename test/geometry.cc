@@ -1,13 +1,17 @@
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 
 #include "shape.hh"
 #include "segment.hh"
+#include "collider.hh"
 
 int main(int argc, char** argv)
 {
   (void) argc;
   (void) argv;
+
+  std::cout << std::setprecision(9);
 
   std::cout << "Colinear:" << std::endl;
   {
@@ -108,7 +112,7 @@ int main(int argc, char** argv)
     s1 = Segment({5, 5}, {5, -5});
     s2 = Segment({0, 0}, {10, 0});
     Point res = Segment::intersection_point(s1, s2);
-    assert((res == (Point) {5, 0}));
+    assert((res == (Point) {5.0, 0.0}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 12]";
@@ -215,6 +219,59 @@ int main(int argc, char** argv)
     Segment res = poly.intersect_with(Segment({3, 3}, {-2, 8}));
     assert((res.p1() == (Point) {0, 0}));
     assert((res.p2() == (Point) {5, 5}));
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "U polygon" << std::endl;
+  {
+    PointEnsemble pe;
+    pe.push_back({116.984, 93.7433});
+    pe.push_back({115.518, 117.399});
+    pe.push_back({102.054, 129.746});
+    pe.push_back({50.6049, 129.478});
+    pe.push_back({50.4045, 120.423});
+    pe.push_back({100.731, 120.958});
+    pe.push_back({107.592, 112.292});
+    pe.push_back({108.323, 96.5429});
+    pe.push_back({96.8922, 86.4158});
+    pe.push_back({51.965, 86.8721});
+    pe.push_back({53.1677, 78.5918});
+    pe.push_back({99.3132, 78.0573});
+    pe.push_back({116.984, 93.7433});
+    Polygon u_poly(pe);
+    PolygonCollider poly_collider(u_poly);
+
+    std::cout << " [Test 1]";
+    Point p = {107.65, 109.702};
+    assert(!u_poly.inside(p));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 2]";
+    Segment s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    Segment s2 = u_poly.intersect_with(s1);
+    assert((s2.p1() == (Point) {107.592, 112.292})
+	   && (s2.p2() == (Point) {108.323, 96.5429}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 3]";
+    s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    s2 = u_poly.intersect_with(s1);
+    p = Segment::intersection_point(s1, s2);
+    assert((p == (Point) {107.709932, 109.751202}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 4]";
+    s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    p = poly_collider.collide(s1.p1(), s1.p2());
+    assert((p == (Point) {107.774349, 109.705772}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 5]";
+    s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    s2 = Segment({107.592, 112.292}, {108.323, 96.5429});
+    Point p1 = poly_collider.collide(s1.p1(), s1.p2());
+    Point p2 = Segment::reflect(s1, s2);
+    assert((p1 == p2));
     std::cout << " OK" << std::endl;
   }
 }

@@ -34,4 +34,17 @@ protected:
   std::uniform_real_distribution<double> randu_;
 };
 
+class RandomTrajectoryStartGenerator: public TrajectoryStartGenerator
+{
+public:
+  RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape& shape);
+
+  virtual Point generate() override;
+protected:
+  std::mt19937_64& ng_;
+  const Shape& shape_;
+  RandomBoxTrajectoryStartGenerator rnd_box_;
+};
+
+
 #endif /// !TRAJECTORY_START_GENERATOR_HH

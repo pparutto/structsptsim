@@ -6,6 +6,8 @@
 #include "simulation_end_condition.hh"
 #include "io.hh"
 
+#include "utils.hh"
+
 int main(int argc, char** argv)
 {
   (void) argc;
@@ -15,21 +17,26 @@ int main(int argc, char** argv)
   std::mt19937_64 mt(rd());
 
   double dt = 0.0001;
-  double DT = 0.02;
-  double D = 0.05;
+  double DT = 0.2;
+  double D = 3000;
   int max_npts = 20;
   int max_ntrajs = 100;
 
-  FixedPointTrajectoryStartGenerator start_gen =
-    FixedPointTrajectoryStartGenerator({10.0, 10.0});
+  Polygon poly = poly_from_inkscape_path("../resources/U.csv");
+
+  //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
+  RandomTrajectoryStartGenerator start_gen(mt, poly);
+
   BrownianMotion bm(mt, D, dt);
   NumberPointsEndCondition traj_end_cond(max_npts);
   FullTrajectoryRecorder traj_rec;
   NumberTrajectoriesSimulationEndCondition end_sim(max_ntrajs);
-  NoneCollider none_collider;
+
+  //NoneCollider collider;
+  PolygonCollider collider(poly);
 
   TrajectoryGenerator traj_gen(start_gen, bm, traj_end_cond, traj_rec,
-			       none_collider, DT);
+			       collider, DT);
 
   Simulation sim(traj_gen, end_sim);
 

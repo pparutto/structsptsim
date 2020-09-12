@@ -1,5 +1,7 @@
 #include "shape.hh"
 
+#include <cmath>
+
 #include <cassert>
 #include <iostream>
 
@@ -28,6 +30,12 @@ Box::boundary() const
   res.push_back({this->lower_left_[0], this->lower_left_[1] + this->height_});
   res.push_back(this->lower_left_);
   return res;
+}
+
+Box
+Box::bounding_box() const
+{
+  return Box(this->lower_left_, this->upper_right_);
 }
 
 Polygon::Polygon(const PointEnsemble& pts)
@@ -72,6 +80,23 @@ Polygon::boundary() const
   return this->pts_;
 }
 
+Box
+Polygon::bounding_box() const
+{
+  Point ll = {(double) NAN, (double) NAN};
+  Point ur = {(double) NAN, (double) NAN};
+
+  for (const Point& p: this->pts_)
+  {
+    ll[0] = std::isnan(ll[0]) || p[0] < ll[0]? p[0] : ll[0];
+    ll[1] = std::isnan(ll[1]) || p[1] < ll[1]? p[1] : ll[1];
+    ur[0] = std::isnan(ur[0]) || p[0] > ur[0]? p[0] : ur[0];
+    ur[1] = std::isnan(ur[1]) || p[1] > ur[1]? p[1] : ur[1];
+  }
+
+  return Box(ll, ur);
+}
+
 Segment
 Polygon::intersect_with(const Segment& s1) const
 {
@@ -96,4 +121,12 @@ Polygon::intersect_with(const Segment& s1) const
 
   assert(already);
   return seg;
+}
+
+std::ostream&
+operator<< (std::ostream& os, const Polygon& poly)
+{
+  for (const Point& p: poly.pts())
+    os << p << std::endl;
+  return os;
 }

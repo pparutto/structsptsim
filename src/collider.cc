@@ -71,11 +71,16 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
 {
   Segment s1(p1, p2);
 
+  Point p = p1;
+  Point pp = p2;
   do
   {
     Segment s2 = this->poly_.intersect_with(s1);
-    (void) s2;
+    p = pp;
+    pp = Segment::reflect(s1, s2);
+    s1 = Segment(p, pp);
   }
-  while (this->outside(p2));
-  return {0, 0};
+  while (this->outside(pp));
+
+  return pp;
 }
