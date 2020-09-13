@@ -141,6 +141,47 @@ int main(int argc, char** argv)
     res = Segment::reflect(s1, s2);
     assert((res == (Point) {2, 2}));
     std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 16]";
+    s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
+    s2 = Segment({50.6049, 129.478}, {50.4045, 120.423});
+    assert(Segment::intersect(s1, s2));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 17]";
+    s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
+    s2 = Segment({50.6049, 129.478}, {50.4045, 120.423});
+    res = Segment::intersection_point(s1, s2);
+    assert((res == (Point) {50.6012629, 129.31366}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 18]";
+    s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
+    s2 = Segment({50.6049, 129.478}, {50.4045, 120.423});
+    res = Segment::reflect(s1, s2);
+    assert((res == (Point) {51.8634543, 130.054885}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 19]";
+    s1 = Segment({50.6012629, 129.31366}, {51.8634543, 130.054885});
+    s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
+    assert(Segment::intersect(s1, s2));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 20]";
+    s1 = Segment({50.6012629, 129.31366}, {51.8634543, 130.054885});
+    s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
+    res = Segment::intersection_point(s1, s2);
+    assert((res == (Point) {50.8835804, 129.479452}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 21]";
+    s1 = Segment({50.6012629, 129.31366}, {51.8634543, 130.054885});
+    s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
+    res = Segment::reflect(s1, s2);
+    assert((res == (Point) {51.8693959, 128.914258}));
+    std::cout << " OK" << std::endl;
+
   }
 
   std::cout << "Polygons:" << std::endl;
@@ -216,7 +257,7 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 11]";
-    Segment res = poly.intersect_with(Segment({3, 3}, {-2, 8}));
+    Segment res = poly.intersect_with(Segment({3.1, 3}, {-2, 8}));
     assert((res.p1() == (Point) {0, 0}));
     assert((res.p2() == (Point) {5, 5}));
     std::cout << " OK" << std::endl;
@@ -272,6 +313,12 @@ int main(int argc, char** argv)
     Point p1 = poly_collider.collide(s1.p1(), s1.p2());
     Point p2 = Segment::reflect(s1, s2);
     assert((p1 == p2));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 6]";
+    s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
+    p1 = poly_collider.collide(s1.p1(), s1.p2());
+    assert((p1 == (Point) {51.8693959, 128.914258}));
     std::cout << " OK" << std::endl;
   }
 }

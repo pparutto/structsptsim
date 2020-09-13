@@ -102,17 +102,31 @@ Polygon::intersect_with(const Segment& s1) const
 {
   bool already = false;
   Segment seg({0, 0}, {0, 0});
+  Point inter_p = {0, 0};
   int i = 0;
   do
   {
     int next = (i + 1) % this->pts_.size();
 
     Segment s2(this->pts_[i], this->pts_[next]);
-    if (Segment::intersect(s1, s2))
+
+    if (!s2.on_segment(s1.p1()) && Segment::intersect(s1, s2))
     {
-      assert(!already); //segment intersects poly more than once
-      already = true;
-      seg = s2;
+      if (already)
+      {
+	Point pp = Segment::intersection_point(s1, s2);
+	if (dist(s1.p1(), pp) < dist(s1.p1(), inter_p))
+	{
+	  seg = s2;
+	  inter_p = pp;
+	}
+      }
+      else
+      {
+	already = true;
+	inter_p = Segment::intersection_point(s1, s2);
+	seg = s2;
+      }
     }
 
     i = next;

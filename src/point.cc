@@ -41,6 +41,12 @@ double norm(const Vec& v)
   return sqrt(v[0]*v[0] + v[1]*v[1]);
 }
 
+double dist(const Point& p1, const Point& p2)
+{
+  return sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) +
+	      (p1[1] - p2[1]) * (p1[1] - p2[1]));
+}
+
 std::ostream&
 operator<< (std::ostream& os, const Point& pt)
 {

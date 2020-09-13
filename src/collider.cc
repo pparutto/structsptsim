@@ -2,6 +2,9 @@
 
 #include "segment.hh"
 
+#include <iostream>
+#include <cassert>
+
 bool
 NoneCollider::outside(const Point& p) const
 {
@@ -66,6 +69,16 @@ PolygonCollider::outside(const Point& p) const
   return !this->poly_.inside(p);
 }
 
+
+//There could be a problem if p1 is exactly on the polygon and p2 is
+//outside without crossing any other boundaries because the
+//intersect_with function skips points on segments.
+
+//because when you replace the point at the intersection point then
+//you get a collision with the segment.
+
+//In this cas, we would need to change the function to consider it
+//only the first time
 Point
 PolygonCollider::collide(const Point& p1, const Point& p2) const
 {
@@ -76,8 +89,10 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
   do
   {
     Segment s2 = this->poly_.intersect_with(s1);
-    p = pp;
+
+    p = Segment::intersection_point(s1, s2);
     pp = Segment::reflect(s1, s2);
+
     s1 = Segment(p, pp);
   }
   while (this->outside(pp));
