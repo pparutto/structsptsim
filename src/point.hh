@@ -15,6 +15,7 @@ enum Orientation {COLINEAR, CLOCKWISE, COUNTERCLOCKWISE};
 bool colinear(const Point& p1, const Point& p2, const Point& p3);
 bool operator== (const Point& p1, const Point& p2);
 Point operator- (const Point& p1, const Point& p2);
+Point operator+ (const Point& p1, const Point& p2);
 
 Orientation orientation(const Point& p1, const Point& p2, const Point& p3);
 

@@ -15,6 +15,8 @@ public:
   Vec vector() const;
   Vec normal() const;
 
+  Segment invert() const;
+
   static bool intersect(const Segment& s1, const Segment& s2);
   static Point intersection_point(const Segment& s1, const Segment& s2);
   static Point reflect(const Segment& s1, const Segment& s2);

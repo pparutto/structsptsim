@@ -43,5 +43,6 @@ RandomTrajectoryStartGenerator::generate()
   Point p = this->rnd_box_.generate();
   while (!this->shape_.inside(p))
     p = this->rnd_box_.generate();
+
   return p;
 }

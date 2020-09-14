@@ -17,6 +17,11 @@ Point operator- (const Point& p1, const Point& p2)
   return {p1[0] - p2[0], p1[1] - p2[1]};
 }
 
+Point operator+ (const Point& p1, const Point& p2)
+{
+  return {p1[0] + p2[0], p1[1] + p2[1]};
+}
+
 bool
 colinear(const Point& p1, const Point& p2, const Point& p3)
 {

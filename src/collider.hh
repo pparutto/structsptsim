@@ -36,7 +36,7 @@ public:
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
 protected:
-  Polygon poly_;
+  const Polygon& poly_;
 };
 
 

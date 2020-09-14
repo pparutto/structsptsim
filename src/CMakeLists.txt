@@ -13,5 +13,4 @@ add_library(libsim
   trajectory_end_condition.cc
   trajectory_generator.cc
   trajectory_recorder.cc
-  trajectory_start_generator.cc
-  utils.cc)
+  trajectory_start_generator.cc)

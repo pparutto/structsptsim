@@ -137,10 +137,75 @@ Polygon::intersect_with(const Segment& s1) const
   return seg;
 }
 
+
+CompoundPolygon::
+CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs)
+  : base_(base)
+  , diffs_(diffs)
+{
+}
+
+bool
+CompoundPolygon::inside(const Point& p) const
+{
+  if (!this->base_.inside(p))
+    return false;
+
+  for (const Polygon& poly: this->diffs_)
+    if (poly.inside(p))
+      return false;
+
+  return true;
+}
+
+PointEnsemble
+CompoundPolygon::boundary() const
+{
+  return this->base_.boundary();
+}
+
+Box
+CompoundPolygon::bounding_box() const
+{
+  return this->base_.bounding_box();
+}
+
+const PointEnsemble&
+CompoundPolygon::pts() const
+{
+  return this->base_.pts();
+};
+
+Segment
+CompoundPolygon::intersect_with(const Segment& s1) const
+{
+  bool in_diff = false;
+  const Polygon* diff = nullptr;
+
+  for (const Polygon& poly: this->diffs_)
+  {
+    if (poly.inside(s1.p2()))
+    {
+      in_diff = true;
+      diff = &poly;
+      break;
+    }
+  }
+
+  if (!in_diff)
+    return this->base_.intersect_with(s1);
+
+  //here we need to invert the orientation of the segment such that it
+  //reflects toward the outside of the inner polygon
+  return diff->intersect_with(s1).invert();
+}
+
+
 std::ostream&
 operator<< (std::ostream& os, const Polygon& poly)
 {
   for (const Point& p: poly.pts())
-    os << p << std::endl;
+    os << p << ";" << std::endl;
+  os << poly.pts()[0] << ";" << std::endl;
   return os;
 }

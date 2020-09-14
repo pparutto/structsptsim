@@ -47,6 +47,12 @@ Segment::normal() const
   return {-v[1] / n, v[0] / n};
 }
 
+Segment
+Segment::invert() const
+{
+  return Segment(this->p2_, this->p1_);
+}
+
 bool
 Segment::intersect(const Segment& s1, const Segment& s2)
 {

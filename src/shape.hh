@@ -40,17 +40,38 @@ class Polygon: public Shape
 {
 public:
   Polygon(const PointEnsemble& pts);
+  Polygon() = default;
 
   virtual bool inside(const Point& p) const override;
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
 
-  const PointEnsemble& pts() const { return this->pts_; };
+  virtual const PointEnsemble& pts() const { return this->pts_; };
 
-  Segment intersect_with(const Segment& s1) const;
-protected:
+  virtual Segment intersect_with(const Segment& s1) const;
+private:
   PointEnsemble pts_;
 };
+
+class CompoundPolygon: public Polygon
+{
+public:
+  CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs);
+
+  virtual bool inside(const Point& p) const override;
+  virtual PointEnsemble boundary() const override;
+  virtual Box bounding_box() const override;
+
+  virtual const PointEnsemble& pts() const override;
+  virtual Segment intersect_with(const Segment& s1) const override;
+
+  const Polygon& base() const { return this->base_; };
+  const std::vector<Polygon>& diffs() const { return this->diffs_; };
+protected:
+  Polygon base_;
+  std::vector<Polygon> diffs_;
+};
+
 
 std::ostream& operator<< (std::ostream& os, const Polygon& poly);
 

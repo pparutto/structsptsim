@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <cassert>
 
+#include <vector>
+
 #include "shape.hh"
 #include "segment.hh"
 #include "collider.hh"
@@ -320,5 +322,100 @@ int main(int argc, char** argv)
     p1 = poly_collider.collide(s1.p1(), s1.p2());
     assert((p1 == (Point) {51.8693959, 128.914258}));
     std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Compound polygon" << std::endl;
+  {
+    PointEnsemble pe;
+    pe.push_back({5, 5});
+    pe.push_back({10, 5});
+    pe.push_back({10, 10});
+    pe.push_back({5, 10});
+    Polygon base_poly(pe);
+
+    pe.clear();
+    pe.push_back({6, 6});
+    pe.push_back({9, 6});
+    pe.push_back({9, 9});
+    pe.push_back({6, 9});
+    std::vector<Polygon> diff_polys;
+    diff_polys.push_back(Polygon(pe));
+
+    CompoundPolygon poly(base_poly, diff_polys);
+    PolygonCollider poly_collider(poly);
+    (void) poly_collider;
+
+    std::cout << " [Test 1]";
+    assert(poly.inside({5.5, 5.5}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 2]";
+    assert(!poly.inside({20, 5.5}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 3]";
+    assert(!poly.inside({7, 7}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 4]";
+    assert(diff_polys[0].inside({7, 7}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 5]";
+    Segment res = poly.intersect_with(Segment({9.5, 5.5}, {12, 5.5}));
+    assert((res.p1() == (Point) {10, 5}) && (res.p2() == (Point) {10, 10}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 6]";
+    res = poly.intersect_with(Segment({5.8, 7.1}, {6.1, 7.1}));
+    assert((res.p1() == (Point) {6, 6}) && (res.p2() == (Point) {6, 9}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 7]";
+    Point p = Segment::reflect(Segment({5.8, 7.1}, {6.1, 7.1}),
+			       Segment({6, 6}, {6, 9}));
+    assert(poly.inside(p));
+    assert((p == (Point) {5.9, 7.1}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 8]";
+    p = poly_collider.collide({5.8, 7.1}, {6.1, 7.1});
+    assert(poly.inside(p));
+    assert((p == (Point) {5.9, 7.1}));
+    std::cout << " OK" << std::endl;
+
+    // std::cout << " [Test 2]";
+    // Segment s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    // Segment s2 = u_poly.intersect_with(s1);
+    // assert((s2.p1() == (Point) {107.592, 112.292})
+    // 	   && (s2.p2() == (Point) {108.323, 96.5429}));
+    // std::cout << " OK" << std::endl;
+
+    // std::cout << " [Test 3]";
+    // s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    // s2 = u_poly.intersect_with(s1);
+    // p = Segment::intersection_point(s1, s2);
+    // assert((p == (Point) {107.709932, 109.751202}));
+    // std::cout << " OK" << std::endl;
+
+    // std::cout << " [Test 4]";
+    // s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    // p = poly_collider.collide(s1.p1(), s1.p2());
+    // assert((p == (Point) {107.774349, 109.705772}));
+    // std::cout << " OK" << std::endl;
+
+    // std::cout << " [Test 5]";
+    // s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
+    // s2 = Segment({107.592, 112.292}, {108.323, 96.5429});
+    // Point p1 = poly_collider.collide(s1.p1(), s1.p2());
+    // Point p2 = Segment::reflect(s1, s2);
+    // assert((p1 == p2));
+    // std::cout << " OK" << std::endl;
+
+    // std::cout << " [Test 6]";
+    // s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
+    // p1 = poly_collider.collide(s1.p1(), s1.p2());
+    // assert((p1 == (Point) {51.8693959, 128.914258}));
+    // std::cout << " OK" << std::endl;
   }
 }
