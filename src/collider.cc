@@ -1,6 +1,7 @@
 #include "collider.hh"
 
 #include "segment.hh"
+#include "utils.hh"
 
 #include <iostream>
 #include <cassert>
@@ -77,7 +78,7 @@ PolygonCollider::outside(const Point& p) const
 //because when you replace the point at the intersection point then
 //you get a collision with the segment.
 
-//In this cas, we would need to change the function to consider it
+//In this case, we would need to change the function to consider it
 //only the first time
 Point
 PolygonCollider::collide(const Point& p1, const Point& p2) const
@@ -90,9 +91,11 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
   {
     Segment s2 = this->poly_.intersect_with(s1);
 
-    p = Segment::intersection_point(s1, s2);
     pp = Segment::reflect(s1, s2);
+    p = Segment::intersection_point(s1, s2);
 
+    Vec norm = s2.normal();
+    p = {p[0] + DELTA_REPL * norm[0], p[1] + DELTA_REPL * norm[1]};
     s1 = Segment(p, pp);
   }
   while (this->outside(pp));

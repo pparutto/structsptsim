@@ -16,8 +16,7 @@ public:
 		      Motion& motion_model,
 		      TrajectoryEndCondition& traj_end,
 		      TrajectoryRecorder& traj_rec,
-		      Collider& collider,
-		      double dt);
+		      Collider& collider);
 
   Trajectory generate();
   void reset();
@@ -27,7 +26,6 @@ protected:
   TrajectoryEndCondition& traj_end_;
   TrajectoryRecorder& traj_rec_;
   Collider& collider_;
-  double dt_;
 };
 
 

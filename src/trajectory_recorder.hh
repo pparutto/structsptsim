@@ -8,24 +8,36 @@
 class TrajectoryRecorder
 {
 public:
-  TrajectoryRecorder() = default;
+  TrajectoryRecorder(double DT);
 
-  virtual void record(const TimedPoint& p) = 0;
-  void reset();
+  virtual void record(const Point& p) = 0;
+  virtual void reset();
 
   const Trajectory& traj() const { return this->traj_; }
 
 protected:
   Trajectory traj_;
+  double DT_;
+  unsigned cnt_;
 };
 
 class FullTrajectoryRecorder: public TrajectoryRecorder
 {
 public:
-  FullTrajectoryRecorder() = default;
+  FullTrajectoryRecorder(double DT);
 
-  virtual void record(const TimedPoint& p) override;
+  virtual void record(const Point& p) override;
 };
 
+class SubsambleTrajectoryRecorder: public TrajectoryRecorder
+{
+public:
+  SubsambleTrajectoryRecorder(double DT, unsigned step);
+
+  virtual void record(const Point& p) override;
+
+protected:
+  unsigned step_;
+};
 
 #endif /// !TRAJECTORY_RECORDER_HH

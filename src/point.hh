@@ -19,6 +19,7 @@ Point operator+ (const Point& p1, const Point& p2);
 
 Orientation orientation(const Point& p1, const Point& p2, const Point& p3);
 
+double dot(const Vec& v1, const Vec& v2);
 double norm(const Vec& v);
 double dist(const Point& p1, const Point& p2);
 

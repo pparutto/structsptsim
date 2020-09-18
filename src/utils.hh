@@ -1,6 +1,12 @@
 #ifndef UTILS_HH_
 # define UTILS_HH_
 
-const double PRECISION = 1e-6;
+# include "point.hh"
+
+const double PRECISION = 1e6;
+const double DELTA_REPL = 1e-10;
+
+double round_to_precision(double v);
+void round_to_precision(Point& v);
 
 #endif /// !UTILS_HH

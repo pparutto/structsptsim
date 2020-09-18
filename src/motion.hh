@@ -22,6 +22,8 @@ public:
   BrownianMotion(std::mt19937_64& ng, double D, double dt);
 
   virtual Point step_euler(const Point& p) override;
+
+  double dt() const { return this->dt_; }
 protected:
   std::mt19937_64& ng_;
   std::normal_distribution<> randn_;

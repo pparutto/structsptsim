@@ -1,15 +1,17 @@
 #include "point.hh"
 
 #include <cmath>
+#include <cfloat>
 #include <iostream>
 
 #include "utils.hh"
+#include "segment.hh"
 
 bool
 operator== (const Point& p1, const Point& p2)
 {
-  return (std::abs(p1[0] - p2[0]) < PRECISION &&
-	  std::abs(p1[1] - p2[1]) < PRECISION);
+  return (std::abs(p1[0] - p2[0]) < DBL_EPSILON &&
+	  std::abs(p1[1] - p2[1]) < DBL_EPSILON);
 }
 
 Point operator- (const Point& p1, const Point& p2)
@@ -34,11 +36,17 @@ orientation(const Point& p1, const Point& p2, const Point& p3)
   double v = ((p2[1] - p1[1]) * (p3[0] - p2[0]) -
 	      (p2[0] - p1[0]) * (p3[1] - p2[1]));
 
-  if (std::abs(v) < PRECISION)
+  Segment s = Segment(p1, p2);
+  if (std::abs(v) < DBL_EPSILON && s.distance(p3) < DBL_EPSILON)
     return COLINEAR;
-  if (v > 0)
+  if (v > DBL_EPSILON)
     return CLOCKWISE;
   return COUNTERCLOCKWISE;
+}
+
+double dot(const Vec& v1, const Vec& v2)
+{
+  return v1[0] * v2[0] + v1[1] * v2[1];
 }
 
 double norm(const Vec& v)

@@ -1,5 +1,6 @@
 #include "segment.hh"
 
+#include <cfloat>
 #include <cassert>
 #include <iostream>
 
@@ -21,11 +22,27 @@ Segment::p2() const
   return this->p2_;
 }
 
+double
+Segment::distance(const Point& p) const
+{
+  double d = dist(this->p1_, this->p2_);
+  return (std::abs((this->p2_[1] - this->p1_[1]) * p[0] -
+		   (this->p2_[0] - this->p1_[0]) * p[1] +
+		   this->p2_[0] * this->p1_[1] - this->p2_[1] * this->p1_[0]) /
+	  d);
+}
+
 bool
 Segment::on_segment(const Point& p) const
 {
+  //std::cout << this->distance(p) << std::endl;
+
   if (!colinear(this->p1_, this->p2_, p))
-    return false;
+  {
+    if (this->distance(p) > DBL_EPSILON)
+      return false;
+  }
+  //return false;
 
   return (p[0] <= std::max(this->p1_[0], this->p2_[0]) &&
 	  p[0] >= std::min(this->p1_[0], this->p2_[0]) &&
@@ -74,6 +91,18 @@ Segment::intersect(const Segment& s1, const Segment& s2)
   return false;
 }
 
+
+Point project_on_line(const Point& p, const Segment& s)
+{
+  // get dot product of e1, e2
+  Vec e1 = s.vector();
+  Vec e2 = Segment(p, s.p1()).vector();
+  double valDp = dot(e1, e2);
+
+  double l = norm(e1);
+  return {s.p1()[0] + (valDp * e1[0]) / l,
+	  s.p1()[1] + (valDp * e1[1]) / l};
+}
 //the two segments must already be intersecting
 //check this with Segment::intersect
 Point
@@ -88,7 +117,9 @@ Segment::intersection_point(const Segment& s1, const Segment& s2)
   double h1 = ((s1.p1()[0] - s2.p1()[0]) * p[0] +
 	       (s1.p1()[1] - s2.p1()[1]) * p[1]) / inter;
 
-  return {s2.p1()[0] + f[0] * h1, s2.p1()[1] + f[1] * h1};
+  Point res = {s2.p1()[0] + f[0] * h1, s2.p1()[1] + f[1] * h1};
+
+  return res;
 }
 
 // Point
@@ -117,6 +148,7 @@ Segment::reflect(const Segment& s1, const Segment& s2)
 
   double s = (N[0] * (s1.p2()[0] - inter_p[0]) +
 	      N[1] * (s1.p2()[1] - inter_p[1]));
+
 
   return {s1.p2()[0] - 2 * s * N[0], s1.p2()[1] - 2 * s * N[1]};
 }

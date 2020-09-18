@@ -46,9 +46,14 @@ public:
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
 
+  virtual void apply_pxsize(double pxsize);
+  virtual Segment intersect_with(const Segment& s1) const;
+
+  virtual double signed_area() const;
+
   virtual const PointEnsemble& pts() const { return this->pts_; };
 
-  virtual Segment intersect_with(const Segment& s1) const;
+  bool my_inside(const Point& p, bool border_is_inside) const;
 private:
   PointEnsemble pts_;
 };
@@ -62,9 +67,10 @@ public:
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
 
-  virtual const PointEnsemble& pts() const override;
+  virtual void apply_pxsize(double pxsize) override;
   virtual Segment intersect_with(const Segment& s1) const override;
 
+  virtual const PointEnsemble& pts() const override;
   const Polygon& base() const { return this->base_; };
   const std::vector<Polygon>& diffs() const { return this->diffs_; };
 protected:

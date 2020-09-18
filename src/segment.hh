@@ -11,6 +11,7 @@ public:
   const Point& p1() const;
   const Point& p2() const;
 
+  double distance(const Point& p) const;
   bool on_segment(const Point& p) const;
   Vec vector() const;
   Vec normal() const;

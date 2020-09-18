@@ -14,9 +14,12 @@ Simulation::Simulation(TrajectoryGenerator& traj_gen,
 void
 Simulation::run()
 {
+  int cpt = 0;
   while (!this->end_cond_.evaluate(*this))
   {
+    std::cout << cpt << std::endl;
     this->trajs_.push_back(this->traj_gen_.generate());
     this->traj_gen_.reset();
+    ++cpt;
   }
 }
