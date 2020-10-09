@@ -50,4 +50,5 @@ void
 TrajectoryGenerator::reset()
 {
   this->traj_rec_.reset();
+  this->traj_end_.reset();
 }

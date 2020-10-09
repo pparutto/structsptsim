@@ -177,7 +177,9 @@ Polygon::intersect_with(const Segment& s1) const
   }
   while (i != 0);
 
-  assert(already);
+  if (!already)
+    throw std::runtime_error("Segment did not collide with polygon");
+
   return seg;
 }
 
@@ -251,7 +253,8 @@ CompoundPolygon::intersect_with(const Segment& s1) const
   bool in_diff = false;
   const Polygon* diff = nullptr;
 
-  assert(this->inside(s1.p1()));
+  if (this->inside(s1.p1()) == this->inside(s1.p2()))
+    throw std::runtime_error("Points are in same location");
   //assert(this->inside(s1.p1()) != this->inside(s1.p2()));
 
   for (const Polygon& poly: this->diffs_)
@@ -273,10 +276,7 @@ CompoundPolygon::intersect_with(const Segment& s1) const
   //i.e toward the starting point of s1
 
   if (dot(s1.vector(), res.normal()) > 0)
-  {
     res = res.invert();
-    assert(dot(s1.vector(), res.normal()) < 0);
-  }
 
   return res;
 

@@ -18,7 +18,16 @@ Simulation::run()
   while (!this->end_cond_.evaluate(*this))
   {
     std::cout << cpt << std::endl;
-    this->trajs_.push_back(this->traj_gen_.generate());
+    try
+    {
+      this->trajs_.push_back(this->traj_gen_.generate());
+    }
+    catch (std::runtime_error& e)
+    {
+      std::cout << e.what() << std::endl;
+      std::cout << "Failed collision" << std::endl;
+    }
+
     this->traj_gen_.reset();
     ++cpt;
   }
