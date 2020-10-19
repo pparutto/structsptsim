@@ -1,5 +1,15 @@
 classdef Utils
     methods(Static)
+        function dt = find_dt(tab)
+            dts = [];
+            for k=unique(tab(:,1))'
+                tr = tab(tab(:,1) == k, 2);
+                dts = unique([dts; unique(tr(2:end) - tr(1:(end-1)))]);
+            end
+
+            dt = min(dts);
+        end
+
         function res = ta_MSD(t)
             res = cell(size(t, 1) - 1, 1);
             

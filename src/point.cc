@@ -7,6 +7,11 @@
 #include "utils.hh"
 #include "segment.hh"
 
+Point to_point(const TimedPoint& tp)
+{
+  return {tp[1], tp[2]};
+}
+
 bool
 operator== (const Point& p1, const Point& p2)
 {
@@ -64,5 +69,12 @@ std::ostream&
 operator<< (std::ostream& os, const Point& pt)
 {
   os << pt[0] << " " << pt[1];
+  return os;
+}
+
+std::ostream&
+operator<< (std::ostream& os, const TimedPoint& pt)
+{
+  os << pt[0] << " " << pt[1] << " " << pt[2];
   return os;
 }

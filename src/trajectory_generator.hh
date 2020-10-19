@@ -14,17 +14,41 @@ class TrajectoryGenerator
 public:
   TrajectoryGenerator(TrajectoryStartGenerator& traj_start,
 		      Motion& motion_model,
-		      TrajectoryEndCondition& traj_end,
-		      TrajectoryRecorder& traj_rec,
+		      TrajectoryEndCondition* traj_end,
+		      TrajectoryRecorder* traj_rec,
 		      Collider& collider);
+  ~TrajectoryGenerator();
+
+  void init();
+  void generate_step();
+  bool finished();
+  double cur_t();
+  Trajectory get();
 
   Trajectory generate();
-  void reset();
 protected:
   TrajectoryStartGenerator& traj_start_;
   Motion& motion_model_;
-  TrajectoryEndCondition& traj_end_;
-  TrajectoryRecorder& traj_rec_;
+  TrajectoryEndCondition* traj_end_;
+  TrajectoryRecorder* traj_rec_;
+  Collider& collider_;
+};
+
+class TrajectoryGeneratorFactory
+{
+public:
+  TrajectoryGeneratorFactory(TrajectoryStartGenerator& traj_start,
+			     Motion& motion_model,
+			     TrajectoryEndConditionFactory& traj_end_facto,
+			     TrajectoryRecorderFactory& traj_rec_facto,
+			     Collider& collider);
+
+  TrajectoryGenerator* get(double t0) const;
+protected:
+  TrajectoryStartGenerator& traj_start_;
+  Motion& motion_model_;
+  TrajectoryEndConditionFactory& traj_end_facto_;
+  TrajectoryRecorderFactory& traj_rec_facto_;
   Collider& collider_;
 };
 

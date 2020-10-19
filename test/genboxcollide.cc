@@ -25,14 +25,16 @@ int main(int argc, char** argv)
     FixedPointTrajectoryStartGenerator({10.0, 10.0});
   BrownianMotion bm(mt, D, dt);
   NumberPointsEndCondition traj_end_cond(max_npts);
-  FullTrajectoryRecorder traj_rec(DT);
+  TrajectoryEndConditionFactory traj_end_cond_facto(traj_end_cond);
+  FullTrajectoryRecorder traj_rec(0.0, DT);
+  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
   NumberTrajectoriesSimulationEndCondition end_sim(max_ntrajs);
   BoxCollider bcollider(sim_box);
 
-  TrajectoryGenerator traj_gen(start_gen, bm, traj_end_cond, traj_rec,
-			       bcollider);
+  TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
+					    traj_rec_facto, bcollider);
 
-  Simulation sim(traj_gen, end_sim);
+  SimulationTrajectory sim(traj_gen_facto, end_sim);
 
   sim.run();
 

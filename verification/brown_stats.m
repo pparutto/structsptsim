@@ -1,11 +1,12 @@
-D = 0.05;
-DT = 0.0001;
-disps_bins = 0.0004:0.0008:0.02;
+%disps_bins = 0.0004:0.0008:0.02;
+disps_bins = 0.0025:0.005:20;
 
-tab = dlmread('/tmp/trajs.csv');
-
+tab = dlmread('/tmp/aa/trajs.csv');
+%tab = dlmread('/mnt/data/SPT_method/simu/very_low/trajs.csv');
+DT = Utils.find_dt(tab);
 
 sds = Utils.ensemble_MSD(tab);
+
 
 %tab_sim = Utils.gen_brown_trajs(0.05, 0.0001, 20, 100);
 %tab = tab_sim;
@@ -38,3 +39,8 @@ axis square
 xlabel('Displacement (µm)')
 ylabel('Frequency')
 %print(sprintf('/tmp/disp_distrib_%s.png', SNR), '-dpng')
+
+[o, b] = hist(disps ./ DT, 1:2:100);
+figure
+bar(b, o / sum(o), 'hist')
+axis square

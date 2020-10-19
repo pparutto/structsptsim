@@ -1,8 +1,8 @@
-addpath('/tmp');
+%addpath('/tmp');
 
-[base_poly, polys] = load_polys();
+%[base_poly, polys] = load_polys();
 
-tab = dlmread('/tmp/trajs.csv');
+tab = dlmread('/tmp/aa/trajs.csv');
 
 po = [
 7.223125 0.4996875;
@@ -26,18 +26,26 @@ po = [
 figure
 hold on
 Utils.show_trajectories(tab);
-
 %plot([4.37108 4.39335], [8.51846, 8.50945], 'r', 'LineWidth', 3);
 
-
-plot(base_poly(:,1), base_poly(:,2), 'k')
-for k=1:length(polys)
-    plot(polys{k}(:,1), polys{k}(:,2), 'k') 
-end
+% 
+% plot(base_poly(:,1), base_poly(:,2), 'k')
+% for k=1:length(polys)
+%     plot(polys{k}(:,1), polys{k}(:,2), 'k') 
+% end
 hold off
 axis square
 daspect([1 1 1])
 set(gca, 'YDir', 'Reverse')
+
+frames = 0:4999;
+cnts = zeros(length(frames), 1);
+for i=1:length(frames)
+    cnts(i) = sum(round(tab(:,2) ./ 0.004) == frames(i));
+end
+
+figure
+plot(frames, cnts)
 
 
 % A = [128.5 14];

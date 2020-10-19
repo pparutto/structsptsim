@@ -146,9 +146,11 @@ int main(int argc, char** argv)
     traj_end_cond = new NumberPointsPoissonianEndCondition(pdist, mt);
   else
     traj_end_cond = new NumberPointsEndCondition(Npts);
+  TrajectoryEndConditionFactory traj_end_cond_facto(*traj_end_cond);
 
   //FullTrajectoryRecorder traj_rec(DT);
-  SubsambleTrajectoryRecorder traj_rec(DT, (unsigned) (DT / dt));
+  SubsambleTrajectoryRecorder traj_rec(0.0, DT, (unsigned) (DT / dt));
+  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
 
   NumberTrajectoriesSimulationEndCondition end_sim(Ntrajs);
 
@@ -156,10 +158,10 @@ int main(int argc, char** argv)
   PolygonCollider collider(poly);
 
 
-  TrajectoryGenerator traj_gen(start_gen, bm, *traj_end_cond, traj_rec,
-			       collider);
+  TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
+					    traj_rec_facto, collider);
 
-  Simulation sim(traj_gen, end_sim);
+  SimulationTrajectory sim(traj_gen_facto, end_sim);
 
   sim.run();
 

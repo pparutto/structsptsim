@@ -1,5 +1,7 @@
 #include "trajectory_end_condition.hh"
 
+#include <iostream>
+
 NumberPointsEndCondition::NumberPointsEndCondition(unsigned max_npts)
   : max_npts_(max_npts)
 {
@@ -11,6 +13,12 @@ NumberPointsEndCondition::evaluate(const Trajectory& traj)
   return traj.size() >= this->max_npts_;
 }
 
+NumberPointsEndCondition*
+NumberPointsEndCondition::clone_reset()
+{
+  return new NumberPointsEndCondition(this->max_npts_);
+}
+
 NumberPointsPoissonianEndCondition::
 NumberPointsPoissonianEndCondition(std::poisson_distribution<int>& distrib,
 				   std::mt19937_64& mt)
@@ -20,8 +28,70 @@ NumberPointsPoissonianEndCondition(std::poisson_distribution<int>& distrib,
 {
 }
 
-void
-NumberPointsPoissonianEndCondition::reset()
+NumberPointsPoissonianEndCondition*
+NumberPointsPoissonianEndCondition::clone_reset()
 {
-  this->max_npts_ = this->distrib_(this->mt_);
+  return new NumberPointsPoissonianEndCondition(this->distrib_, this->mt_);
+}
+
+EscapeEndCondition::
+EscapeEndCondition(const Shape& reg)
+  : reg_(reg)
+{
+}
+
+bool
+EscapeEndCondition::evaluate(const Trajectory& traj)
+{
+  return !this->reg_.inside(to_point(traj.at(traj.size() - 1)));
+}
+
+EscapeEndCondition*
+EscapeEndCondition::clone_reset()
+{
+  return new EscapeEndCondition(this->reg_);
+}
+
+CompoundEndCondition::
+CompoundEndCondition(std::vector<TrajectoryEndCondition*>& end_conds)
+  : end_conds_(end_conds)
+{
+}
+
+CompoundEndCondition::~CompoundEndCondition()
+{
+  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+    delete end_cond;
+}
+
+
+bool
+CompoundEndCondition::evaluate(const Trajectory& traj)
+{
+  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+    if (end_cond->evaluate(traj))
+      return true;
+  return false;
+}
+
+CompoundEndCondition*
+CompoundEndCondition::clone_reset()
+{
+  std::vector<TrajectoryEndCondition*> new_conds;
+  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+    new_conds.push_back(end_cond->clone_reset());
+  return new CompoundEndCondition(new_conds);
+}
+
+
+TrajectoryEndConditionFactory::
+TrajectoryEndConditionFactory(TrajectoryEndCondition& template_condition)
+  : template_condition_(template_condition)
+{
+}
+
+TrajectoryEndCondition*
+TrajectoryEndConditionFactory::get()
+{
+  return template_condition_.clone_reset();
 }

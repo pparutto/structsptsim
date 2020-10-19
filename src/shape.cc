@@ -284,6 +284,16 @@ CompoundPolygon::intersect_with(const Segment& s1) const
 
 
 std::ostream&
+operator<< (std::ostream& os, const Box& box)
+{
+  Point ll = box.lower_left();
+  Point tr = box.upper_right();
+  os << ll[0] << " " << ll[1] << ";"
+     << tr[0] << " " << tr[1] << std::endl;
+  return os;
+}
+
+std::ostream&
 operator<< (std::ostream& os, const Polygon& poly)
 {
   for (const Point& p: poly.pts())

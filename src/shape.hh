@@ -78,7 +78,7 @@ protected:
   std::vector<Polygon> diffs_;
 };
 
-
+std::ostream& operator<< (std::ostream& os, const Box& box);
 std::ostream& operator<< (std::ostream& os, const Polygon& poly);
 
 #endif /// !SHAPE_HH

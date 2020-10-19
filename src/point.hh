@@ -12,6 +12,8 @@ using PointEnsemble = std::vector<Point>;
 
 enum Orientation {COLINEAR, CLOCKWISE, COUNTERCLOCKWISE};
 
+Point to_point(const TimedPoint& tp);
+
 bool colinear(const Point& p1, const Point& p2, const Point& p3);
 bool operator== (const Point& p1, const Point& p2);
 Point operator- (const Point& p1, const Point& p2);
@@ -24,5 +26,6 @@ double norm(const Vec& v);
 double dist(const Point& p1, const Point& p2);
 
 std::ostream& operator<< (std::ostream& os, const Point& pt);
+std::ostream& operator<< (std::ostream& os, const TimedPoint& pt);
 
 #endif /// !POINT_HH
