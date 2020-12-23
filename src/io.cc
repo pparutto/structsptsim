@@ -86,22 +86,19 @@ Point read_point(const std::string& s)
 //Inkscape polygon format: can contain letters M, h, v, z
 //Each line is a polygon
 //The first line is the base polygon and succesive lines are the diffs
-CompoundPolygon
-poly_from_inkscape_path(const std::string& fname)
+std::vector<CompoundPolygon>
+polys_from_inkscape_path(const std::string& fname)
 {
   std::ifstream ifs(fname);
 
   if (!ifs.is_open())
   {
     std::cout << "ERROR file not found: " << fname << std::endl;
-    return CompoundPolygon(std::vector<Point> (), std::vector<Polygon> ());
+    return std::vector<CompoundPolygon> ();
   }
 
 
-  bool first = true;
-  Polygon base_poly;
   std::vector<Polygon> polys;
-
   std::string line;
   while(std::getline(ifs, line))
   {
@@ -189,16 +186,45 @@ poly_from_inkscape_path(const std::string& fname)
     assert(tmp == "z" || tmp == "Z");
     assert(!cur_pe.empty());
 
-    if (first)
-    {
-      base_poly = Polygon(cur_pe);
-      first = false;
-    }
-    else
-      polys.push_back(Polygon(cur_pe));
+    polys.push_back(Polygon(cur_pe));
   }
 
-  return CompoundPolygon(base_poly, polys);
+  std::vector<CompoundPolygon> res;
+
+  bool go = true;
+  while (go)
+  {
+    go = false;
+    for (unsigned i = 0; i < polys.size(); ++i)
+    {
+      std::vector<Polygon> overlap;
+      std::vector<unsigned> idxs;
+      idxs.push_back(i);
+      for (unsigned j = 0; j < polys.size() && i != j; ++j)
+      {
+	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
+	    polys[i].inside(polys[0]))
+	{
+	  overlap.push_back(polys[j]);
+	  idxs.push_back(j);
+	}
+      }
+
+      if (!overlap.empty())
+      {
+	go = true;
+	res.push_back(CompoundPolygon(polys[0], overlap));
+	for (int i = idxs.size() - 1; i >= 0; --i)
+	  polys.erase(polys.begin() + i);
+	break;
+      }
+    }
+  }
+
+  for (unsigned i = 0; i < polys.size(); ++i)
+    res.push_back(CompoundPolygon(polys[i], {}));
+
+  return res;
 }
 
 void

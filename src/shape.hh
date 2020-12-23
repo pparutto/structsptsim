@@ -43,6 +43,7 @@ public:
   Polygon() = default;
 
   virtual bool inside(const Point& p) const override;
+  bool inside(const Polygon& poly) const;
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
 
@@ -69,6 +70,8 @@ public:
 
   virtual void apply_pxsize(double pxsize) override;
   virtual Segment intersect_with(const Segment& s1) const override;
+
+  double signed_area() const override;
 
   virtual const PointEnsemble& pts() const override;
   const Polygon& base() const { return this->base_; };

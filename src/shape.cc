@@ -108,6 +108,15 @@ Polygon::inside(const Point& p) const
   return this->my_inside(p, true);
 }
 
+bool
+Polygon::inside(const Polygon& poly) const
+{
+  for (const Point& pt: this->pts_)
+    if (!poly.inside(pt))
+      return false;
+  return true;
+}
+
 PointEnsemble
 Polygon::boundary() const
 {
@@ -280,6 +289,16 @@ CompoundPolygon::intersect_with(const Segment& s1) const
 
   return res;
 
+}
+
+double
+CompoundPolygon::signed_area() const
+{
+  double res = fabs(this->base_.signed_area());
+
+  for (const Polygon& poly: diffs_)
+    res -= fabs(poly.signed_area());
+  return res;
 }
 
 

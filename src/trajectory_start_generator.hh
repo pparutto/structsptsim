@@ -46,5 +46,21 @@ protected:
   RandomBoxTrajectoryStartGenerator rnd_box_;
 };
 
+class MultiplePolysRandomTrajectoryStartGenerator:
+  public TrajectoryStartGenerator
+{
+public:
+  MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
+					      const std::vector<CompoundPolygon>& polys);
+
+  virtual Point generate() override;
+protected:
+  std::mt19937_64& ng_;
+  std::vector<double> norm_cum_areas_;
+  std::uniform_real_distribution<double> randu_;
+  std::vector<RandomTrajectoryStartGenerator> poly_gens_;
+};
+
+
 
 #endif /// !TRAJECTORY_START_GENERATOR_HH

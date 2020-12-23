@@ -618,7 +618,9 @@ int main(int argc, char** argv)
 
   std::cout << "Complex polygon" << std::endl;
   {
-    CompoundPolygon poly = poly_from_inkscape_path("../resources/ER_net1.path");
+    std::vector<CompoundPolygon> polys =
+      polys_from_inkscape_path("../resources/ER_net1.path");
+    CompoundPolygon poly = polys[0];
     poly.apply_pxsize(0.0406250);
 
     //3.9040625 5.3828125;

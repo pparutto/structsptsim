@@ -56,7 +56,7 @@ BoxCollider::collide(const Point& p1, const Point& p2) const
   }
 
   return res;
-};
+}
 
 
 PolygonCollider::PolygonCollider(const Polygon& poly)
@@ -101,4 +101,30 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
   while (this->outside(pp));
 
   return pp;
+}
+
+MultiplePolygonCollider::
+MultiplePolygonCollider(const std::vector<CompoundPolygon>& polys)
+  : colliders_()
+{
+  for (const CompoundPolygon& poly: polys)
+    this->colliders_.push_back(PolygonCollider(poly));
+}
+
+bool
+MultiplePolygonCollider::outside(const Point& p) const
+{
+  for (const PolygonCollider& coll: this->colliders_)
+    if (!coll.outside(p))
+      return false;
+  return true;
+}
+
+Point
+MultiplePolygonCollider::collide(const Point& p1, const Point& p2) const
+{
+  for (const PolygonCollider& coll: this->colliders_)
+    if (!coll.outside(p1) && coll.outside(p2))
+      return coll.collide(p1, p2);
+  return {};
 }

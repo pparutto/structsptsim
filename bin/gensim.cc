@@ -120,25 +120,19 @@ int main(int argc, char** argv)
   std::random_device rd;
   std::mt19937_64 mt(rd());
 
-  // double dt = 0.0001;
-  // double DT = 0.004;
-  // double D = 9;
-  // int max_npts = 5;
-  // int max_ntrajs = 500;
-  // double poly_px_size = 0.0406250;
-
-  //CompoundPolygon poly = poly_from_inkscape_path("../resources/ER_net1.path");
-  //CompoundPolygon poly = poly_from_inkscape_path("/mnt/data2/ER_net simu/190418_COS7_Halo-KDEL_YFP-Z_day1_JF646PC_SPT_9/190418_COS7_Halo-KDEL_YFP-Z_day1_JF646PC_SPT_9_G_med4_poly.path");
-
-  CompoundPolygon poly = poly_from_inkscape_path(poly_path);
+  std::vector<CompoundPolygon> polys =
+    polys_from_inkscape_path(poly_path);
 
   if (use_poly_pxsize)
-    poly.apply_pxsize(poly_pxsize);
+  {
+    for (CompoundPolygon& poly: polys)
+      poly.apply_pxsize(poly_pxsize);
+  }
+  //save_poly_matlab(poly, "/tmp/load_polys.m");
 
-  save_poly_matlab(poly, "/tmp/load_polys.m");
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
-  RandomTrajectoryStartGenerator start_gen(mt, poly);
+  MultiplePolysRandomTrajectoryStartGenerator start_gen(mt, polys);
 
   BrownianMotion bm(mt, D, dt);
   TrajectoryEndCondition* traj_end_cond = nullptr;
@@ -155,8 +149,8 @@ int main(int argc, char** argv)
   NumberTrajectoriesSimulationEndCondition end_sim(Ntrajs);
 
   //NoneCollider collider;
-  PolygonCollider collider(poly);
-
+  //PolygonCollider collider(poly);
+  MultiplePolygonCollider collider(polys);
 
   TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
 					    traj_rec_facto, collider);

@@ -39,5 +39,16 @@ protected:
   const Polygon& poly_;
 };
 
+class MultiplePolygonCollider: public Collider
+{
+public:
+  MultiplePolygonCollider(const std::vector<CompoundPolygon>& polys);
+
+  virtual bool outside(const Point& p) const override;
+  virtual Point collide(const Point& p1, const Point& p2) const override;
+protected:
+  std::vector<PolygonCollider> colliders_;
+};
+
 
 #endif /// !COLLIDER_HH
