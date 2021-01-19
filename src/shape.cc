@@ -44,16 +44,23 @@ double orientation(const PointEnsemble& pts)
 	  (pts[2][0] - pts[0][0]) * (pts[1][1] - pts[0][1])) < 0;
 }
 
+bool within(const Segment& s, const Point p)
+{
+  double mx = std::min(s.p1()[0], s.p2()[0]);
+  double Mx = std::max(s.p1()[0], s.p2()[0]);
+  double my = std::min(s.p1()[1], s.p2()[1]);
+  double My = std::max(s.p1()[1], s.p2()[1]);
+  return p[0] >= mx && p[0] <= Mx && p[1] >= my && p[1] <= My;
+}
+
 Polygon::Polygon(const PointEnsemble& pts)
   : pts_(pts)
 {
 }
 
 bool
-Polygon::my_inside(const Point& p, bool border_is_inside) const
+Polygon::my_inside(const Point& p, bool border_is_inside, Point extreme) const
 {
-  double INF = 10000.0;
-  Point extreme = {INF, p[1]};
   Segment s1(p, extreme);
 
   int prev = 0;
@@ -71,7 +78,8 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
 
     Segment s2(this->pts_[i], this->pts_[next]);
 
-    if (colinear(s2.p1(), s2.p2(), p))
+    if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
+	(within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())))
     {
       if (s2.on_segment(p))
 	return border_is_inside;
@@ -99,13 +107,25 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   }
   while (i != 0);
 
+  //std::cout << p[0] << " " << p[1] << " " << count << std::endl;
   return count % 2 == 1;
 }
 
 bool
 Polygon::inside(const Point& p) const
 {
-  return this->my_inside(p, true);
+  double INF = 10000.0;
+  return (this->my_inside(p, true, (Point) {p[0], INF}) +
+	  this->my_inside(p, true, (Point) {p[0], -INF}) +
+	  this->my_inside(p, true, (Point) {INF, p[1]}) > 1);
+}
+
+bool Polygon::inside2(const Point& p, bool border_is_inside) const
+{
+  double INF = 10000.0;
+  return (this->my_inside(p, border_is_inside, (Point) {p[0], INF}) +
+	  this->my_inside(p, border_is_inside, (Point) {p[0], -INF}) +
+	  this->my_inside(p, border_is_inside, (Point) {INF, p[1]}) > 1);
 }
 
 bool
@@ -203,6 +223,7 @@ Polygon::signed_area() const
 
     res += (this->pts_[i][0] * this->pts_[next][1] -
 	    this->pts_[next][0] * this->pts_[i][1]);
+    i = next;
   }
   while (i != 0);
 
@@ -224,7 +245,7 @@ CompoundPolygon::inside(const Point& p) const
     return false;
 
   for (const Polygon& poly: this->diffs_)
-    if (poly.my_inside(p, false))
+    if (poly.inside2(p, false))
       return false;
 
   return true;
@@ -268,7 +289,7 @@ CompoundPolygon::intersect_with(const Segment& s1) const
 
   for (const Polygon& poly: this->diffs_)
   {
-    if (poly.my_inside(s1.p2(), false))
+    if (poly.inside2(s1.p2(), false))
     {
       in_diff = true;
       diff = &poly;

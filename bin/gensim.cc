@@ -120,8 +120,12 @@ int main(int argc, char** argv)
   std::random_device rd;
   std::mt19937_64 mt(rd());
 
+  std::cout << "Parsing polygon" << std::endl;
+
   std::vector<CompoundPolygon> polys =
     polys_from_inkscape_path(poly_path);
+
+  std::cout << "Loaded " << polys.size() << " polygons" << std::endl;
 
   if (use_poly_pxsize)
   {
@@ -157,6 +161,8 @@ int main(int argc, char** argv)
 
   SimulationTrajectory sim(traj_gen_facto, end_sim);
 
+  std::cout << "Running simulation" << std::endl;
+
   sim.run();
 
   std::string res_name;
@@ -178,13 +184,14 @@ int main(int argc, char** argv)
   save_trajectories_csv(outdir + "/" + res_name, sim.trajs());
 
   delete traj_end_cond;
-  std::cout << "DONE" << std::endl;
+
+  std::cout << "Generating images" << std::endl;
 
   unsigned length = 100;
   unsigned width = 128;
   unsigned height = 128;
 
-  unsigned short*** imgs = raw_image_simulator(length, 128, width, height, DT, 1000.0, 0.4, sim.trajs());
+  unsigned short*** imgs = raw_image_simulator(length, width, height, DT, 1000.0, 0.2, sim.trajs());
   /*
   for (int i = 0; i < 128; ++i)
   {
@@ -195,7 +202,7 @@ int main(int argc, char** argv)
   */
 
   TIFF* tif = TIFFOpen("/tmp/foo.tif", "w");
-  for (unsigned k = 0; k < 100; ++k)
+  for (unsigned k = 0; k < length; ++k)
   {
     TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
     TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
@@ -214,4 +221,6 @@ int main(int argc, char** argv)
     delete[] imgs[k];
   }
   delete[] imgs;
+
+  std::cout << "DONE" << std::endl;
 }

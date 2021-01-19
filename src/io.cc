@@ -108,6 +108,7 @@ polys_from_inkscape_path(const std::string& fname)
     std::string tmp;
     std::istringstream ss(line);
     std::getline(ss, tmp, ' ');
+
     while (tmp != "z" && tmp != "Z")
     {
       if (tmp == "m" || tmp == "l")
@@ -190,7 +191,6 @@ polys_from_inkscape_path(const std::string& fname)
   }
 
   std::vector<CompoundPolygon> res;
-
   bool go = true;
   while (go)
   {
@@ -200,10 +200,10 @@ polys_from_inkscape_path(const std::string& fname)
       std::vector<Polygon> overlap;
       std::vector<unsigned> idxs;
       idxs.push_back(i);
-      for (unsigned j = 0; j < polys.size() && i != j; ++j)
+      for (unsigned j = 1; j < polys.size() && i != j; ++j)
       {
 	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
-	    polys[i].inside(polys[0]))
+	    polys[j].inside(polys[i]))
 	{
 	  overlap.push_back(polys[j]);
 	  idxs.push_back(j);

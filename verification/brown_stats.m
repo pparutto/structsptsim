@@ -1,5 +1,5 @@
 %disps_bins = 0.0004:0.0008:0.02;
-disps_bins = 0.0025:0.005:20;
+disps_bins = 0.0025:0.005:2;
 
 tab = dlmread('/tmp/aa/trajs.csv');
 %tab = dlmread('/mnt/data/SPT_method/simu/very_low/trajs.csv');
@@ -33,6 +33,7 @@ figure
 hold on
 bar(b, o / sum(o), 'hist')
 plot(b, raylpdf(b, f) / sum(raylpdf(b, f)), 'r')
+plot(b, raylpdf(b, sqrt(2 * 20 * 0.004)) / sum(raylpdf(b, sqrt(2 * 20 * 0.004))), 'm--')
 hold off
 title(sprintf('Estimated D=%.4f', Dest), 'Interpreter', 'None')
 axis square
@@ -40,7 +41,17 @@ xlabel('Displacement (µm)')
 ylabel('Frequency')
 %print(sprintf('/tmp/disp_distrib_%s.png', SNR), '-dpng')
 
-[o, b] = hist(disps ./ DT, 1:2:100);
+% [o, b] = hist(disps ./ DT, 1:2:100);
+% figure
+% bar(b, o / sum(o), 'hist')
+% axis square
+
+D = 3;
+DT = [0.002 0.004 0.006 0.008 0.01 0.012 0.014];
+
 figure
-bar(b, o / sum(o), 'hist')
-axis square
+hold on
+for i=1:length(DT)
+   plot(0.01:0.02:1.5, raylpdf(0.01:0.02:1.5, sqrt(2*D * DT(i))))
+end
+hold off
