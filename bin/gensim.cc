@@ -130,7 +130,7 @@ int main(int argc, char** argv)
   if (use_poly_pxsize)
   {
     for (CompoundPolygon& poly: polys)
-      poly.apply_pxsize(poly_pxsize);
+      bp::apply_pxsize(poly, poly_pxsize);
   }
   //save_poly_matlab(poly, "/tmp/load_polys.m");
 
@@ -185,13 +185,13 @@ int main(int argc, char** argv)
 
   delete traj_end_cond;
 
-  std::cout << "Generating images" << std::endl;
+  // std::cout << "Generating images" << std::endl;
 
-  unsigned length = 100;
-  unsigned width = 128;
-  unsigned height = 128;
+  // unsigned length = 100;
+  // unsigned width = 128;
+  // unsigned height = 128;
 
-  unsigned short*** imgs = raw_image_simulator(length, width, height, DT, 1000.0, 0.2, sim.trajs());
+  //unsigned short*** imgs = raw_image_simulator(length, width, height, DT, 1000.0, 0.2, sim.trajs());
   /*
   for (int i = 0; i < 128; ++i)
   {
@@ -201,26 +201,26 @@ int main(int argc, char** argv)
   }
   */
 
-  TIFF* tif = TIFFOpen("/tmp/foo.tif", "w");
-  for (unsigned k = 0; k < length; ++k)
-  {
-    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
-    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
-    for (unsigned i = 0; i < 128; ++i)
-      TIFFWriteScanline(tif, imgs[k][i], i);
-    TIFFWriteDirectory(tif);
-  }
-  TIFFClose(tif);
+  // TIFF* tif = TIFFOpen("/tmp/foo.tif", "w");
+  // for (unsigned k = 0; k < length; ++k)
+  // {
+  //   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
+  //   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
+  //   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+  //   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+  //   for (unsigned i = 0; i < 128; ++i)
+  //     TIFFWriteScanline(tif, imgs[k][i], i);
+  //   TIFFWriteDirectory(tif);
+  // }
+  // TIFFClose(tif);
 
-  for (unsigned k = 0; k < length; ++k)
-  {
-    for (unsigned i = 0; i < width; ++i)
-      delete[] imgs[k][i];
-    delete[] imgs[k];
-  }
-  delete[] imgs;
+  // for (unsigned k = 0; k < length; ++k)
+  // {
+  //   for (unsigned i = 0; i < width; ++i)
+  //     delete[] imgs[k][i];
+  //   delete[] imgs[k];
+  // }
+  // delete[] imgs;
 
   std::cout << "DONE" << std::endl;
 }

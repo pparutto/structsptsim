@@ -1,8 +1,12 @@
 #ifndef SHAPE_HH_
 #define SHAPE_HH_
 
+# include <boost/polygon/polygon.hpp>
+
 # include "point.hh"
 # include "segment.hh"
+
+namespace bp = boost::polygon;
 
 class Box;
 
@@ -36,53 +40,29 @@ protected:
   double height_;
 };
 
-class Polygon: public Shape
+
+typedef bp::polygon_data<double> Polygon;
+typedef bp::polygon_traits<Polygon>::point_type pPoint;
+typedef bp::segment_data<double> pSegment;
+typedef bp::polygon_with_holes_data<double> CompoundPolygon;
+
+namespace boost::polygon
 {
-public:
-  Polygon(const PointEnsemble& pts);
-  Polygon() = default;
+  bool inside(const Polygon& poly, const pPoint& p);
+  bool inside(const CompoundPolygon& poly, const pPoint& p);
 
-  virtual bool inside(const Point& p) const override;
-  bool inside(const Polygon& poly) const;
-  bool inside2(const Point& p, bool border_is_inside) const;
-  virtual PointEnsemble boundary() const override;
-  virtual Box bounding_box() const override;
+  Segment intersect_with(const Polygon& poly, const Segment& s1);
+  Segment intersect_with(const CompoundPolygon& poly, const Segment& s1);
 
-  virtual void apply_pxsize(double pxsize);
-  virtual Segment intersect_with(const Segment& s1) const;
+  Box bounding_box(const Polygon& poly);
+  Box bounding_box(const CompoundPolygon& poly);
 
-  virtual double signed_area() const;
-
-  virtual const PointEnsemble& pts() const { return this->pts_; };
-
-  bool my_inside(const Point& p, bool border_is_inside, Point extreme) const;
-private:
-  PointEnsemble pts_;
-};
-
-class CompoundPolygon: public Polygon
-{
-public:
-  CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs);
-
-  virtual bool inside(const Point& p) const override;
-  virtual PointEnsemble boundary() const override;
-  virtual Box bounding_box() const override;
-
-  virtual void apply_pxsize(double pxsize) override;
-  virtual Segment intersect_with(const Segment& s1) const override;
-
-  double signed_area() const override;
-
-  virtual const PointEnsemble& pts() const override;
-  const Polygon& base() const { return this->base_; };
-  const std::vector<Polygon>& diffs() const { return this->diffs_; };
-protected:
-  Polygon base_;
-  std::vector<Polygon> diffs_;
-};
+  void apply_pxsize(Polygon& poly, double pxsize);
+  void apply_pxsize(CompoundPolygon& poly, double pxsize);
+}
 
 std::ostream& operator<< (std::ostream& os, const Box& box);
 std::ostream& operator<< (std::ostream& os, const Polygon& poly);
+std::ostream& operator<< (std::ostream& os, const pPoint& poly);
 
 #endif /// !SHAPE_HH

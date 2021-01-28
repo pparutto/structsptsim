@@ -27,6 +27,14 @@ save_trajectories_csv(const std::string fname, const TrajectoryEnsemble& trajs)
   f.close();
 }
 
+bool inside(Polygon p1, Polygon p2)
+{
+  for (pPoint p: p1)
+    if (!bp::inside(p2, p))
+      return false;
+  return true;
+}
+
 //format:
 //x,y
 //dx,dy
@@ -37,14 +45,11 @@ poly_from_csv_path(const std::string& fname)
   std::ifstream ifs(fname);
 
   if (!ifs.is_open())
-  {
-    std::cout << "ERROR file not found: " << fname << std::endl;
-    return Polygon(std::vector<Point> ());
-  }
+    throw std::runtime_error("ERROR file not found: " + fname);
 
   std::string line;
   std::string tmp;
-  std::vector<Point> res;
+  std::vector<pPoint> pts;
   while (std::getline(ifs, line))
   {
     std::istringstream ss(line);
@@ -53,16 +58,16 @@ poly_from_csv_path(const std::string& fname)
     std::getline(ss, tmp, ',');
     double b = std::stod(tmp);
 
-    if (res.empty())
-      res.push_back({a, b});
+    if (pts.empty())
+      pts.push_back(bp::construct<pPoint>(a, b));
     else
     {
-      int N = res.size() - 1;
-      res.push_back({res[N][0] + a, res[N][1] + b});
+      int N = pts.size() - 1;
+      pts.push_back(bp::construct<pPoint>(pts[N].x() + a, pts[N].y() + b));
     }
   }
 
-  return Polygon(res);
+  return Polygon(pts.begin(), pts.end());
 }
 
 bool is_letter(const std::string& s)
@@ -103,7 +108,7 @@ polys_from_inkscape_path(const std::string& fname)
   while(std::getline(ifs, line))
   {
     Point pos = {0, 0};
-    PointEnsemble cur_pe;
+    std::vector<pPoint> cur_pe;
 
     std::string tmp;
     std::istringstream ss(line);
@@ -120,7 +125,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + read_point(tmp);
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -133,7 +138,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = read_point(tmp);
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -143,7 +148,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + (Point) {0, std::stod(tmp)};
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -153,7 +158,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = {pos[0], std::stod(tmp)};
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -163,7 +168,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + (Point) {std::stod(tmp), 0};
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -173,7 +178,7 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = {std::stod(tmp), pos[1]};
-	  cur_pe.push_back(pos);
+	  cur_pe.push_back(bp::construct<pPoint>(pos[0], pos[1]));
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -187,7 +192,7 @@ polys_from_inkscape_path(const std::string& fname)
     assert(tmp == "z" || tmp == "Z");
     assert(!cur_pe.empty());
 
-    polys.push_back(Polygon(cur_pe));
+    polys.push_back(Polygon(cur_pe.begin(), cur_pe.end()));
   }
 
   std::vector<CompoundPolygon> res;
@@ -202,8 +207,8 @@ polys_from_inkscape_path(const std::string& fname)
       idxs.push_back(i);
       for (unsigned j = 1; j < polys.size() && i != j; ++j)
       {
-	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
-	    polys[j].inside(polys[i]))
+	if (bp::area(polys[i]) > bp::area(polys[j]) &&
+	    inside(polys[j], polys[i]))
 	{
 	  overlap.push_back(polys[j]);
 	  idxs.push_back(j);
@@ -213,7 +218,8 @@ polys_from_inkscape_path(const std::string& fname)
       if (!overlap.empty())
       {
 	go = true;
-	res.push_back(CompoundPolygon(polys[0], overlap));
+	res.push_back(CompoundPolygon(polys[0].begin(), polys[0].end(),
+				      overlap.begin(), overlap.end()));
 	for (int i = idxs.size() - 1; i >= 0; --i)
 	  polys.erase(polys.begin() + i);
 	break;
@@ -222,7 +228,7 @@ polys_from_inkscape_path(const std::string& fname)
   }
 
   for (unsigned i = 0; i < polys.size(); ++i)
-    res.push_back(CompoundPolygon(polys[i], {}));
+    res.push_back(CompoundPolygon(polys[i].begin(), polys[i].end()));
 
   return res;
 }
@@ -241,15 +247,14 @@ save_poly_matlab(const CompoundPolygon& poly, const std::string& fname)
 
   f << "function [base_poly, polys] = load_polys()" << std::endl;
   f << "base_poly = [" << std::endl;
-  f << poly.base() << "];" << std::endl;
+  f << poly.self_ << "];" << std::endl;
 
-  std::vector<Polygon> polys = poly.diffs();
   f << "polys = {};" << std::endl;
-  for (unsigned i = 0; i < polys.size(); ++i)
+  int i = 0;
+  for (Polygon hole: poly.holes_)
   {
     f << "polys{" << i + 1 << "} = [" << std::endl;
-    f << poly.diffs()[i];
-    f << "];" << std::endl;
+    f << hole << "];" << std::endl;
   }
   f << "end" << std::endl;
 

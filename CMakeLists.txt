@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
 include_directories ("${PROJECT_SOURCE_DIR}/external/tclap-1.2.1")
+include_directories ("${PROJECT_SOURCE_DIR}/external/polygon-boost-1.75.0/include")
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory (src)
 
@@ -15,6 +16,7 @@ add_executable(genfree2Dsim bin/genfree2Dsim.cc)
 add_executable(genboxcollide test/genboxcollide.cc)
 add_executable(gentrajs test/gentrajs.cc)
 add_executable(geometry test/geometry.cc)
+add_executable(boostPoly test/test_boost_poly.cc)
 
 target_link_libraries (gensim libsim -ldl -ltiff)
 target_link_libraries (genfree2Dsim libsim -ldl -ltiff)

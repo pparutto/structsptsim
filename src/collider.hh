@@ -31,12 +31,12 @@ protected:
 class PolygonCollider: public Collider
 {
 public:
-  PolygonCollider(const Polygon& poly);
+  PolygonCollider(const CompoundPolygon& poly);
 
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
 protected:
-  const Polygon& poly_;
+  const CompoundPolygon& poly_;
 };
 
 class MultiplePolygonCollider: public Collider

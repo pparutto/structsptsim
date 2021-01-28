@@ -59,7 +59,7 @@ BoxCollider::collide(const Point& p1, const Point& p2) const
 }
 
 
-PolygonCollider::PolygonCollider(const Polygon& poly)
+PolygonCollider::PolygonCollider(const CompoundPolygon& poly)
   : poly_(poly)
 {
 }
@@ -67,7 +67,7 @@ PolygonCollider::PolygonCollider(const Polygon& poly)
 bool
 PolygonCollider::outside(const Point& p) const
 {
-  return !this->poly_.inside(p);
+  return !bp::inside(this->poly_, bp::construct<pPoint> (p[0], p[1]));
 }
 
 
@@ -89,7 +89,7 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
   Point pp = p2;
   do
   {
-    Segment s2 = this->poly_.intersect_with(s1);
+    Segment s2 = bp::intersect_with(this->poly_, s1);
 
     pp = Segment::reflect(s1, s2);
     p = Segment::intersection_point(s1, s2);

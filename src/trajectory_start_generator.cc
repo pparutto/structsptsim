@@ -47,6 +47,26 @@ RandomTrajectoryStartGenerator::generate()
   return p;
 }
 
+RandomPolygonTrajectoryStartGenerator::
+RandomPolygonTrajectoryStartGenerator(std::mt19937_64& ng,
+				      const CompoundPolygon& poly)
+  : ng_(ng)
+  , poly_(poly)
+  , rnd_box_(ng_, bp::bounding_box(poly))
+
+{
+}
+
+Point
+RandomPolygonTrajectoryStartGenerator::generate()
+{
+  Point p = this->rnd_box_.generate();
+  while (!bp::inside(this->poly_, bp::construct<pPoint>(p[0], p[1])))
+    p = this->rnd_box_.generate();
+
+  return p;
+}
+
 MultiplePolysRandomTrajectoryStartGenerator::
 MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
 					    const std::vector<CompoundPolygon>& polys)
@@ -58,9 +78,9 @@ MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
   double sum = 0.0;
   for (const CompoundPolygon& poly: polys)
   {
-    this->poly_gens_.push_back(RandomTrajectoryStartGenerator(ng, poly));
+    this->poly_gens_.push_back(RandomPolygonTrajectoryStartGenerator(ng, poly));
 
-    double ar = fabs(poly.signed_area());
+    double ar = bp::area(poly);
     if (this->norm_cum_areas_.empty())
       this->norm_cum_areas_.push_back(ar);
     else

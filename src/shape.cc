@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "utils.hh"
+
 Box::Box(const Point& lower_left, const Point& upper_right)
   : lower_left_(lower_left)
   , upper_right_(upper_right)
@@ -53,275 +55,130 @@ bool within(const Segment& s, const Point p)
   return p[0] >= mx && p[0] <= Mx && p[1] >= my && p[1] <= My;
 }
 
-Polygon::Polygon(const PointEnsemble& pts)
-  : pts_(pts)
+
+namespace boost::polygon
 {
-}
-
-bool
-Polygon::my_inside(const Point& p, bool border_is_inside, Point extreme) const
-{
-  Segment s1(p, extreme);
-
-  int prev = 0;
-  Segment s2(this->pts_[this->pts_.size()-1], this->pts_[0]);
-  if (colinear(s2.p1(), s2.p2(), p) && !s2.on_segment(p))
-    prev = 2;
-  else if(!s2.on_segment(p) && Segment::intersect(s1, s2))
-    prev = 1;
-
-  int count = 0;
-  int i = 0;
-  do
+  bool
+  inside(const Polygon& poly, const pPoint& p)
   {
-    int next = (i + 1) % this->pts_.size();
-
-    Segment s2(this->pts_[i], this->pts_[next]);
-
-    if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
-	(within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())))
+    std::size_t i = 0;
+    do
     {
-      if (s2.on_segment(p))
-	return border_is_inside;
+      std::size_t next = (i + 1) % poly.size();
+      pSegment ps2(poly.coords_[i], poly.coords_[i+1]);
 
-      if (prev == 2)
-	--count;
+      if (bp::euclidean_distance(ps2, p) < 1/PRECISION)
+	return true;
 
-      prev = 2;
-      ++count;
+      i = next;
     }
-    else if (s2.on_segment(p))
-      return border_is_inside;
-    else if (Segment::intersect(s1, s2))
-    {
-      if (prev > 0 && Segment::intersection_point(s1, s2) == this->pts_[i])
-	--count;
+    while (i != 0);
 
-      prev = 1;
-      ++count;
+    return bp::contains(poly, p);
+  }
+
+  bool
+  inside(const CompoundPolygon& poly, const pPoint& p)
+  {
+    std::size_t i = 0;
+    do
+    {
+      std::size_t next = (i + 1) % poly.size();
+      pSegment ps2(poly.self_.coords_[i], poly.self_.coords_[i+1]);
+
+      if (bp::euclidean_distance(ps2, p) < 1/PRECISION)
+	return true;
+
+      i = next;
     }
-    else
-      prev = 0;
+    while (i != 0);
 
-    i = next;
-  }
-  while (i != 0);
-
-  //std::cout << p[0] << " " << p[1] << " " << count << std::endl;
-  return count % 2 == 1;
-}
-
-bool
-Polygon::inside(const Point& p) const
-{
-  double INF = 10000.0;
-  return (this->my_inside(p, true, (Point) {p[0], INF}) +
-	  this->my_inside(p, true, (Point) {p[0], -INF}) +
-	  this->my_inside(p, true, (Point) {INF, p[1]}) > 1);
-}
-
-bool Polygon::inside2(const Point& p, bool border_is_inside) const
-{
-  double INF = 10000.0;
-  return (this->my_inside(p, border_is_inside, (Point) {p[0], INF}) +
-	  this->my_inside(p, border_is_inside, (Point) {p[0], -INF}) +
-	  this->my_inside(p, border_is_inside, (Point) {INF, p[1]}) > 1);
-}
-
-bool
-Polygon::inside(const Polygon& poly) const
-{
-  for (const Point& pt: this->pts_)
-    if (!poly.inside(pt))
-      return false;
-  return true;
-}
-
-PointEnsemble
-Polygon::boundary() const
-{
-  return this->pts_;
-}
-
-Box
-Polygon::bounding_box() const
-{
-  Point ll = {(double) NAN, (double) NAN};
-  Point ur = {(double) NAN, (double) NAN};
-
-  for (const Point& p: this->pts_)
-  {
-    ll[0] = std::isnan(ll[0]) || p[0] < ll[0]? p[0] : ll[0];
-    ll[1] = std::isnan(ll[1]) || p[1] < ll[1]? p[1] : ll[1];
-    ur[0] = std::isnan(ur[0]) || p[0] > ur[0]? p[0] : ur[0];
-    ur[1] = std::isnan(ur[1]) || p[1] > ur[1]? p[1] : ur[1];
+    return bp::contains(poly, p);
   }
 
-  return Box(ll, ur);
-}
-
-void
-Polygon::apply_pxsize(double pxsize)
-{
-  for (unsigned i = 0; i < this->pts_.size(); ++i)
+  Segment
+  intersect_with(const Polygon& poly, const Segment& s1)
   {
-    this->pts_[i][0] *= pxsize;
-    this->pts_[i][1] *= pxsize;
-  }
-}
+    pPoint pp1 = bp::construct<pPoint> (s1.p1()[0], s1.p1()[1]);
+    pPoint pp2 = bp::construct<pPoint> (s1.p2()[0], s1.p2()[1]);
+    pSegment ps1(pp1, pp2);
 
-Segment
-Polygon::intersect_with(const Segment& s1) const
-{
-  bool already = false;
-  Segment seg({0, 0}, {0, 0});
-  Point inter_p = {0, 0};
-  int i = 0;
-  do
-  {
-    int next = (i + 1) % this->pts_.size();
-
-    Segment s2(this->pts_[i], this->pts_[next]);
-
-    if (!s2.on_segment(s1.p1()) && Segment::intersect(s1, s2))
+    std::size_t next = 1;
+    for (std::size_t i = 0; i <= poly.size(); ++i)
     {
-      if (already)
-      {
-	Point pp = Segment::intersection_point(s1, s2);
-	if (dist(s1.p1(), pp) < dist(s1.p1(), inter_p))
-	{
-	  seg = s2;
-	  inter_p = pp;
-	}
-      }
-      else
-      {
-	already = true;
-	inter_p = Segment::intersection_point(s1, s2);
-	seg = s2;
-      }
+      next = (i + 1) % poly.size();
+      pSegment ps2(poly.coords_[i], poly.coords_[next]);
+
+      //(bp::euclidean_distance(ps2, pp1) > 1/PRECISION &&
+      if (bp::intersects(ps1, ps2))
+	return Segment({poly.coords_[i].x(), poly.coords_[i].y()},
+		       {poly.coords_[next].x(), poly.coords_[next].y()});
     }
 
-    i = next;
-  }
-  while (i != 0);
-
-  if (!already)
+    std::cout << "[" << pp1.x() << " " << pp2.x() << "], [" << pp1.y() << " " << pp2.y() << "], 'x')" << std::endl;
+    std::cout << poly << std::endl << "========" << std::endl;
     throw std::runtime_error("Segment did not collide with polygon");
-
-  return seg;
-}
-
-double
-Polygon::signed_area() const
-{
-  double res = 0;
-  unsigned i = 0;
-  do
-  {
-    unsigned next = (i + 1) % this->pts_.size();
-
-    res += (this->pts_[i][0] * this->pts_[next][1] -
-	    this->pts_[next][0] * this->pts_[i][1]);
-    i = next;
   }
-  while (i != 0);
 
-  return res;
-}
-
-
-CompoundPolygon::
-CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs)
-  : base_(base)
-  , diffs_(diffs)
-{
-}
-
-bool
-CompoundPolygon::inside(const Point& p) const
-{
-  if (!this->base_.inside(p))
-    return false;
-
-  for (const Polygon& poly: this->diffs_)
-    if (poly.inside2(p, false))
-      return false;
-
-  return true;
-}
-
-PointEnsemble
-CompoundPolygon::boundary() const
-{
-  return this->base_.boundary();
-}
-
-Box
-CompoundPolygon::bounding_box() const
-{
-  return this->base_.bounding_box();
-}
-
-const PointEnsemble&
-CompoundPolygon::pts() const
-{
-  return this->base_.pts();
-};
-
-void
-CompoundPolygon::apply_pxsize(double pxsize)
-{
-  this->base_.apply_pxsize(pxsize);
-  for (unsigned i = 0; i < this->diffs_.size(); ++i)
-    this->diffs_[i].apply_pxsize(pxsize);
-}
-
-Segment
-CompoundPolygon::intersect_with(const Segment& s1) const
-{
-  bool in_diff = false;
-  const Polygon* diff = nullptr;
-
-  if (this->inside(s1.p1()) == this->inside(s1.p2()))
-    throw std::runtime_error("Points are in same location");
-  //assert(this->inside(s1.p1()) != this->inside(s1.p2()));
-
-  for (const Polygon& poly: this->diffs_)
+  Segment intersect_with(const CompoundPolygon& poly,
+			 const Segment& s1)
   {
-    if (poly.inside2(s1.p2(), false))
+    pPoint pp1 = bp::construct<pPoint> (s1.p1()[0], s1.p1()[1]);
+    pPoint pp2 = bp::construct<pPoint> (s1.p2()[0], s1.p2()[1]);
+
+    if (bp::inside(poly.self_, pp1) != bp::inside(poly.self_, pp2))
+      return intersect_with(poly.self_, s1);
+
+    for (CompoundPolygon::iterator_holes_type it = poly.begin_holes();
+	 it != poly.end_holes(); ++it)
     {
-      in_diff = true;
-      diff = &poly;
-      break;
+      if (bp::contains(*it, pp1) != bp::contains(*it, pp2))
+	return intersect_with(*it, s1);
+    }
+
+    std::cout << "[" << pp1.x() << " " << pp2.x() << "], [" << pp1.y() << " " << pp2.y() << "], 'x')" << std::endl;
+    std::cout << "[" << poly.self_ << "];" << std::endl;
+    std::cout << "sub_polys = {";
+    for (CompoundPolygon::iterator_holes_type it = poly.begin_holes();
+	 it != poly.end_holes(); ++it)
+      std::cout << "[" << *it << "];" << std::endl;
+    std::cout << "};" << std::endl;
+    std::cout << "========" << std::endl;
+    throw std::runtime_error("Segment did not collide with compound polygon");
+  }
+
+  Box
+  bounding_box(const Polygon& poly)
+  {
+      bp::rectangle_data<double> r;
+      bp::extents(r, poly);
+      return Box({bp::xl(r), bp::yl(r)}, {bp::xh(r), bp::yh(r)});
+  }
+
+  Box
+  bounding_box(const CompoundPolygon& poly)
+  {
+    return bounding_box(poly.self_);
+  }
+
+  void
+  apply_pxsize(Polygon& poly, double pxsize)
+  {
+    for (unsigned i = 0; i < poly.coords_.size(); ++i)
+    {
+      poly.coords_[i].x(poly.coords_[i].x() * pxsize);
+      poly.coords_[i].y(poly.coords_[i].y() * pxsize);
     }
   }
 
-  Segment res({0, 0}, {0, 0});
-  if (!in_diff)
-    res = this->base_.intersect_with(s1);
-  else
-    res = diff->intersect_with(s1);
-  //we always want the normal to point inward
-  //i.e toward the starting point of s1
-
-  if (dot(s1.vector(), res.normal()) > 0)
-    res = res.invert();
-
-  return res;
-
+  void
+  apply_pxsize(CompoundPolygon& poly, double pxsize)
+  {
+    apply_pxsize(poly.self_, pxsize);
+    for (Polygon& hole: poly.holes_)
+      apply_pxsize(hole, pxsize);
+  }
 }
-
-double
-CompoundPolygon::signed_area() const
-{
-  double res = fabs(this->base_.signed_area());
-
-  for (const Polygon& poly: diffs_)
-    res -= fabs(poly.signed_area());
-  return res;
-}
-
 
 std::ostream&
 operator<< (std::ostream& os, const Box& box)
@@ -336,8 +193,14 @@ operator<< (std::ostream& os, const Box& box)
 std::ostream&
 operator<< (std::ostream& os, const Polygon& poly)
 {
-  for (const Point& p: poly.pts())
-    os << p << ";" << std::endl;
-  os << poly.pts()[0] << ";" << std::endl;
+  for (pPoint p: poly)
+    os << p << ";";
+  return os;
+}
+
+std::ostream&
+operator<< (std::ostream& os, const pPoint& p)
+{
+  os << p.x() << " " << p.y();
   return os;
 }
