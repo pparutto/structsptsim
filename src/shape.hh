@@ -44,7 +44,7 @@ public:
 
   virtual bool inside(const Point& p) const override;
   bool inside(const Polygon& poly) const;
-  bool inside2(const Point& p, bool border_is_inside) const;
+
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
 

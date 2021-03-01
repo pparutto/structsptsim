@@ -136,7 +136,6 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   }
   while (i != 0);
 
-  //std::cout << p[0] << " " << p[1] << " " << count << std::endl;
   return count % 2 == 1;
 }
 
@@ -144,11 +143,6 @@ bool
 Polygon::inside(const Point& p) const
 {
   return this->my_inside(p, true);
-}
-
-bool Polygon::inside2(const Point& p, bool border_is_inside) const
-{
-  return this->my_inside(p, border_is_inside);
 }
 
 bool
@@ -268,7 +262,7 @@ CompoundPolygon::inside(const Point& p) const
     return false;
 
   for (const Polygon& poly: this->diffs_)
-    if (poly.inside2(p, false))
+    if (poly.my_inside(p, false))
       return false;
 
   return true;
@@ -308,11 +302,10 @@ CompoundPolygon::intersect_with(const Segment& s1) const
 
   if (this->inside(s1.p1()) == this->inside(s1.p2()))
     throw std::runtime_error("Points are in same location");
-  //assert(this->inside(s1.p1()) != this->inside(s1.p2()));
 
   for (const Polygon& poly: this->diffs_)
   {
-    if (poly.inside2(s1.p2(), false))
+    if (poly.my_inside(s1.p2(), false))
     {
       in_diff = true;
       diff = &poly;
