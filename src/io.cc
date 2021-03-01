@@ -213,7 +213,7 @@ polys_from_inkscape_path(const std::string& fname)
       if (!overlap.empty())
       {
 	go = true;
-	res.push_back(CompoundPolygon(polys[0], overlap));
+	res.push_back(CompoundPolygon(polys[i], overlap));
 	for (int i = idxs.size() - 1; i >= 0; --i)
 	  polys.erase(polys.begin() + i);
 	break;

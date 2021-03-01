@@ -59,16 +59,28 @@ Polygon::Polygon(const PointEnsemble& pts)
 }
 
 bool
-Polygon::my_inside(const Point& p, bool border_is_inside, Point extreme) const
+Polygon::my_inside(const Point& p, bool border_is_inside) const
 {
+  double INF = 10000.0;
+  Point extreme = {p[0], INF};
   Segment s1(p, extreme);
+  int NONE = 0;
+  int INTERSECT = 1;
+  int COLIN = 2;
+  int TOUCH = 3;
 
-  int prev = 0;
+  int prev = NONE;
   Segment s2(this->pts_[this->pts_.size()-1], this->pts_[0]);
   if (colinear(s2.p1(), s2.p2(), p) && !s2.on_segment(p))
-    prev = 2;
+    prev = COLIN;
   else if(!s2.on_segment(p) && Segment::intersect(s1, s2))
-    prev = 1;
+  {
+    if (Segment::intersection_point(s1, s2) == this->pts_[0])
+      prev = TOUCH;
+    else
+      prev = INTERSECT;
+  }
+
 
   int count = 0;
   int i = 0;
@@ -79,29 +91,46 @@ Polygon::my_inside(const Point& p, bool border_is_inside, Point extreme) const
     Segment s2(this->pts_[i], this->pts_[next]);
 
     if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
-	(within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())))
+	(within(s2, p) || within(s2, extreme) || within(s1, s2.p1())
+	 || within(s1, s2.p2())))
     {
       if (s2.on_segment(p))
 	return border_is_inside;
 
-      if (prev == 2)
+      if (prev != NONE)
 	--count;
 
-      prev = 2;
+      prev = COLIN;
       ++count;
     }
     else if (s2.on_segment(p))
       return border_is_inside;
     else if (Segment::intersect(s1, s2))
     {
-      if (prev > 0 && Segment::intersection_point(s1, s2) == this->pts_[i])
-	--count;
+      if (prev != NONE && Segment::intersection_point(s1, s2) == this->pts_[i])
+      {
+	//here we need to verify that the line does not just "touch"
+	//the tip of the two segment without crossing them
+	if (prev == TOUCH &&
+	    ((this->pts_[i-1][0] < s2.p1()[0] &&
+	      this->pts_[next][0] < s2.p1()[0]) ||
+	     (this->pts_[i-1][0] > s2.p1()[0] &&
+	      this->pts_[next][0] > s2.p1()[0])))
+	  count -= 2;
+	else
+	  --count;
+      }
 
-      prev = 1;
+      if (Segment::intersection_point(s1, s2) == this->pts_[i] ||
+	  Segment::intersection_point(s1, s2) == this->pts_[next])
+	prev = TOUCH;
+      else
+	prev = INTERSECT;
+
       ++count;
     }
     else
-      prev = 0;
+      prev = NONE;
 
     i = next;
   }
@@ -114,18 +143,12 @@ Polygon::my_inside(const Point& p, bool border_is_inside, Point extreme) const
 bool
 Polygon::inside(const Point& p) const
 {
-  double INF = 10000.0;
-  return (this->my_inside(p, true, (Point) {p[0], INF}) +
-	  this->my_inside(p, true, (Point) {p[0], -INF}) +
-	  this->my_inside(p, true, (Point) {INF, p[1]}) > 1);
+  return this->my_inside(p, true);
 }
 
 bool Polygon::inside2(const Point& p, bool border_is_inside) const
 {
-  double INF = 10000.0;
-  return (this->my_inside(p, border_is_inside, (Point) {p[0], INF}) +
-	  this->my_inside(p, border_is_inside, (Point) {p[0], -INF}) +
-	  this->my_inside(p, border_is_inside, (Point) {INF, p[1]}) > 1);
+  return this->my_inside(p, border_is_inside);
 }
 
 bool

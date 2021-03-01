@@ -299,11 +299,6 @@ int main(int argc, char** argv)
     pe.push_back({8.01938, 9.62406});
     poly = Polygon(pe);
 
-    std::cout << poly << std::endl;
-
-    std::cout << "colin= " << colinear({8.01938, 9.62406}, {8.01938, 9.62406}, {8.03189, 9.64409}) << std::endl;
-    Segment s1 = Segment({8.01938, 9.62406}, {8.01938, 9.62406});
-    std::cout << "on= " << s1.on_segment({8.03189, 9.64409}) << std::endl;
     std::cout << " [Test 8]";
     assert(poly.inside({8.03189, 9.64409}));
     std::cout << " OK" << std::endl;
@@ -329,23 +324,23 @@ int main(int argc, char** argv)
     pe.push_back({5, 5});
     pe.push_back({5, 0});
 
-    std::cout << " [Test 8]";
+    std::cout << " [Test 11]";
     Polygon poly(pe);
     Point p = {2, 2};
     assert(poly.inside(p));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 9]";
+    std::cout << " [Test 12]";
     p = {5, 1};
     assert(poly.inside(p));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 10]";
+    std::cout << " [Test 13]";
     p = {8, 1};
     assert(!poly.inside(p));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 11]";
+    std::cout << " [Test 14]";
     Segment res = poly.intersect_with(Segment({3.1, 3}, {-2, 8}));
     assert((res.p1() == (Point) {0, 0}));
     assert((res.p2() == (Point) {5, 5}));
@@ -370,9 +365,6 @@ int main(int argc, char** argv)
     pe.push_back({116.984, 93.7433});
     Polygon u_poly(pe);
     PolygonCollider poly_collider(u_poly);
-
-    for (Point p: pe)
-      std::cout << p[0] << ", " << p[1] << ";" << std::endl;
 
     std::cout << " [Test 1]";
     Point p = {107.65, 109.702};
@@ -427,67 +419,66 @@ int main(int argc, char** argv)
     assert(s2.on_segment(p1));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 8]";
+    std::cout << " [Test 9]";
     s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
     s2 = u_poly.intersect_with(s1);
     p1 = Segment::intersection_point(s1, s2);
     assert(pts_eq(p1, {50.6012629, 129.31366}, PRECISION));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 9]";
+    std::cout << " [Test 10]";
     s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
     s2 = u_poly.intersect_with(s1);
     p1 = Segment::intersection_point(s1, s2);
     assert(u_poly.inside(p1));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 10]";
+    std::cout << " [Test 11]";
     s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
     s2 = u_poly.intersect_with(s1);
     p1 = Segment::reflect(s1, s2);
     assert(pts_eq(p1, {51.8634543, 130.054885}, PRECISION));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 11]";
+    std::cout << " [Test 12]";
     assert(u_poly.inside({50.738, 129.225}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 12]";
+    std::cout << " [Test 13]";
     s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = u_poly.intersect_with(s1);
     assert(pts_eq(s2.p1(), {102.054, 129.746}, PRECISION) &&
 	   pts_eq(s2.p2(), {50.6049, 129.478}, PRECISION));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 13]";
-    s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
-    s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
-    p1 = Segment::intersection_point(s1, s2);
-    std::cout << p1 << std::endl;
-    assert(pts_eq(p1, {51.0844957, 129.480498}, PRECISION));
-    std::cout << " OK" << std::endl;
-
     std::cout << " [Test 14]";
     s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
-    p1 = Segment::reflect(s1, s2);
-    assert(pts_eq(p1, {51.8693959, 128.914258}, PRECISION));
+    p1 = Segment::intersection_point(s1, s2);
+    assert(pts_eq(p1, {51.0844957, 129.480498}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 15]";
     s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
     p1 = Segment::reflect(s1, s2);
-    assert(u_poly.inside(p1));
+    assert(pts_eq(p1, {51.8693959, 128.914258}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 16]";
+    s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
+    s2 = Segment({102.054, 129.746}, {50.6049, 129.478});
+    p1 = Segment::reflect(s1, s2);
+    assert(u_poly.inside(p1));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 17]";
     s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
     p1 = poly_collider.collide(s1.p1(), s1.p2());
     assert(pts_eq(p1, {51.8693959, 128.914258}, PRECISION));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 17]";
+    std::cout << " [Test 18]";
     s1 = Segment({0.251875, 0}, {0.377813, 0});
     assert(s1.on_segment({0.347154, 0}));
     std::cout << " OK" << std::endl;
@@ -623,32 +614,39 @@ int main(int argc, char** argv)
     CompoundPolygon poly = polys[0];
     poly.apply_pxsize(0.0406250);
 
-    //3.9040625 5.3828125;
-    //3.9 5.41125;
-    //3.9 5.44375;
-
-    std::cout << " [Test 9]";
+    std::cout << " [Test 1]";
     assert(poly.inside({1.18408, 5.41125}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 10]";
+    std::cout << " [Test 2]";
     assert(poly.inside({7.10528, 2.98698}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 11]";
+    std::cout << " [Test 3]";
     assert(poly.inside({7.15607, 2.96563}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 12]";
+    std::cout << " [Test 4]";
     assert(poly.inside({3.86121, 0.73125}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 13]";
+    std::cout << " [Test 5]";
     assert(poly.inside({6.84829, 7.4425}));
     std::cout << " OK" << std::endl;
 
-    std::cout << " [Test 13]";
+    std::cout << " [Test 6]";
     assert(poly.inside({1.86335, 2.31562}));
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Touch inside" << std::endl;
+  {
+    std::vector<CompoundPolygon> polys =
+      polys_from_inkscape_path("../resources/poly_touch.poly");
+    CompoundPolygon poly = polys[0];
+
+    std::cout << " [Test 1]";
+    assert(poly.inside((Point) {481.9, 160}));
     std::cout << " OK" << std::endl;
   }
 }

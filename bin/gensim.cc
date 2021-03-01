@@ -185,6 +185,7 @@ int main(int argc, char** argv)
 
   delete traj_end_cond;
 
+  /*
   std::cout << "Generating images" << std::endl;
 
   unsigned length = 100;
@@ -192,14 +193,7 @@ int main(int argc, char** argv)
   unsigned height = 128;
 
   unsigned short*** imgs = raw_image_simulator(length, width, height, DT, 1000.0, 0.2, sim.trajs());
-  /*
-  for (int i = 0; i < 128; ++i)
-  {
-    for (int j = 0; j < 128; ++j)
-      std::cout << imgs[0][i][j] << " ";
-    std::cout << std::endl;
-  }
-  */
+
 
   TIFF* tif = TIFFOpen("/tmp/foo.tif", "w");
   for (unsigned k = 0; k < length; ++k)
@@ -221,6 +215,7 @@ int main(int argc, char** argv)
     delete[] imgs[k];
   }
   delete[] imgs;
+  */
 
   std::cout << "DONE" << std::endl;
 }
