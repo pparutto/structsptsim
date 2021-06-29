@@ -30,12 +30,13 @@ void create_dir_if_not_exist(const std::string& path)
 
 int main(int argc, char** argv)
 {
+  bool fixed_size = false;
   unsigned width = 0;
   unsigned height = 0;
   unsigned length = 0;
   double pxsize = NAN;
-  double poisson_lambda = NAN;
-  std::poisson_distribution<int> pdist;
+  double exp_lambda = NAN;
+  std::exponential_distribution<double> pdist;
   double dt = NAN;
   double DT = NAN;
   double D = NAN;
@@ -45,6 +46,10 @@ int main(int argc, char** argv)
   try
   {
     TCLAP::CmdLine cmd("./gensim", ' ', "1");
+
+    TCLAP::SwitchArg fixed_size_arg
+      ("", "fixed-size", "fixed trajectory size given as λ arg", false);
+    cmd.add(fixed_size_arg);
 
     TCLAP::UnlabeledValueArg<unsigned> width_arg
       ("width", "Width (px)", true, 0, "w");
@@ -62,9 +67,9 @@ int main(int argc, char** argv)
       ("pxsize", "Pixel size (µm)", true, NAN, "pxsize");
     cmd.add(pxsize_arg);
 
-    TCLAP::UnlabeledValueArg<double> poisson_arg
-      ("λ", "Poissonian λ traj. length", true, NAN, "poissonLambda");
-    cmd.add(poisson_arg);
+    TCLAP::UnlabeledValueArg<double> exp_arg
+      ("λ", "Exponential λ traj. length", true, NAN, "ExpLambda");
+    cmd.add(exp_arg);
 
     TCLAP::UnlabeledValueArg<double> dt_arg
       ("dt", "Simulation timestep (s)", true, NAN, "dt");
@@ -88,12 +93,13 @@ int main(int argc, char** argv)
 
     cmd.parse(argc, argv);
 
+    fixed_size = fixed_size_arg.isSet();
     width = width_arg.getValue();
     height = height_arg.getValue();
     length = length_arg.getValue();
     pxsize = pxsize_arg.getValue();
-    poisson_lambda = poisson_arg.getValue();
-    pdist = std::poisson_distribution<int>(poisson_lambda);
+    exp_lambda = exp_arg.getValue();
+    pdist = std::exponential_distribution<double>(1 / exp_lambda);
     dt = dt_arg.getValue();
     DT = DT_arg.getValue();
     D = D_arg.getValue();
@@ -123,8 +129,11 @@ int main(int argc, char** argv)
   RandomBoxTrajectoryStartGenerator start_gen(mt, simulation_region);
 
   std::vector<TrajectoryEndCondition*> end_conds;
-  end_conds.push_back(new NumberPointsPoissonianEndCondition(pdist, mt));
-  //end_conds.push_back(new NumberPointsEndCondition(10));
+  if (fixed_size)
+      end_conds.push_back(new NumberPointsEndCondition(exp_lambda));
+  else
+    end_conds.push_back(new NumberPointsExpEndCondition(pdist, mt));
+
   end_conds.push_back(new EscapeEndCondition(simulation_region));
   CompoundEndCondition traj_end_cond(end_conds);
   TrajectoryEndConditionFactory traj_end_cond_facto(traj_end_cond);
@@ -156,7 +165,7 @@ int main(int argc, char** argv)
   f << "height (px): " << height << std::endl;
   f << "length (frame): " << length << std::endl;
   f << "pxsize (µm): " << pxsize << std::endl;
-  f << "Poisson lambda (frame): " << poisson_lambda << std::endl;
+  f << "Exponential lambda (frame): " << exp_lambda << std::endl;
   f << "dt (s): " << dt << std::endl;
   f << "DT (s): " << DT << std::endl;
   f << "D (µm2/s): " << D << std::endl;

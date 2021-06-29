@@ -70,6 +70,15 @@ Segment::invert() const
   return Segment(this->p2_, this->p1_);
 }
 
+std::string
+Segment::plot_str(const std::string& col) const
+{
+  return "plot([" + std::to_string(this->p1_[0]) + "," +
+    std::to_string(this->p2_[0]) + "], [" +
+    std::to_string(this->p1_[1]) + "," + std::to_string(this->p2_[1]) +
+    "], 'LineWidth', 2, 'Color', '" + col + "');";
+}
+
 bool
 Segment::intersect(const Segment& s1, const Segment& s2)
 {

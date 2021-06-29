@@ -3,9 +3,19 @@
 
 #include <iostream>
 
+SimulationEndCondition::~SimulationEndCondition()
+{
+}
+
+
 NumberTrajectoriesSimulationEndCondition::
 NumberTrajectoriesSimulationEndCondition(unsigned max_ntrajs)
   : max_ntrajs_(max_ntrajs)
+{
+}
+
+NumberTrajectoriesSimulationEndCondition::
+~NumberTrajectoriesSimulationEndCondition()
 {
 }
 
@@ -20,6 +30,10 @@ NumberFramesSimulationEndCondition::
 NumberFramesSimulationEndCondition(unsigned max_frames)
   : cur_frame_(0)
   , max_frames_(max_frames)
+{
+}
+
+NumberFramesSimulationEndCondition::~NumberFramesSimulationEndCondition()
 {
 }
 

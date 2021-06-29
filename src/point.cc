@@ -15,8 +15,8 @@ Point to_point(const TimedPoint& tp)
 bool
 operator== (const Point& p1, const Point& p2)
 {
-  return (std::abs(p1[0] - p2[0]) < DBL_EPSILON &&
-	  std::abs(p1[1] - p2[1]) < DBL_EPSILON);
+  return (std::abs(p1[0] - p2[0]) < EPSILON &&
+	  std::abs(p1[1] - p2[1]) < EPSILON);
 }
 
 Point operator- (const Point& p1, const Point& p2)
@@ -42,9 +42,9 @@ orientation(const Point& p1, const Point& p2, const Point& p3)
 	      (p2[0] - p1[0]) * (p3[1] - p2[1]));
 
   Segment s = Segment(p1, p2);
-  if (std::abs(v) < DBL_EPSILON && s.distance(p3) < DBL_EPSILON)
+  if (std::abs(v) < EPSILON && s.distance(p3) < EPSILON)
     return COLINEAR;
-  if (v > DBL_EPSILON)
+  if (v > EPSILON)
     return CLOCKWISE;
   return COUNTERCLOCKWISE;
 }

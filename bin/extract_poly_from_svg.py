@@ -9,6 +9,7 @@ parser.add_argument("fname", help="input svg filename")
 
 args = parser.parse_args()
 
+print("arg", args.fname)
 out_fname = join(abspath(args.fname), args.fname.rstrip(".svg") + ".poly")
 
 if isfile(out_fname):

@@ -11,6 +11,7 @@ class Simulation
 public:
   Simulation(const TrajectoryGeneratorFactory& traj_gen_facto,
 	     SimulationEndCondition& end_cond);
+  virtual ~Simulation();
 
   virtual void run() = 0;
 
@@ -27,6 +28,7 @@ class SimulationTrajectory: public Simulation
 public:
   SimulationTrajectory(const TrajectoryGeneratorFactory& traj_gen_facto,
 		       SimulationEndCondition& end_cond);
+  virtual ~SimulationTrajectory();
 
   virtual void run();
 };
@@ -37,6 +39,7 @@ public:
   SimulationDensity(const TrajectoryGeneratorFactory& traj_gen_facto,
 		    SimulationEndCondition& end_cond,
 		    unsigned ntrajs, double DT, unsigned tratio);
+  virtual ~SimulationDensity();
 
   virtual void run();
 protected:

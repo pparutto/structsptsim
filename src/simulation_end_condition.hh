@@ -6,6 +6,7 @@ class Simulation;
 class SimulationEndCondition
 {
 public:
+  virtual ~SimulationEndCondition();
   virtual bool evaluate(const Simulation& sim) = 0;
 };
 
@@ -13,6 +14,7 @@ class NumberTrajectoriesSimulationEndCondition: public SimulationEndCondition
 {
 public:
   NumberTrajectoriesSimulationEndCondition(unsigned max_ntrajs);
+  virtual ~NumberTrajectoriesSimulationEndCondition();
 
   virtual bool evaluate(const Simulation& sim) override;
 protected:
@@ -23,6 +25,7 @@ class NumberFramesSimulationEndCondition: public SimulationEndCondition
 {
 public:
   NumberFramesSimulationEndCondition(unsigned max_frames);
+  virtual ~NumberFramesSimulationEndCondition();
 
   virtual bool evaluate(const Simulation& sim) override;
 protected:

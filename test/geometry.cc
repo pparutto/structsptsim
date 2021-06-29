@@ -375,7 +375,7 @@ int main(int argc, char** argv)
     Segment s1 = Segment({108.0070, 110.005}, {107.65, 109.7});
     Segment s2 = u_poly.intersect_with(s1);
     assert(pts_eq(s2.p1(), {107.592, 112.292}, PRECISION) &&
-	   pts_eq(s2.p2(), {108.323, 96.5429}, PRECISION));
+  	   pts_eq(s2.p2(), {108.323, 96.5429}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 3]";
@@ -408,7 +408,7 @@ int main(int argc, char** argv)
     s1 = Segment({50.738, 129.225}, {49.3731, 130.11});
     s2 = u_poly.intersect_with(s1);
     assert(pts_eq(s2.p1(), {50.6049, 129.478}, PRECISION) &&
-	   pts_eq(s2.p2(), {50.4045, 120.423}, PRECISION));
+  	   pts_eq(s2.p2(), {50.4045, 120.423}, PRECISION));
     std::cout << " OK" << std::endl;
 
 
@@ -448,7 +448,7 @@ int main(int argc, char** argv)
     s1 = Segment({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = u_poly.intersect_with(s1);
     assert(pts_eq(s2.p1(), {102.054, 129.746}, PRECISION) &&
-	   pts_eq(s2.p2(), {50.6049, 129.478}, PRECISION));
+  	   pts_eq(s2.p2(), {50.6049, 129.478}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 14]";
@@ -534,7 +534,7 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 7]";
     Point p = Segment::reflect(Segment({5.8, 7.1}, {6.1, 7.1}),
-			       Segment({6, 6}, {6, 9}));
+  			       Segment({6, 6}, {6, 9}));
     assert(poly.inside(p));
     assert((p == (Point) {5.9, 7.1}));
     std::cout << " OK" << std::endl;
@@ -546,7 +546,7 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
   }
 
-  std::cout << "Compound polygon" << std::endl;
+  std::cout << "Compound polygon 2" << std::endl;
   {
     PointEnsemble pe;
     pe.push_back({5, 5});
@@ -595,7 +595,7 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 7]";
     Point p = Segment::reflect(Segment({5.8, 7.1}, {6.1, 7.1}),
-			       Segment({6, 6}, {6, 9}));
+  			       Segment({6, 6}, {6, 9}));
     assert(poly.inside(p));
     assert((p == (Point) {5.9, 7.1}));
     std::cout << " OK" << std::endl;
@@ -614,27 +614,37 @@ int main(int argc, char** argv)
     CompoundPolygon poly = polys[0];
     poly.apply_pxsize(0.0406250);
 
+    Segment s2({177, 277.1}, {177, 280.3});
     std::cout << " [Test 1]";
-    assert(poly.inside({1.18408, 5.41125}));
+    assert(colinear(s2.p1(), s2.p2(), {177, 177.3}));
     std::cout << " OK" << std::endl;
+    assert(colinear(s2.p1(), s2.p2(), {177, 10000}));
 
     std::cout << " [Test 2]";
-    assert(poly.inside({7.10528, 2.98698}));
+    assert(polys.size() == 1);
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 3]";
-    assert(poly.inside({7.15607, 2.96563}));
+    assert(poly.inside({1.18408, 5.41125}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 4]";
-    assert(poly.inside({3.86121, 0.73125}));
+    assert(poly.inside({7.10528, 2.98698}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 5]";
-    assert(poly.inside({6.84829, 7.4425}));
+    assert(poly.inside({7.15607, 2.96563}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 6]";
+    assert(poly.inside({3.86121, 0.73125}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 7]";
+    assert(poly.inside({6.84829, 7.4425}));
+    std::cout << " OK" << std::endl;
+
+    std::cout << " [Test 8]";
     assert(poly.inside({1.86335, 2.31562}));
     std::cout << " OK" << std::endl;
   }
@@ -648,5 +658,28 @@ int main(int argc, char** argv)
     std::cout << " [Test 1]";
     assert(poly.inside((Point) {481.9, 160}));
     std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Complex polygon 2" << std::endl;
+  {
+    std::vector<CompoundPolygon> polys =
+      polys_from_inkscape_path("../resources/C2-_2019_10_02__16_23_00_mask_5073.poly");
+
+    std::cout << " [Test 1]";
+    assert(polys.size() == 1);
+    std::cout << " OK" << std::endl;
+  }
+
+
+  std::cout << "Complex collide" << std::endl;
+  {
+    Segment border({12.3784000000000, 9.35883000000000}, {12.4075000000000, 9.87177000000000});
+    Segment traj({12.4030, 9.8718}, {12.4108, 9.8685});
+
+    Point pp = Segment::intersection_point(border, traj);
+    std::cout << pp[0] << " " << pp[1] << std::endl;
+
+    Point p = Segment::reflect(traj, border);
+    std::cout << p << std::endl;
   }
 }

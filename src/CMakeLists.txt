@@ -4,6 +4,7 @@ add_library(libsim
   point.cc
   segment.cc
   collider.cc
+  cum_distrib_function.cc
   io.cc
   motion.cc
   shape.cc

@@ -26,6 +26,9 @@ public:
   Trajectory get();
 
   Trajectory generate();
+
+  bool subsample() const;
+
 protected:
   TrajectoryStartGenerator& traj_start_;
   Motion& motion_model_;

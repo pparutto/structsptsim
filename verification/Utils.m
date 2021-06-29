@@ -91,5 +91,13 @@ classdef Utils
                 tab = [tab; k * ones(npts, 1) (0:(npts-1))'*dt cumsum([10 10; sqrt(2*D*dt) * randn(npts-1, 2)], 1)];
             end
         end
+        
+        function disps = displacements(tab)
+            disps = [];
+            for i = unique(tab(:,1))'
+                tr = tab(tab(:,1) == i, :);
+                disps = [disps; sqrt(sum((tr(2:end, 3:4) - tr(1:(end-1), 3:4)).^2, 2))];
+            end
+        end
     end
 end

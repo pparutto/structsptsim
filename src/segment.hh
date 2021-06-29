@@ -18,6 +18,8 @@ public:
 
   Segment invert() const;
 
+  std::string plot_str(const std::string& col) const;
+
   static bool intersect(const Segment& s1, const Segment& s2);
   static Point intersection_point(const Segment& s1, const Segment& s2);
   static Point reflect(const Segment& s1, const Segment& s2);

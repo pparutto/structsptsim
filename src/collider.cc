@@ -85,20 +85,28 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
 {
   Segment s1(p1, p2);
 
+  int cnt = 0;
+
   Point p = p1;
   Point pp = p2;
   do
   {
+    //std::cout << p << " " << pp << ";" <<  std::endl;
     Segment s2 = this->poly_.intersect_with(s1);
 
     pp = Segment::reflect(s1, s2);
     p = Segment::intersection_point(s1, s2);
 
-    Vec norm = s2.normal();
-    p = {p[0] + DELTA_REPL * norm[0], p[1] + DELTA_REPL * norm[1]};
+    //Vec norm = s2.normal();
+    //p = {p[0] + DELTA_REPL * norm[0], p[1] + DELTA_REPL * norm[1]};
     s1 = Segment(p, pp);
+
+    ++cnt;
+    if (cnt > 20)
+      assert(false);
   }
   while (this->outside(pp));
+  //std::cout << "===============" << std::endl;
 
   return pp;
 }

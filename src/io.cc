@@ -202,20 +202,29 @@ polys_from_inkscape_path(const std::string& fname)
       idxs.push_back(i);
       for (unsigned j = 1; j < polys.size() && i != j; ++j)
       {
+	//std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+	//std::cout << i << " " << j << std::endl;
+	bool ins = polys[j].inside(polys[i]);
 	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
-	    polys[j].inside(polys[i]))
+	    ins)
 	{
+	  std::cout << "Detected a diff polygon" << std::endl;
 	  overlap.push_back(polys[j]);
 	  idxs.push_back(j);
 	}
+
+	//sanity check for ER
+	// if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
+	//     !ins)
+	//   assert(false);
       }
 
       if (!overlap.empty())
       {
 	go = true;
 	res.push_back(CompoundPolygon(polys[i], overlap));
-	for (int i = idxs.size() - 1; i >= 0; --i)
-	  polys.erase(polys.begin() + i);
+	for (int k = idxs.size() - 1; k >= 0; --k)
+	  polys.erase(polys.begin() + idxs[k]);
 	break;
       }
     }
@@ -230,7 +239,7 @@ polys_from_inkscape_path(const std::string& fname)
 void
 save_poly_matlab(const CompoundPolygon& poly, const std::string& fname)
 {
-    std::ofstream f;
+  std::ofstream f;
   f.open(fname);
 
   if (!f.is_open())
@@ -252,6 +261,68 @@ save_poly_matlab(const CompoundPolygon& poly, const std::string& fname)
     f << "];" << std::endl;
   }
   f << "end" << std::endl;
+
+  f.close();
+}
+
+void
+save_polys_matlab(const std::vector<CompoundPolygon>& polys,
+		  const std::string& fname)
+{
+  std::ofstream f;
+  f.open(fname);
+
+  if (!f.is_open())
+  {
+    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
+    return;
+  }
+
+  f << "function [base_polys, diff_polys] = polys()" << std::endl;
+  int cpt = 1;
+  for (const CompoundPolygon& poly: polys)
+  {
+    f << "base_polys{" << cpt << "} = [" << std::endl;
+    f << poly.base() << "];" << std::endl;
+
+    std::vector<Polygon> d_polys = poly.diffs();
+
+    f << "diff_polys{" << cpt << "} = {};" << std::endl;
+    for (unsigned i = 0; i < d_polys.size(); ++i)
+    {
+      f << "diff_polys{" << cpt << "}{" << i + 1 << "} = [" << std::endl;
+      f << d_polys[i];
+      f << "];" << std::endl;
+    }
+
+    ++cpt;
+  }
+
+  f << "end" << std::endl;
+  f.close();
+}
+
+void
+save_poly_txt(const CompoundPolygon& poly, const std::string& fname)
+{
+    std::ofstream f;
+  f.open(fname);
+
+  if (!f.is_open())
+  {
+    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
+    return;
+  }
+
+  f << "BASE" << std::endl;
+  f << poly.base() << std::endl;
+
+  std::vector<Polygon> polys = poly.diffs();
+  for (unsigned i = 0; i < polys.size(); ++i)
+  {
+    f << "Diff " << i + 1 << std::endl;
+    f << poly.diffs()[i];
+  }
 
   f.close();
 }

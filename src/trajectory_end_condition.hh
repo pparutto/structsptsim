@@ -27,16 +27,16 @@ protected:
   unsigned max_npts_;
 };
 
-class NumberPointsPoissonianEndCondition: public NumberPointsEndCondition
+class NumberPointsExpEndCondition: public NumberPointsEndCondition
 {
 public:
-  NumberPointsPoissonianEndCondition(std::poisson_distribution<int>& distrib,
-				     std::mt19937_64& mt);
-  ~NumberPointsPoissonianEndCondition() {}
+  NumberPointsExpEndCondition(std::exponential_distribution<double>& distrib,
+			      std::mt19937_64& mt);
+  ~NumberPointsExpEndCondition() {}
 
-  virtual NumberPointsPoissonianEndCondition* clone_reset() override;
+  virtual NumberPointsExpEndCondition* clone_reset() override;
 protected:
-  std::poisson_distribution<int> distrib_;
+  std::exponential_distribution<double> distrib_;
   std::mt19937_64& mt_;
 };
 

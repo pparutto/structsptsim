@@ -13,10 +13,18 @@ Simulation::Simulation(const TrajectoryGeneratorFactory& traj_gen_facto,
 {
 }
 
+Simulation::~Simulation()
+{
+}
+
 SimulationTrajectory::
 SimulationTrajectory(const TrajectoryGeneratorFactory& traj_gen_facto,
 		     SimulationEndCondition& end_cond)
   : Simulation(traj_gen_facto, end_cond)
+{
+}
+
+SimulationTrajectory::~SimulationTrajectory()
 {
 }
 
@@ -57,6 +65,28 @@ SimulationDensity(const TrajectoryGeneratorFactory& traj_gen_facto,
 {
 }
 
+SimulationDensity::~SimulationDensity()
+{
+}
+
+void
+generate_step_unstuck(TrajectoryGenerator* tg)
+{
+  bool done = false;
+  while (!done)
+  {
+    try
+    {
+      tg->generate_step();
+      done = true;
+    }
+    catch (std::runtime_error& e)
+    {
+      tg->generate_step();
+    }
+  }
+}
+
 void
 SimulationDensity::run()
 {
@@ -71,9 +101,17 @@ SimulationDensity::run()
   std::list<TrajectoryGenerator*> new_trajs;
   while (!this->end_cond_.evaluate(*this))
   {
+    std::cout << frame << std::endl;
     for (TrajectoryGenerator* tg: alive_trajs)
-      for (unsigned j = 0; j < this->tratio_; ++j)
-	tg->generate_step();
+    {
+      if (tg->subsample())
+      {
+	for (unsigned j = 0; j < this->tratio_; ++j)
+	  generate_step_unstuck(tg);
+      }
+      else
+	generate_step_unstuck(tg);
+    }
 
     alive_trajs.insert(alive_trajs.end(), new_trajs.begin(), new_trajs.end());
     new_trajs.clear();

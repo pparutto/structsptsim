@@ -1,7 +1,7 @@
 %disps_bins = 0.0004:0.0008:0.02;
 disps_bins = 0.0025:0.005:2;
 
-tab = dlmread('/tmp/aa/trajs.csv');
+tab = dlmread('/tmp/sim/trajs_D=1.500000_dt=0.000100_DT=0.006000_lambdaNpts=0.050000_nframes=0_width=128_height=128_dens=0.000123.csv');
 %tab = dlmread('/mnt/data/SPT_method/simu/very_low/trajs.csv');
 DT = Utils.find_dt(tab);
 

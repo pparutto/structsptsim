@@ -1,6 +1,7 @@
 #include "trajectory_end_condition.hh"
 
 #include <iostream>
+#include <cmath>
 
 NumberPointsEndCondition::NumberPointsEndCondition(unsigned max_npts)
   : max_npts_(max_npts)
@@ -19,19 +20,19 @@ NumberPointsEndCondition::clone_reset()
   return new NumberPointsEndCondition(this->max_npts_);
 }
 
-NumberPointsPoissonianEndCondition::
-NumberPointsPoissonianEndCondition(std::poisson_distribution<int>& distrib,
-				   std::mt19937_64& mt)
-  : NumberPointsEndCondition(distrib(mt))
+NumberPointsExpEndCondition::
+NumberPointsExpEndCondition(std::exponential_distribution<double>& distrib,
+			    std::mt19937_64& mt)
+  : NumberPointsEndCondition(round(distrib(mt)))
   , distrib_(distrib)
   , mt_(mt)
 {
 }
 
-NumberPointsPoissonianEndCondition*
-NumberPointsPoissonianEndCondition::clone_reset()
+NumberPointsExpEndCondition*
+NumberPointsExpEndCondition::clone_reset()
 {
-  return new NumberPointsPoissonianEndCondition(this->distrib_, this->mt_);
+  return new NumberPointsExpEndCondition(this->distrib_, this->mt_);
 }
 
 EscapeEndCondition::

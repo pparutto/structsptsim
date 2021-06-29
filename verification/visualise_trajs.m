@@ -2,7 +2,7 @@
 
 %[base_poly, polys] = load_polys();
 
-tab = dlmread('/tmp/aa/trajs.csv');
+tab = dlmread('/tmp/sim/trajs_empirical_dt=0.000100_DT=0.006000_lambdaNpts=0.050000_nframes=0_width=128_height=128_dens=0.000123.csv');
 
 po = [
 7.223125 0.4996875;
@@ -25,7 +25,7 @@ po = [
 
 figure
 hold on
-Utils.show_trajectories(tab);
+Utils.show_trajectories(tab, 'rand');
 %plot([4.37108 4.39335], [8.51846, 8.50945], 'r', 'LineWidth', 3);
 
 % 
@@ -47,6 +47,8 @@ end
 figure
 plot(frames, cnts)
 
+figure
+hist(Utils.displacements(tab), 100)
 
 % A = [128.5 14];
 % B = [127 14];

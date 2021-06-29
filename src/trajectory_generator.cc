@@ -75,6 +75,13 @@ TrajectoryGenerator::generate()
   return this->get();
 }
 
+bool
+TrajectoryGenerator::subsample() const
+{
+  return this->motion_model_.subsample();
+}
+
+
 TrajectoryGeneratorFactory::
 TrajectoryGeneratorFactory(TrajectoryStartGenerator& traj_start,
 			   Motion& motion_model,

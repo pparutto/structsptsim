@@ -5,6 +5,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "utils.hh"
+
 Box::Box(const Point& lower_left, const Point& upper_right)
   : lower_left_(lower_left)
   , upper_right_(upper_right)
@@ -61,6 +63,7 @@ Polygon::Polygon(const PointEnsemble& pts)
 bool
 Polygon::my_inside(const Point& p, bool border_is_inside) const
 {
+  //std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
   double INF = 10000.0;
   Point extreme = {p[0], INF};
   Segment s1(p, extreme);
@@ -82,6 +85,7 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   }
 
 
+  int start_chain = -1;
   int count = 0;
   int i = 0;
   do
@@ -90,15 +94,23 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
 
     Segment s2(this->pts_[i], this->pts_[next]);
 
+    // std::cout << s1 << " " << s2 << " " << colinear(s2.p1(), s2.p2(), p) << " " << colinear(s2.p1(), s2.p2(), extreme) << " " <<
+    //   (within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())) << std::endl;
     if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
-	(within(s2, p) || within(s2, extreme) || within(s1, s2.p1())
-	 || within(s1, s2.p2())))
+	(s2.p1()[1] > p[1] || s2.p2()[1] > p[1]))
     {
+      if (start_chain < 0)
+	start_chain = i;
+
+      //std::cout << s2.plot_str("m") << std::endl;
       if (s2.on_segment(p))
 	return border_is_inside;
 
       if (prev != NONE)
+      {
+	//std::cout << "AAAAA" << std::endl;
 	--count;
+      }
 
       prev = COLIN;
       ++count;
@@ -107,35 +119,83 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
       return border_is_inside;
     else if (Segment::intersect(s1, s2))
     {
-      if (prev != NONE && Segment::intersection_point(s1, s2) == this->pts_[i])
+      if (start_chain < 0)
+	start_chain = i;
+
+      //std::cout << s2.plot_str("r") << std::endl;
+      Point ip = Segment::intersection_point(s1, s2);
+      if (prev != NONE && ip == this->pts_[i])
       {
 	//here we need to verify that the line does not just "touch"
 	//the tip of the two segment without crossing them
-	if (prev == TOUCH &&
-	    ((this->pts_[i-1][0] < s2.p1()[0] &&
-	      this->pts_[next][0] < s2.p1()[0]) ||
-	     (this->pts_[i-1][0] > s2.p1()[0] &&
-	      this->pts_[next][0] > s2.p1()[0])))
-	  count -= 2;
+
+	// ((this->pts_[start_chain][0] < s2.p1()[0] &&
+	// this->pts_[next][0] < s2.p1()[0]) ||
+	// (this->pts_[start_chain][0] > s2.p1()[0] &&
+	// this->pts_[next][0] > s2.p1()[0]))))
+	if (prev == COLIN || prev == TOUCH)
+	{
+	  //std::cout << "SAME SIDE CHAIN" << std::endl;
+	  //here we need to test that all points from the chain are on
+	  //the same side of the intersection line s2.
+	  bool ok = true;
+	  //std::cout << "s1.p1()[0] = " << s1.p1()[0] << std::endl;
+	  double diff = this->pts_[start_chain][0] - s1.p1()[0];
+	  //std::cout << "start= " << start_chain << " " << diff << std::endl;
+	  int k = (start_chain + 1) % this->pts_.size();
+	  while (k <= next)
+	  {
+	    double cur_diff = this->pts_[k][0] - s1.p1()[0];
+	    //std::cout << "k= " << k << " " << this->pts_[k][0] << ": " << this->pts_[k][0] - s1.p1()[0] << std::endl;
+	    if ((diff <= EPSILON && cur_diff > EPSILON) || (diff >= -EPSILON && cur_diff < -EPSILON))
+	    {
+	      ok = false;
+	      break;
+	    }
+	    k = (k + 1) % this->pts_.size();
+	  }
+	  //	  std::cout << "end chain = " << next << std::endl;
+
+	  if (ok)
+	  {
+	    //std::cout << "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"  << std::endl;
+	    count -= 2;
+	  }
+	  else
+	    --count;
+	}
 	else
+	{
+	  //std::cout << "YOYO" << std::endl;
 	  --count;
+	}
       }
 
-      if (Segment::intersection_point(s1, s2) == this->pts_[i] ||
-	  Segment::intersection_point(s1, s2) == this->pts_[next])
+      if (ip == this->pts_[i] || ip == this->pts_[next])
+      {
 	prev = TOUCH;
+	//std::cout << "CCCCCCCCCCCCC" << std::endl;
+      }
       else
 	prev = INTERSECT;
 
       ++count;
     }
     else
+    {
+      start_chain = -1;
       prev = NONE;
+    }
 
     i = next;
   }
   while (i != 0);
 
+  //  if (count % 2 == 0)
+    //  {
+    //    std::cout << p << " " << count << std::endl;
+    //assert(false);
+    //}
   return count % 2 == 1;
 }
 
