@@ -14,6 +14,12 @@ NumberPointsEndCondition::evaluate(const Trajectory& traj)
   return traj.size() >= this->max_npts_;
 }
 
+void
+NumberPointsEndCondition::update_max_npts(unsigned new_max)
+{
+  this->max_npts_ = new_max;
+}
+
 NumberPointsEndCondition*
 NumberPointsEndCondition::clone_reset()
 {
@@ -94,5 +100,11 @@ TrajectoryEndConditionFactory(TrajectoryEndCondition& template_condition)
 TrajectoryEndCondition*
 TrajectoryEndConditionFactory::get()
 {
-  return template_condition_.clone_reset();
+  return this->template_condition_.clone_reset();
+}
+
+TrajectoryEndCondition&
+TrajectoryEndConditionFactory::template_condition()
+{
+  return this->template_condition_;
 }

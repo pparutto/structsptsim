@@ -9,6 +9,7 @@ class Box;
 class Shape
 {
 public:
+  virtual ~Shape();
   virtual bool inside(const Point& p) const = 0;
   virtual PointEnsemble boundary() const = 0;
 
@@ -20,6 +21,8 @@ class Box: public Shape
 public:
   Box(const Point& lower_left, const Point& upper_right);
   Box(const Box& b) = default;
+
+  virtual ~Box();
 
   virtual bool inside(const Point& p) const override;
   virtual PointEnsemble boundary() const override;
@@ -41,6 +44,8 @@ class Polygon: public Shape
 public:
   Polygon(const PointEnsemble& pts);
   Polygon() = default;
+
+  virtual ~Polygon();
 
   virtual bool inside(const Point& p) const override;
   bool inside(const Polygon& poly) const;
@@ -65,6 +70,8 @@ class CompoundPolygon: public Polygon
 public:
   CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs);
 
+  virtual ~CompoundPolygon();
+
   virtual bool inside(const Point& p) const override;
   virtual PointEnsemble boundary() const override;
   virtual Box bounding_box() const override;
@@ -72,7 +79,7 @@ public:
   virtual void apply_pxsize(double pxsize) override;
   virtual Segment intersect_with(const Segment& s1) const override;
 
-  double signed_area() const override;
+  virtual double signed_area() const override;
 
   virtual const PointEnsemble& pts() const override;
   const Polygon& base() const { return this->base_; };
@@ -80,6 +87,26 @@ public:
 protected:
   Polygon base_;
   std::vector<Polygon> diffs_;
+};
+
+class MultiplePolygon: public Shape
+{
+public:
+  MultiplePolygon(const std::vector<CompoundPolygon>& polys);
+
+  virtual ~MultiplePolygon();
+
+  void apply_pxsize(double pxsize);
+
+  const std::vector<CompoundPolygon>& polys() const;
+
+  virtual bool inside(const Point& p) const;
+  virtual PointEnsemble boundary() const;
+  virtual Box bounding_box() const;
+
+  bool empty() const;
+protected:
+  std::vector<CompoundPolygon> polys_;
 };
 
 std::ostream& operator<< (std::ostream& os, const Box& box);

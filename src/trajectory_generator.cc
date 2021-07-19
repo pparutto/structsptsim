@@ -30,7 +30,10 @@ void
 TrajectoryGenerator::init()
 {
   assert(this->traj_rec_->traj().empty());
-  this->traj_rec_->record(this->traj_start_.generate());
+  Point p = this->traj_start_.generate();
+  if (this->collider_.outside(p))
+    throw std::runtime_error("Initial point outside polygons");
+  this->traj_rec_->record(p);
 }
 
 double
@@ -52,8 +55,12 @@ TrajectoryGenerator::generate_step()
   Point p1 = to_point(this->traj_rec_->last_simu_point());
   Point p2 = this->motion_model_.step_euler(p1);
 
+  //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
+
   if (this->collider_.outside(p2))
     p2 = this->collider_.collide(p1, p2);
+
+  //std::cout << "p22 = " << p2[0] << " " << p2[1] << std::endl;
 
   this->traj_rec_->record(p2);
 }
@@ -70,7 +77,22 @@ TrajectoryGenerator::generate()
   this->init();
 
   while (!this->finished())
-    this->generate_step();
+  {
+    bool done = false;
+    while (!done)
+    {
+      try
+      {
+	this->generate_step();
+	done = true;
+      }
+      catch (std::runtime_error& e)
+      {
+	this->generate_step();
+	std::cout << "error" << std::endl;
+      }
+    }
+  }
 
   return this->get();
 }
@@ -103,4 +125,16 @@ TrajectoryGeneratorFactory::get(double t0) const
 				 this->traj_end_facto_.get(),
 				 this->traj_rec_facto_.get(t0),
 				 this->collider_);
+}
+
+TrajectoryStartGenerator&
+TrajectoryGeneratorFactory::traj_start()
+{
+  return this->traj_start_;
+}
+
+TrajectoryEndConditionFactory&
+TrajectoryGeneratorFactory::traj_end_facto()
+{
+  return this->traj_end_facto_;
 }

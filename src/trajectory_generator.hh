@@ -47,6 +47,10 @@ public:
 			     Collider& collider);
 
   TrajectoryGenerator* get(double t0) const;
+
+  TrajectoryStartGenerator& traj_start();
+  TrajectoryEndConditionFactory& traj_end_facto();
+
 protected:
   TrajectoryStartGenerator& traj_start_;
   Motion& motion_model_;

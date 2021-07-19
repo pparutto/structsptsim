@@ -9,6 +9,7 @@
 class TrajectoryStartGenerator
 {
 public:
+  virtual ~TrajectoryStartGenerator();
   virtual Point generate() = 0;
 };
 
@@ -16,16 +17,20 @@ class FixedPointTrajectoryStartGenerator: public TrajectoryStartGenerator
 {
 public:
   FixedPointTrajectoryStartGenerator(const Point& pt);
+  virtual ~FixedPointTrajectoryStartGenerator();
+
+  void update_start_point(const Point& new_pt);
 
   virtual Point generate() override;
 protected:
-  const Point& pt_;
+  Point pt_;
 };
 
 class RandomBoxTrajectoryStartGenerator: public TrajectoryStartGenerator
 {
 public:
   RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box& box);
+  virtual ~RandomBoxTrajectoryStartGenerator();
 
   virtual Point generate() override;
 protected:
@@ -38,6 +43,7 @@ class RandomTrajectoryStartGenerator: public TrajectoryStartGenerator
 {
 public:
   RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape& shape);
+  virtual ~RandomTrajectoryStartGenerator();
 
   virtual Point generate() override;
 protected:
@@ -51,7 +57,8 @@ class MultiplePolysRandomTrajectoryStartGenerator:
 {
 public:
   MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
-					      const std::vector<CompoundPolygon>& polys);
+					      const MultiplePolygon& polys);
+  virtual ~MultiplePolysRandomTrajectoryStartGenerator();
 
   virtual Point generate() override;
 protected:

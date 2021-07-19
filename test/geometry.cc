@@ -609,9 +609,9 @@ int main(int argc, char** argv)
 
   std::cout << "Complex polygon" << std::endl;
   {
-    std::vector<CompoundPolygon> polys =
+    MultiplePolygon* polys =
       polys_from_inkscape_path("../resources/ER_net1.path");
-    CompoundPolygon poly = polys[0];
+    CompoundPolygon poly = polys->polys()[0];
     poly.apply_pxsize(0.0406250);
 
     Segment s2({177, 277.1}, {177, 280.3});
@@ -621,7 +621,7 @@ int main(int argc, char** argv)
     assert(colinear(s2.p1(), s2.p2(), {177, 10000}));
 
     std::cout << " [Test 2]";
-    assert(polys.size() == 1);
+    assert(polys->polys().size() == 1);
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 3]";
@@ -651,23 +651,27 @@ int main(int argc, char** argv)
 
   std::cout << "Touch inside" << std::endl;
   {
-    std::vector<CompoundPolygon> polys =
+    MultiplePolygon* polys =
       polys_from_inkscape_path("../resources/poly_touch.poly");
-    CompoundPolygon poly = polys[0];
+    CompoundPolygon poly = polys->polys()[0];
 
     std::cout << " [Test 1]";
     assert(poly.inside((Point) {481.9, 160}));
     std::cout << " OK" << std::endl;
+
+    delete polys;
   }
 
   std::cout << "Complex polygon 2" << std::endl;
   {
-    std::vector<CompoundPolygon> polys =
+    MultiplePolygon* polys =
       polys_from_inkscape_path("../resources/C2-_2019_10_02__16_23_00_mask_5073.poly");
 
     std::cout << " [Test 1]";
-    assert(polys.size() == 1);
+    assert(polys->polys().size() == 1);
     std::cout << " OK" << std::endl;
+
+    delete polys;
   }
 
 

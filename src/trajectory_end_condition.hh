@@ -20,9 +20,10 @@ public:
   NumberPointsEndCondition(unsigned max_npts);
   ~NumberPointsEndCondition() {}
 
+  void update_max_npts(unsigned new_max);
+
   virtual bool evaluate(const Trajectory& traj) override;
   virtual NumberPointsEndCondition* clone_reset() override;
-
 protected:
   unsigned max_npts_;
 };
@@ -70,6 +71,8 @@ class TrajectoryEndConditionFactory
   TrajectoryEndConditionFactory(TrajectoryEndCondition& template_condition);
 
   TrajectoryEndCondition* get();
+
+  TrajectoryEndCondition& template_condition();
  protected:
   TrajectoryEndCondition& template_condition_;
 };

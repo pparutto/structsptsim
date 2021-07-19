@@ -2,10 +2,26 @@
 
 #include <iostream>
 
+TrajectoryStartGenerator::~TrajectoryStartGenerator()
+{
+}
+
 FixedPointTrajectoryStartGenerator::
 FixedPointTrajectoryStartGenerator(const Point& pt)
   : pt_(pt)
 {
+}
+
+FixedPointTrajectoryStartGenerator::
+~FixedPointTrajectoryStartGenerator()
+{
+}
+
+void
+FixedPointTrajectoryStartGenerator::
+update_start_point(const Point& new_pt)
+{
+  this->pt_ = new_pt;
 }
 
 Point
@@ -19,6 +35,11 @@ RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box& box)
   : ng_(ng)
   , box_(box)
   , randu_(0.0, 1.0)
+{
+}
+
+RandomBoxTrajectoryStartGenerator::
+~RandomBoxTrajectoryStartGenerator()
 {
 }
 
@@ -37,6 +58,11 @@ RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape& shape)
 {
 }
 
+RandomTrajectoryStartGenerator::
+~RandomTrajectoryStartGenerator()
+{
+}
+
 Point
 RandomTrajectoryStartGenerator::generate()
 {
@@ -49,14 +75,14 @@ RandomTrajectoryStartGenerator::generate()
 
 MultiplePolysRandomTrajectoryStartGenerator::
 MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
-					    const std::vector<CompoundPolygon>& polys)
+					    const MultiplePolygon& polys)
   : ng_(ng)
   , norm_cum_areas_()
   , randu_(0.0, 1.0)
   , poly_gens_()
 {
   double sum = 0.0;
-  for (const CompoundPolygon& poly: polys)
+  for (const CompoundPolygon& poly: polys.polys())
   {
     this->poly_gens_.push_back(RandomTrajectoryStartGenerator(ng, poly));
 
@@ -70,6 +96,11 @@ MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
 
   for (unsigned i = 0; i < this->norm_cum_areas_.size(); ++i)
     this->norm_cum_areas_[i] /= sum;
+}
+
+MultiplePolysRandomTrajectoryStartGenerator::
+~MultiplePolysRandomTrajectoryStartGenerator()
+{
 }
 
 Point

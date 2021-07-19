@@ -32,48 +32,6 @@ void create_dir_if_not_exist(const std::string& path)
     }
 }
 
-enum MotionType {EMPIRICAL, BROWNIAN};
-enum TrajLenType {FIXED, EXP};
-enum TrajGenType {NTRAJS, NFRAMES};
-
-struct ProgramOptions
-{
-  std::string poly_path;
-  bool export_poly_txt = false;
-  bool export_poly_mat = false;
-  bool use_poly_pxsize = false;
-  double poly_pxsize = NAN;
-
-  TrajLenType tr_len_type;
-  unsigned Npts = 0;
-  std::exponential_distribution<double> pdist;
-
-  double dt = NAN;
-  double DT = NAN;
-
-  TrajGenType tr_gen_type;
-  unsigned Ntrajs = 0;
-  unsigned Nframes = 0;
-  unsigned width = 128;
-  unsigned height = 128;
-  double spot_dens = NAN;
-  std::string outdir;
-
-  MotionType motion_type;
-  double D = NAN;
-  std::string cdf_path;
-
-  unsigned t_ratio()
-  {
-    return (unsigned) (this->DT / this->dt);
-  }
-
-  unsigned num_particles()
-  {
-    return (unsigned) (this->width * this->height * this->spot_dens);
-  }
-};
-
 int main(int argc, char** argv)
 {
   ProgramOptions p_opts;
@@ -96,6 +54,10 @@ int main(int argc, char** argv)
     TCLAP::ValueArg<double> exp_l_arg
       ("", "npts-exp", "", false, NAN, "Exponential λ traj. length");
     cmd.add(exp_l_arg);
+
+    TCLAP::ValueArg<std::string> empirical_tr_arg
+      ("", "empirical-trajs", "", false, "", "Empirical trajectories");
+    cmd.add(empirical_tr_arg);
 
     TCLAP::ValueArg<unsigned> Npts_arg
       ("", "npts-fixed", "", false, 0, "Number of points");
@@ -129,12 +91,12 @@ int main(int argc, char** argv)
       ("", "motion-cdf", "", false, "", "CSV file containing inst. vel. cdf");
     cmd.add(ivel_cdf_arg);
 
-    TCLAP::UnlabeledValueArg<std::string> poly_arg
-      ("poly", "Polygon file", true, "", "polyFile");
+    TCLAP::ValueArg<std::string> poly_arg
+      ("", "poly", "", false, "", "Path to polygon file");
     cmd.add(poly_arg);
 
-    TCLAP::UnlabeledValueArg<double> dt_arg
-      ("dt", "Simulation timestep (s)", true, NAN, "dt");
+    TCLAP::ValueArg<double> dt_arg
+      ("", "dt", "", false, NAN, "Simulation timestep (s)");
     cmd.add(dt_arg);
 
     TCLAP::UnlabeledValueArg<double> DT_arg
@@ -147,9 +109,9 @@ int main(int argc, char** argv)
 
     cmd.parse(argc, argv);
 
-    if (!(Ntrajs_arg.isSet() ^ Nframes_arg.isSet()))
+    if (!(Ntrajs_arg.isSet() ^ Nframes_arg.isSet() ^ empirical_tr_arg.isSet()))
     {
-      std::cerr << "ERROR: Either ntrajs or nframes must be set"
+      std::cerr << "ERROR: Either ntrajs, nframes or empirical-trajs must be set"
 		<< std::endl;
       return 0;
     }
@@ -162,22 +124,32 @@ int main(int argc, char** argv)
       return 0;
     }
 
-    if (!(Npts_arg.isSet() ^ exp_l_arg.isSet()))
+    if (!(Npts_arg.isSet() ^ exp_l_arg.isSet()) ^ empirical_tr_arg.isSet())
     {
-      std::cerr << "ERROR: either npts-fixed or npts-lambda must be set"
+      std::cerr << "ERROR: either npts-fixed, npts-exp or empirical-trajs must be set"
 		<< std::endl;
       return 0;
     }
 
-    p_opts.poly_path = poly_arg.getValue();
+    if (D_arg.isSet() && !dt_arg.isSet())
+    {
+      std::cerr << "ERROR: dt must be set if motion is diffusive" << std::endl;
+      return 0;
+    }
+
+    if (poly_arg.isSet())
+    {
+      p_opts.use_poly = true;
+      p_opts.poly_path = poly_arg.getValue();
+    }
 
     p_opts.export_poly_txt = export_poly_txt_arg.getValue();
     p_opts.export_poly_mat = export_poly_mat_arg.getValue();
 
     if (pxsize_arg.isSet())
     {
-      p_opts.use_poly_pxsize = true;
-      p_opts.poly_pxsize = pxsize_arg.getValue();
+      p_opts.use_pxsize = true;
+      p_opts.pxsize = pxsize_arg.getValue();
     }
 
     if (exp_l_arg.isSet())
@@ -194,37 +166,43 @@ int main(int argc, char** argv)
 
     if (Ntrajs_arg.isSet())
     {
-      p_opts.tr_gen_type = NTRAJS;
+      p_opts.tr_gen_type = TrajGenType::NTRAJS;
       p_opts.Ntrajs = Ntrajs_arg.getValue();
     }
-    else
+    else if (Nframes_arg.isSet())
     {
-      p_opts.tr_gen_type= NFRAMES;
+      p_opts.tr_gen_type = TrajGenType::NFRAMES;
       p_opts.Nframes = Nframes_arg.getValue();
       p_opts.spot_dens = spot_dens_arg.getValue();
       p_opts.width = width_arg.getValue();
       p_opts.height = height_arg.getValue();
     }
+    else if (empirical_tr_arg.isSet())
+    {
+      p_opts.tr_gen_type = TrajGenType::EMPIRICAL;
+      p_opts.empirical_trajs_file = empirical_tr_arg.getValue();
+      p_opts.empirical_trajs = load_characs(empirical_tr_arg.getValue());
+    }
 
     if (ivel_cdf_arg.isSet())
-   {
-     p_opts.motion_type = MotionType::EMPIRICAL;
-     p_opts.D = NAN;
-     p_opts.cdf_path = ivel_cdf_arg.getValue();
-   }
+    {
+      p_opts.motion_type = MotionType::DISTRIB;
+      p_opts.D = NAN;
+      p_opts.cdf_path = ivel_cdf_arg.getValue();
+    }
     else if (D_arg.isSet())
-   {
-     p_opts.motion_type = MotionType::BROWNIAN;
-     p_opts.D = D_arg.getValue();
-   }
-   else
-   {
-     std::cerr << "ERROR: either motion-cdf or motion-D must be set"
-	       << std::endl;
-     return 0;
-   }
+    {
+      p_opts.motion_type = MotionType::BROWNIAN;
+      p_opts.D = D_arg.getValue();
+      p_opts.dt = dt_arg.getValue();
+    }
+    else
+    {
+      std::cerr << "ERROR: either motion-cdf or motion-D must be set"
+		<< std::endl;
+      return 0;
+    }
 
-    p_opts.dt = dt_arg.getValue();
     p_opts.DT = DT_arg.getValue();
 
     p_opts.outdir = outdir_arg.getValue();
@@ -245,46 +223,62 @@ int main(int argc, char** argv)
 
   std::cout << "Parsing polygon" << std::endl;
 
-  std::vector<CompoundPolygon> polys =
-    polys_from_inkscape_path(p_opts.poly_path);
-
-  std::cout << "Loaded " << polys.size() << " polygons" << std::endl;
-  if (polys.size() == 0)
+  Shape* poly = nullptr;
+  if (p_opts.use_poly)
   {
-    std::cerr << "ERROR: no polygon loaded" << std::endl;
-    return 0;
-  }
+    MultiplePolygon* polys =
+      polys_from_inkscape_path(p_opts.poly_path);
+    poly = polys;
 
-  if (p_opts.use_poly_pxsize)
-  {
-    for (CompoundPolygon& poly: polys)
-      poly.apply_pxsize(p_opts.poly_pxsize);
-  }
-
-  if (p_opts.export_poly_txt)
-  {
-    int i = 0;
-    for (CompoundPolygon& poly: polys)
+    if (polys->empty())
     {
-      save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
-      ++i;
+      std::cerr << "ERROR: no polygon loaded" << std::endl;
+      return 0;
     }
+
+    if (p_opts.use_pxsize)
+      polys->apply_pxsize(p_opts.pxsize);
+
+    if (p_opts.export_poly_txt)
+    {
+      int i = 0;
+      for (const CompoundPolygon& poly: polys->polys())
+      {
+	save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
+	++i;
+      }
+    }
+
+    if (p_opts.export_poly_mat)
+      save_polys_matlab(*polys, p_opts.outdir + "/polys.m");
   }
-
-  if (p_opts.export_poly_mat)
-    save_polys_matlab(polys, p_opts.outdir + "/polys.m");
-
+  else
+  {
+    double region_scale = 0.04;
+    poly = new Box({region_scale * p_opts.width * p_opts.pxsize,
+		    region_scale * p_opts.width * p_opts.pxsize},
+      {(1 - region_scale) * p_opts.width * p_opts.pxsize,
+       (1 - region_scale) * p_opts.height * p_opts.pxsize});
+  }
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
-  MultiplePolysRandomTrajectoryStartGenerator start_gen(mt, polys);
+
+  TrajectoryStartGenerator* start_gen = nullptr;
+  if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+    start_gen = new FixedPointTrajectoryStartGenerator({0.0, 0.0});
+  else if (p_opts.use_poly)
+    start_gen = new MultiplePolysRandomTrajectoryStartGenerator(mt, *dynamic_cast<MultiplePolygon*>(poly));
+  else
+    start_gen = new RandomBoxTrajectoryStartGenerator(mt, *dynamic_cast<Box*>(poly));
+
 
   Motion* motion = nullptr;
   CumDistribFunction* ivel_cdf = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
     motion = new BrownianMotion(mt, p_opts.D, p_opts.dt);
-  else if (p_opts.motion_type == MotionType::EMPIRICAL)
+  else if (p_opts.motion_type == MotionType::DISTRIB)
   {
-    ivel_cdf = new CumDistribFunction(p_opts.cdf_path);
+    ivel_cdf = new CumDistribFunction(mt, p_opts.cdf_path);
     motion = new EmpiricalMotion(mt, *ivel_cdf, p_opts.DT);
   }
 
@@ -293,29 +287,50 @@ int main(int argc, char** argv)
     traj_end_cond = new NumberPointsExpEndCondition(p_opts.pdist, mt);
   else if (p_opts.tr_len_type == FIXED)
     traj_end_cond = new NumberPointsEndCondition(p_opts.Npts);
+  else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+    traj_end_cond = new NumberPointsEndCondition(0);
+  else
+    assert(false);
+
+  if (!p_opts.use_poly)
+  {
+    std::vector<TrajectoryEndCondition*> conds;
+    conds.push_back(traj_end_cond);
+    conds.push_back(new EscapeEndCondition(*poly));
+    traj_end_cond = new CompoundEndCondition(conds);
+  }
+
   TrajectoryEndConditionFactory traj_end_cond_facto(*traj_end_cond);
 
-  //FullTrajectoryRecorder traj_rec(DT);
-  SubsambleTrajectoryRecorder traj_rec(0.0, p_opts.DT, p_opts.t_ratio());
-  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
+  TrajectoryRecorder* traj_rec = nullptr;
+  if (p_opts.motion_type == MotionType::BROWNIAN)
+    traj_rec =
+      new SubsambleTrajectoryRecorder(0.0, p_opts.DT, p_opts.t_ratio());
+  else if (p_opts.motion_type == MotionType::DISTRIB)
+    traj_rec = new FullTrajectoryRecorder(0.0, p_opts.DT);
+
+  TrajectoryRecorderFactory traj_rec_facto(*traj_rec);
 
 
-  //NoneCollider collider;
-  //PolygonCollider collider(poly);
-  MultiplePolygonCollider collider(polys);
+  Collider* collider = nullptr;
+  if (p_opts.use_poly)
+    collider =
+      new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly));
+  else
+    collider = new NoneCollider();
 
-  TrajectoryGeneratorFactory traj_gen_facto(start_gen, *motion,
+  TrajectoryGeneratorFactory traj_gen_facto(*start_gen, *motion,
 					    traj_end_cond_facto, traj_rec_facto,
-					    collider);
+					    *collider);
 
   SimulationEndCondition* end_sim = nullptr;
   Simulation* sim = nullptr;
-  if (p_opts.tr_gen_type == NTRAJS)
+  if (p_opts.tr_gen_type == TrajGenType::NTRAJS)
   {
     end_sim = new NumberTrajectoriesSimulationEndCondition(p_opts.Ntrajs);
     sim = new SimulationTrajectory(traj_gen_facto, *end_sim);
   }
-  else if (p_opts.tr_gen_type == NFRAMES)
+  else if (p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
     std::cout << "Density x fov area = " << p_opts.num_particles()
 	      << " spots per frame" << std::endl;
@@ -323,38 +338,20 @@ int main(int argc, char** argv)
     sim = new SimulationDensity(traj_gen_facto, *end_sim, p_opts.num_particles(),
 				p_opts.DT, p_opts.t_ratio());
   }
+  else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+  {
+    sim = new SimulationEmpirical(traj_gen_facto,
+				  p_opts.empirical_trajs, p_opts.DT);
+  }
   else
     assert(false);
 
   std::cout << "Running simulation" << std::endl;
   sim->run();
 
-  std::string res_name = "trajs";
 
-  if (p_opts.motion_type == MotionType::BROWNIAN)
-    res_name += "_D=" + std::to_string(p_opts.D);
-  else
-    res_name += "_empirical";
-
-  res_name += "_dt=" + std::to_string(p_opts.dt) +
-    "_DT=" + std::to_string(p_opts.DT);
-
-  if (p_opts.tr_len_type == EXP)
-    res_name += "_lambdaNpts=" + std::to_string(p_opts.pdist.lambda());
-  else
-    res_name += "_npts=" + std::to_string(p_opts.Npts);
-
-  if (p_opts.tr_gen_type == NTRAJS)
-    res_name += "_ntrajs=" + std::to_string(p_opts.Ntrajs);
-  else
-    res_name += "_nframes=" + std::to_string(p_opts.Ntrajs) +
-      "_width=" + std::to_string(p_opts.width) +
-      "_height=" + std::to_string(p_opts.height) +
-      "_dens=" + std::to_string(p_opts.spot_dens);
-
-  res_name += ".csv";
-
-  save_trajectories_csv(p_opts.outdir + "/" + res_name, sim->trajs());
+  save_params_csv(p_opts.outdir + "/params.csv", p_opts);
+  save_trajectories_csv(p_opts.outdir + "/trajs.csv", sim->trajs());
 
   delete traj_end_cond;
 
@@ -369,7 +366,7 @@ int main(int argc, char** argv)
   }
 
   unsigned short*** imgs =
-    raw_image_simulator(length, p_opts.width, p_opts.height, p_opts.poly_pxsize,
+    raw_image_simulator(length, p_opts.width, p_opts.height, p_opts.pxsize,
 			p_opts.DT, 1000.0, 0.2, sim->trajs());
 
   TIFF* tif = TIFFOpen((p_opts.outdir +"/simulated_raw_data.tif").c_str(),
@@ -394,6 +391,10 @@ int main(int argc, char** argv)
   }
   delete[] imgs;
 
+  delete poly;
+  delete collider;
+  delete start_gen;
+  delete traj_rec;
   delete sim;
   delete end_sim;
   delete ivel_cdf;

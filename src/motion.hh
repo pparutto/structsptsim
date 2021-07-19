@@ -41,7 +41,7 @@ class EmpiricalMotion: public Motion
 {
 public:
   virtual ~EmpiricalMotion() = default;
-  EmpiricalMotion(std::mt19937_64& ng, const CumDistribFunction& ivel_cdf,
+  EmpiricalMotion(std::mt19937_64& ng, CumDistribFunction& ivel_cdf,
 		  double dt);
 
   virtual Point step_euler(const Point& p) override;
@@ -51,7 +51,7 @@ public:
 protected:
   std::mt19937_64& ng_;
   std::uniform_real_distribution<> randu_;
-  const CumDistribFunction& ivel_cdf_;
+  CumDistribFunction& ivel_cdf_;
   double dt_;
 };
 

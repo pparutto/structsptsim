@@ -6,7 +6,7 @@
 #include <sstream>
 
 void
-save_trajectories_csv(const std::string fname, const TrajectoryEnsemble& trajs)
+save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble& trajs)
 {
   std::ofstream f;
   f.open(fname);
@@ -24,6 +24,78 @@ save_trajectories_csv(const std::string fname, const TrajectoryEnsemble& trajs)
       f << cpt << "," << p[0] << "," << p[1] << "," << p[2] << std::endl;
     ++cpt;
   }
+  f.close();
+}
+
+void
+save_params_csv(const std::string& fname, const ProgramOptions opts)
+{
+  std::ofstream f;
+  f.open(fname);
+
+  if (!f.is_open())
+  {
+    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
+    return;
+  }
+
+  if (opts.motion_type == MotionType::BROWNIAN)
+  {
+    f << "MotionType, Brownian" << std::endl;
+    f << "D, " << std::to_string(opts.D) << std::endl;
+    f << "dt, " << std::to_string(opts.dt) << std::endl;
+  }
+  else if (opts.motion_type == MotionType::DISTRIB)
+  {
+    f << "MotionType, Distribution" << std::endl;
+    f << "DistribFile, " << opts.cdf_path << std::endl;
+  }
+
+  if (opts.tr_gen_type == TrajGenType::NTRAJS)
+  {
+    f << "TrajGenType, Trajs" << std::endl;
+    f << "Ntrajs, " << std::to_string(opts.Ntrajs) << std::endl;
+  }
+  else if (opts.tr_gen_type == TrajGenType::NFRAMES)
+  {
+    f << "TrajGenType, Frames" << std::endl;
+    f << "Nframes, " << std::to_string(opts.Nframes) << std::endl;
+    f << "density, " << std::to_string(opts.spot_dens) << std::endl;
+    f << "FOVWidth, " << std::to_string(opts.width) << std::endl;
+    f << "FOVHeight, " << std::to_string(opts.height) << std::endl;
+  }
+  else
+  {
+    f << "TrajGenType, Empirical" << std::endl;
+    f << "EmpiricalTrajsFile, " << opts.empirical_trajs_file << std::endl;
+  }
+
+  if (opts.tr_len_type == TrajLenType::EXP)
+  {
+    f << "TrajLengthType, Exponential" << std::endl;
+    f << "NptsLambda, " + std::to_string(opts.pdist.lambda()) << std::endl;
+  }
+  else
+  {
+    f << "TrajLengthType, Fixed" << std::endl;
+    f << "Npts, " << std::to_string(opts.Npts) << std::endl;
+  }
+
+  if (opts.use_pxsize)
+    f << "pixelSize, " << opts.pxsize << std::endl;
+
+  f << "DT, " << std::to_string(opts.DT) << std::endl;
+
+  if (opts.use_poly)
+  {
+    f << "ConfinementType, Polygon" << std::endl;
+    f << "polygonFile, " << opts.poly_path << std::endl;
+  }
+  else
+    f << "ConfinementType, FreeSpace" << std::endl;
+
+  f << "Outdir, " << opts.outdir << std::endl;
+
   f.close();
 }
 
@@ -86,7 +158,7 @@ Point read_point(const std::string& s)
 //Inkscape polygon format: can contain letters M, h, v, z
 //Each line is a polygon
 //The first line is the base polygon and succesive lines are the diffs
-std::vector<CompoundPolygon>
+MultiplePolygon*
 polys_from_inkscape_path(const std::string& fname)
 {
   std::ifstream ifs(fname);
@@ -94,7 +166,7 @@ polys_from_inkscape_path(const std::string& fname)
   if (!ifs.is_open())
   {
     std::cout << "ERROR file not found: " << fname << std::endl;
-    return std::vector<CompoundPolygon> ();
+    return nullptr;
   }
 
 
@@ -233,7 +305,7 @@ polys_from_inkscape_path(const std::string& fname)
   for (unsigned i = 0; i < polys.size(); ++i)
     res.push_back(CompoundPolygon(polys[i], {}));
 
-  return res;
+  return new MultiplePolygon(res);
 }
 
 void
@@ -266,7 +338,7 @@ save_poly_matlab(const CompoundPolygon& poly, const std::string& fname)
 }
 
 void
-save_polys_matlab(const std::vector<CompoundPolygon>& polys,
+save_polys_matlab(const MultiplePolygon& poly,
 		  const std::string& fname)
 {
   std::ofstream f;
@@ -280,7 +352,7 @@ save_polys_matlab(const std::vector<CompoundPolygon>& polys,
 
   f << "function [base_polys, diff_polys] = polys()" << std::endl;
   int cpt = 1;
-  for (const CompoundPolygon& poly: polys)
+  for (const CompoundPolygon& poly: poly.polys())
   {
     f << "base_polys{" << cpt << "} = [" << std::endl;
     f << poly.base() << "];" << std::endl;
@@ -305,7 +377,7 @@ save_polys_matlab(const std::vector<CompoundPolygon>& polys,
 void
 save_poly_txt(const CompoundPolygon& poly, const std::string& fname)
 {
-    std::ofstream f;
+  std::ofstream f;
   f.open(fname);
 
   if (!f.is_open())
@@ -325,4 +397,47 @@ save_poly_txt(const CompoundPolygon& poly, const std::string& fname)
   }
 
   f.close();
+}
+
+
+TrajectoryCharacs::TrajectoryCharacs(Point pos, int npts)
+  : p0(pos)
+  , npts(npts)
+{
+}
+
+
+TrajectoryCharacsMap
+load_characs(const std::string& fname)
+{
+  TrajectoryCharacsMap res;
+
+  std::ifstream ifs(fname);
+  if (!ifs.is_open())
+  {
+    std::cout << "ERROR file not found: " << fname << std::endl;
+    return res;
+  }
+
+  std::string line;
+  std::string tmp;
+  while (std::getline(ifs, line))
+  {
+    std::istringstream ss(line);
+    std::getline(ss, tmp, ',');
+    double px = std::stod(tmp);
+    std::getline(ss, tmp, ',');
+    double py = std::stod(tmp);
+    std::getline(ss, tmp, ',');
+    int frame = std::stoi(tmp);
+    std::getline(ss, tmp);
+    int npts = std::stoi(tmp);
+
+    if (res.find(frame) == res.end())
+      res.insert(std::pair<int, std::vector<TrajectoryCharacs> >
+		 (frame, std::vector<TrajectoryCharacs> ()));
+    res[frame].push_back(TrajectoryCharacs({px, py}, npts));
+  }
+
+  return res;
 }

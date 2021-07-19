@@ -5,10 +5,29 @@
 
 #include <iostream>
 
-Simulation::Simulation(const TrajectoryGeneratorFactory& traj_gen_facto,
-		       SimulationEndCondition& end_cond)
+namespace
+{
+  void
+  generate_step_unstuck(TrajectoryGenerator* tg)
+  {
+    bool done = false;
+    while (!done)
+    {
+      try
+      {
+	tg->generate_step();
+	done = true;
+      }
+      catch (std::runtime_error& e)
+      {
+	tg->generate_step();
+      }
+    }
+  }
+}
+
+Simulation::Simulation(TrajectoryGeneratorFactory& traj_gen_facto)
   : traj_gen_facto_(traj_gen_facto)
-  , end_cond_(end_cond)
   , trajs_()
 {
 }
@@ -18,9 +37,10 @@ Simulation::~Simulation()
 }
 
 SimulationTrajectory::
-SimulationTrajectory(const TrajectoryGeneratorFactory& traj_gen_facto,
+SimulationTrajectory(TrajectoryGeneratorFactory& traj_gen_facto,
 		     SimulationEndCondition& end_cond)
-  : Simulation(traj_gen_facto, end_cond)
+  : Simulation(traj_gen_facto)
+  , end_cond_(end_cond)
 {
 }
 
@@ -36,15 +56,7 @@ SimulationTrajectory::run()
   {
     TrajectoryGenerator* tg = this->traj_gen_facto_.get(0.0);
     std::cout << cpt << std::endl;
-    try
-    {
-      this->trajs_.push_back(tg->generate());
-    }
-    catch (std::runtime_error& e)
-    {
-      std::cout << e.what() << std::endl;
-      std::cout << "Failed collision" << std::endl;
-    }
+    this->trajs_.push_back(tg->generate());
 
     delete tg;
     ++cpt;
@@ -53,12 +65,13 @@ SimulationTrajectory::run()
 
 
 SimulationDensity::
-SimulationDensity(const TrajectoryGeneratorFactory& traj_gen_facto,
+SimulationDensity(TrajectoryGeneratorFactory& traj_gen_facto,
 		  SimulationEndCondition& end_cond,
 		  unsigned ntrajs,
 		  double DT,
 		  unsigned tratio)
-  : Simulation(traj_gen_facto, end_cond)
+  : Simulation(traj_gen_facto)
+  , end_cond_(end_cond)
   , ntrajs_(ntrajs)
   , DT_(DT)
   , tratio_(tratio)
@@ -67,24 +80,6 @@ SimulationDensity(const TrajectoryGeneratorFactory& traj_gen_facto,
 
 SimulationDensity::~SimulationDensity()
 {
-}
-
-void
-generate_step_unstuck(TrajectoryGenerator* tg)
-{
-  bool done = false;
-  while (!done)
-  {
-    try
-    {
-      tg->generate_step();
-      done = true;
-    }
-    catch (std::runtime_error& e)
-    {
-      tg->generate_step();
-    }
-  }
 }
 
 void
@@ -141,5 +136,58 @@ SimulationDensity::run()
     this->trajs_.push_back(tgen->get());
     delete tgen;
   }
+
+  for (TrajectoryGenerator* tgen: new_trajs)
+    delete tgen;
+
   alive_trajs.clear();
+}
+
+
+SimulationEmpirical::
+SimulationEmpirical(TrajectoryGeneratorFactory& traj_gen_facto,
+		    const TrajectoryCharacsMap& traj_characs,
+		    double DT)
+  : Simulation(traj_gen_facto)
+  , traj_characs_(traj_characs)
+  , DT_(DT)
+{
+}
+
+SimulationEmpirical::
+~SimulationEmpirical()
+{
+}
+
+void
+SimulationEmpirical::run()
+{
+  NumberPointsEndCondition& end_cond = dynamic_cast<NumberPointsEndCondition&>
+    (this->traj_gen_facto_.traj_end_facto().template_condition());
+  FixedPointTrajectoryStartGenerator& start = dynamic_cast<FixedPointTrajectoryStartGenerator&>
+    (this->traj_gen_facto_.traj_start());
+
+  for (TrajectoryCharacsMap::const_iterator it = this->traj_characs_.begin();
+       it != this->traj_characs_.end(); ++it)
+  {
+    for (std::vector<TrajectoryCharacs>::const_iterator jt = it->second.begin();
+	 jt != it->second.end(); ++jt)
+    {
+      start.update_start_point(jt->p0);
+      end_cond.update_max_npts(jt->npts);
+      //std::cout << it->first << std::endl;
+      try
+      {
+	TrajectoryGenerator* tg =
+	  this->traj_gen_facto_.get(it->first * this->DT_);
+
+	this->trajs_.push_back(tg->generate());
+	delete tg;
+      }
+      catch (std::runtime_error& e)
+      {
+	std::cerr << e.what() << std::endl;
+      }
+    }
+  }
 }

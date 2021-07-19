@@ -7,11 +7,19 @@
 
 #include "utils.hh"
 
+Shape::~Shape()
+{
+}
+
 Box::Box(const Point& lower_left, const Point& upper_right)
   : lower_left_(lower_left)
   , upper_right_(upper_right)
   , width_(upper_right[0] - lower_left[0])
   , height_(upper_right[1] - lower_left[1])
+{
+}
+
+Box::~Box()
 {
 }
 
@@ -60,10 +68,13 @@ Polygon::Polygon(const PointEnsemble& pts)
 {
 }
 
+Polygon::~Polygon()
+{
+}
+
 bool
 Polygon::my_inside(const Point& p, bool border_is_inside) const
 {
-  //std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
   double INF = 10000.0;
   Point extreme = {p[0], INF};
   Segment s1(p, extreme);
@@ -94,7 +105,6 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
 
     Segment s2(this->pts_[i], this->pts_[next]);
 
-    // std::cout << s1 << " " << s2 << " " << colinear(s2.p1(), s2.p2(), p) << " " << colinear(s2.p1(), s2.p2(), extreme) << " " <<
     //   (within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())) << std::endl;
     if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
 	(s2.p1()[1] > p[1] || s2.p2()[1] > p[1]))
@@ -102,15 +112,11 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
       if (start_chain < 0)
 	start_chain = i;
 
-      //std::cout << s2.plot_str("m") << std::endl;
       if (s2.on_segment(p))
 	return border_is_inside;
 
       if (prev != NONE)
-      {
-	//std::cout << "AAAAA" << std::endl;
 	--count;
-      }
 
       prev = COLIN;
       ++count;
@@ -122,7 +128,6 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
       if (start_chain < 0)
 	start_chain = i;
 
-      //std::cout << s2.plot_str("r") << std::endl;
       Point ip = Segment::intersection_point(s1, s2);
       if (prev != NONE && ip == this->pts_[i])
       {
@@ -135,47 +140,35 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
 	// this->pts_[next][0] > s2.p1()[0]))))
 	if (prev == COLIN || prev == TOUCH)
 	{
-	  //std::cout << "SAME SIDE CHAIN" << std::endl;
 	  //here we need to test that all points from the chain are on
 	  //the same side of the intersection line s2.
 	  bool ok = true;
-	  //std::cout << "s1.p1()[0] = " << s1.p1()[0] << std::endl;
 	  double diff = this->pts_[start_chain][0] - s1.p1()[0];
-	  //std::cout << "start= " << start_chain << " " << diff << std::endl;
 	  int k = (start_chain + 1) % this->pts_.size();
 	  while (k <= next)
 	  {
 	    double cur_diff = this->pts_[k][0] - s1.p1()[0];
-	    //std::cout << "k= " << k << " " << this->pts_[k][0] << ": " << this->pts_[k][0] - s1.p1()[0] << std::endl;
-	    if ((diff <= EPSILON && cur_diff > EPSILON) || (diff >= -EPSILON && cur_diff < -EPSILON))
+
+	    if ((diff <= EPSILON && cur_diff > EPSILON) ||
+		(diff >= -EPSILON && cur_diff < -EPSILON))
 	    {
 	      ok = false;
 	      break;
 	    }
 	    k = (k + 1) % this->pts_.size();
 	  }
-	  //	  std::cout << "end chain = " << next << std::endl;
 
 	  if (ok)
-	  {
-	    //std::cout << "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"  << std::endl;
 	    count -= 2;
-	  }
 	  else
 	    --count;
 	}
 	else
-	{
-	  //std::cout << "YOYO" << std::endl;
 	  --count;
-	}
       }
 
       if (ip == this->pts_[i] || ip == this->pts_[next])
-      {
 	prev = TOUCH;
-	//std::cout << "CCCCCCCCCCCCC" << std::endl;
-      }
       else
 	prev = INTERSECT;
 
@@ -191,11 +184,6 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   }
   while (i != 0);
 
-  //  if (count % 2 == 0)
-    //  {
-    //    std::cout << p << " " << count << std::endl;
-    //assert(false);
-    //}
   return count % 2 == 1;
 }
 
@@ -315,6 +303,10 @@ CompoundPolygon(const Polygon& base, const std::vector<Polygon>& diffs)
 {
 }
 
+CompoundPolygon::~CompoundPolygon()
+{
+}
+
 bool
 CompoundPolygon::inside(const Point& p) const
 {
@@ -396,6 +388,58 @@ CompoundPolygon::signed_area() const
   for (const Polygon& poly: diffs_)
     res -= fabs(poly.signed_area());
   return res;
+}
+
+
+MultiplePolygon::
+MultiplePolygon(const std::vector<CompoundPolygon>& polys)
+  : polys_(polys)
+{
+  std::cout << "Loaded " << polys.size() << " polygons" << std::endl;
+}
+
+MultiplePolygon::~MultiplePolygon()
+{
+}
+
+void
+MultiplePolygon::apply_pxsize(double pxsize)
+{
+  for (CompoundPolygon& poly: this->polys_)
+    poly.apply_pxsize(pxsize);
+}
+
+const std::vector<CompoundPolygon>&
+MultiplePolygon::polys() const
+{
+  return this->polys_;
+}
+
+bool
+MultiplePolygon::inside(const Point& p) const
+{
+  for (const CompoundPolygon& poly: this->polys_)
+    if (poly.inside(p))
+      return true;
+  return false;
+}
+
+PointEnsemble
+MultiplePolygon::boundary() const
+{
+  return {};
+}
+
+Box
+MultiplePolygon::bounding_box() const
+{
+  return Box({0, 0}, {0, 0});
+}
+
+bool
+MultiplePolygon::empty() const
+{
+  return this->polys_.empty();
 }
 
 

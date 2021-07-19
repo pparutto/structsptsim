@@ -6,6 +6,14 @@
 #include <iostream>
 #include <cassert>
 
+Collider::~Collider()
+{
+};
+
+NoneCollider::~NoneCollider()
+{
+}
+
 bool
 NoneCollider::outside(const Point& p) const
 {
@@ -22,6 +30,10 @@ NoneCollider::collide(const Point& p1, const Point& p2) const
 
 BoxCollider::BoxCollider(const Box& box)
   : box_(box)
+{
+}
+
+BoxCollider::~BoxCollider()
 {
 }
 
@@ -61,6 +73,10 @@ BoxCollider::collide(const Point& p1, const Point& p2) const
 
 PolygonCollider::PolygonCollider(const Polygon& poly)
   : poly_(poly)
+{
+}
+
+PolygonCollider::~PolygonCollider()
 {
 }
 
@@ -112,11 +128,15 @@ PolygonCollider::collide(const Point& p1, const Point& p2) const
 }
 
 MultiplePolygonCollider::
-MultiplePolygonCollider(const std::vector<CompoundPolygon>& polys)
+MultiplePolygonCollider(const MultiplePolygon& polys)
   : colliders_()
 {
-  for (const CompoundPolygon& poly: polys)
+  for (const CompoundPolygon& poly: polys.polys())
     this->colliders_.push_back(PolygonCollider(poly));
+}
+
+MultiplePolygonCollider::~MultiplePolygonCollider()
+{
 }
 
 bool
@@ -134,5 +154,6 @@ MultiplePolygonCollider::collide(const Point& p1, const Point& p2) const
   for (const PolygonCollider& coll: this->colliders_)
     if (!coll.outside(p1) && coll.outside(p2))
       return coll.collide(p1, p2);
-  return {};
+
+  throw std::runtime_error("Segment did not collide");
 }

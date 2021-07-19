@@ -6,6 +6,8 @@
 class Collider
 {
 public:
+  virtual ~Collider();
+
   virtual bool outside(const Point& p) const = 0;
   virtual Point collide(const Point& p1, const Point& p2) const = 0;
 };
@@ -13,6 +15,7 @@ public:
 class NoneCollider: public Collider
 {
 public:
+  virtual ~NoneCollider();
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
 };
@@ -21,6 +24,7 @@ class BoxCollider: public Collider
 {
 public:
   BoxCollider(const Box& box);
+  virtual ~BoxCollider();
 
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
@@ -32,6 +36,7 @@ class PolygonCollider: public Collider
 {
 public:
   PolygonCollider(const Polygon& poly);
+  virtual ~PolygonCollider();
 
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
@@ -42,7 +47,8 @@ protected:
 class MultiplePolygonCollider: public Collider
 {
 public:
-  MultiplePolygonCollider(const std::vector<CompoundPolygon>& polys);
+  MultiplePolygonCollider(const MultiplePolygon& polys);
+  virtual ~MultiplePolygonCollider();
 
   virtual bool outside(const Point& p) const override;
   virtual Point collide(const Point& p1, const Point& p2) const override;
