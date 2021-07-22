@@ -73,6 +73,14 @@ Polygon::~Polygon()
 }
 
 bool
+my_colinear(const Segment& s1, const Segment& s2)
+{
+  return colinear(s2.p1(), s2.p2(), s1.p1()) &&
+    colinear(s2.p1(), s2.p2(), s1.p2()) &&
+    (s2.p1()[1] > s1.p1()[1] || s2.p2()[1] > s1.p1()[1]);
+}
+
+bool
 Polygon::my_inside(const Point& p, bool border_is_inside) const
 {
   double INF = 10000.0;
@@ -95,10 +103,23 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
       prev = INTERSECT;
   }
 
+  //we need to pick a starting point that is not on a chain, so the
+  //easiest solution is to look for a point that is on a segment that
+  //does not collide with the polygon
+  unsigned start = 0;
+  while (start < this->pts_.size())
+  {
+    unsigned next = (start + 1) % this->pts_.size();
+    Segment s2(this->pts_[start], this->pts_[next]);
+    if (!my_colinear(s1, s2) && !Segment::intersect(s1, s2))
+      break;
+    ++start;
+  }
+  start = start % this->pts_.size();
 
   int start_chain = -1;
   int count = 0;
-  int i = 0;
+  unsigned i = start;
   do
   {
     int next = (i + 1) % this->pts_.size();
@@ -106,8 +127,7 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
     Segment s2(this->pts_[i], this->pts_[next]);
 
     //   (within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())) << std::endl;
-    if (colinear(s2.p1(), s2.p2(), p) && colinear(s2.p1(), s2.p2(), extreme) &&
-	(s2.p1()[1] > p[1] || s2.p2()[1] > p[1]))
+    if (my_colinear(s1, s2))
     {
       if (start_chain < 0)
 	start_chain = i;
@@ -115,11 +135,11 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
       if (s2.on_segment(p))
 	return border_is_inside;
 
-      if (prev != NONE)
+      if (prev == NONE)
 	--count;
 
       prev = COLIN;
-      ++count;
+      //++count;
     }
     else if (s2.on_segment(p))
       return border_is_inside;
@@ -182,7 +202,7 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
 
     i = next;
   }
-  while (i != 0);
+  while (i != start);
 
   return count % 2 == 1;
 }
@@ -199,6 +219,7 @@ Polygon::inside(const Polygon& poly) const
   for (const Point& pt: this->pts_)
     if (!poly.inside(pt))
       return false;
+
   return true;
 }
 
@@ -275,6 +296,15 @@ Polygon::intersect_with(const Segment& s1) const
     throw std::runtime_error("Segment did not collide with polygon");
 
   return seg;
+}
+
+void Polygon::round_poly_pts()
+{
+  for (unsigned i = 0; i < this->pts_.size(); ++i)
+  {
+    this->pts_[i][0] = round_to_precision(this->pts_[i][0]);
+    this->pts_[i][1] = round_to_precision(this->pts_[i][1]);
+  }
 }
 
 double

@@ -674,7 +674,6 @@ int main(int argc, char** argv)
     delete polys;
   }
 
-
   std::cout << "Complex collide" << std::endl;
   {
     Segment border({12.3784000000000, 9.35883000000000}, {12.4075000000000, 9.87177000000000});
@@ -685,5 +684,124 @@ int main(int argc, char** argv)
 
     Point p = Segment::reflect(traj, border);
     std::cout << p << std::endl;
+  }
+
+  std::cout << "Poly L" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/L2_poly.poly");
+
+    std::cout << "[TEST1] ";
+    assert(poly->polys()[0].inside((Point) {71.059519, 105}));
+    std::cout << "OK"  << std::endl;
+  }
+
+  std::cout << "Poly moon" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/moon_poly.poly");
+
+    std::cout << "[TEST1] ";
+    assert(poly->polys()[0].inside((Point) {90.60437, 41.0}));
+    std::cout << "OK"  << std::endl;
+
+    std::cout << "[TEST2] ";
+    assert(poly->polys()[0].inside((Point) {141.38558, 41.0}));
+    std::cout << "OK"  << std::endl;
+  }
+
+  std::cout << "Poly colin in" << std::endl;
+  {
+    PointEnsemble pe;
+    pe.push_back({102, 130});
+    pe.push_back({102, 119});
+    pe.push_back({102, 108});
+    pe.push_back({117, 104});
+    pe.push_back({117, 84});
+    pe.push_back({78, 84});
+    pe.push_back({78, 141});
+    pe.push_back({102, 130});
+    std::vector<Polygon> diffs;
+    CompoundPolygon poly(Polygon(pe), diffs);
+
+    std::cout << "[Test 1]";
+    assert(poly.inside((Point) {93, 95}));
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Poly colin in left" << std::endl;
+  {
+    PointEnsemble pe;
+    pe.push_back({102, 130});
+    pe.push_back({102, 119});
+    pe.push_back({102, 108});
+    pe.push_back({117, 104});
+    pe.push_back({117, 84});
+    pe.push_back({78, 84});
+    pe.push_back({78, 141});
+    std::vector<Polygon> diffs;
+    CompoundPolygon poly(Polygon(pe), diffs);
+
+    std::cout << "[Test 1]";
+    assert(poly.inside((Point) {102, 95}));
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Poly colin in 2 left" << std::endl;
+  {
+    PointEnsemble pe;
+    pe.push_back({102, 130});
+    pe.push_back({102, 119});
+    pe.push_back({102, 108});
+    pe.push_back({93, 104});
+    pe.push_back({117, 100});
+    pe.push_back({117, 84});
+    pe.push_back({78, 84});
+    pe.push_back({78, 141});
+    std::vector<Polygon> diffs;
+    CompoundPolygon poly(Polygon(pe), diffs);
+
+    std::cout << "[Test 1]";
+    assert(poly.inside((Point) {102, 95}));
+    std::cout << " OK" << std::endl;
+  }
+
+    std::cout << "Poly Fail 1" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/poly_fail.poly");
+
+    std::cout << "[Test 1]";
+    assert(poly->polys()[0].inside((Point) {1194, 207.3}));
+    std::cout << " OK" << std::endl;
+    std::cout << "[Test 2]";
+    assert(poly->polys().size() == 1);
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "Poly Fail 2" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/poly_fail2.poly");
+
+    std::cout << "[Test 1]";
+    assert(poly->polys()[0].inside((Point) {1155, 545.3}));
+    std::cout << " OK" << std::endl;
+    std::cout << "[Test 2]";
+    assert(poly->polys().size() == 1);
+    std::cout << " OK" << std::endl;
+  }
+
+  std::cout << "ER complex poly" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/ER9_VERYNICE_MMStack_Pos0.ome_Simple Segmentation_cleaned_binary_poly.poly");
+
+    std::cout << "[Test 1]";
+    assert(poly->polys()[0].inside((Point) {1155, 545.3}));
+    std::cout << " OK" << std::endl;
+    std::cout << "[Test 2]";
+    assert(poly->polys().size() == 1);
+    std::cout << " OK" << std::endl;
   }
 }

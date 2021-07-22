@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "utils.hh"
+
 void
 save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble& trajs)
 {
@@ -262,6 +264,12 @@ polys_from_inkscape_path(const std::string& fname)
     polys.push_back(Polygon(cur_pe));
   }
 
+  //IMPORTANT TO PREVENT INTERSECTION ARTIFACTS
+  std::cout << "Rounding polygon points to precision: 1/"
+	    << PRECISION << std::endl;
+  for (Polygon& poly: polys)
+    poly.round_poly_pts();
+
   std::vector<CompoundPolygon> res;
   bool go = true;
   while (go)
@@ -272,10 +280,11 @@ polys_from_inkscape_path(const std::string& fname)
       std::vector<Polygon> overlap;
       std::vector<unsigned> idxs;
       idxs.push_back(i);
-      for (unsigned j = 1; j < polys.size() && i != j; ++j)
+      for (unsigned j = 0; j < polys.size(); ++j)
       {
-	//std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-	//std::cout << i << " " << j << std::endl;
+	if (i == j)
+	  continue;
+
 	bool ins = polys[j].inside(polys[i]);
 	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
 	    ins)

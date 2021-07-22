@@ -60,6 +60,8 @@ public:
 
   virtual const PointEnsemble& pts() const { return this->pts_; };
 
+  void round_poly_pts();
+
   bool my_inside(const Point& p, bool border_is_inside) const;
 private:
   PointEnsemble pts_;
