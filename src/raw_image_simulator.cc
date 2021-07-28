@@ -39,14 +39,15 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
 		    double pxsize, double DT, double I0, double sigma,
 		    const TrajectoryEnsemble& trajs)
 {
+  std::cout << width << " " << height << std::endl;
   unsigned short*** res = new unsigned short**[length];
   for (unsigned k = 0; k < length; ++k)
   {
-    res[k] = new unsigned short*[width];
-    for (unsigned i = 0; i < width; ++i)
+    res[k] = new unsigned short*[height];
+    for (unsigned i = 0; i < height; ++i)
     {
-      res[k][i] = new unsigned short[height];
-      for (unsigned j = 0; j < height; ++j)
+      res[k][i] = new unsigned short[width];
+      for (unsigned j = 0; j < width; ++j)
 	res[k][i][j] = 0;
     }
   }
@@ -66,8 +67,8 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
       if ((unsigned) frame >= length)
 	continue;
 
-      int pos[] = {(int) round(p[1] / pxsize), (int) round(p[2] / pxsize)};
-      double mu[] = {p[1], p[2]};
+      int pos[] = {(int) round(p[2] / pxsize), (int) round(p[1] / pxsize)};
+      double mu[] = {p[2], p[1]};
 
       gaussian_kernel(&gker, I0, sigma, 2 * ker_half + 1, pxsize, pos, mu);
 
@@ -77,13 +78,13 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
 
       for (int i = - (int) ker_half; i <= (int) ker_half; ++i)
       {
-	int xx = pos[0] + i;
-	if (xx < 0 || xx >= (int) width)
+	int xx = pos[1] + i;
+	if (xx < 0 || xx >= (int) height)
 	  continue;
 	for (int j = - (int) ker_half; j <= (int) ker_half; ++j)
 	{
-	  int yy = pos[1] + j;
-	  if (yy < 0 || yy >= (int) height)
+	  int yy = pos[0] + j;
+	  if (yy < 0 || yy >= (int) width)
 	    continue;
 
 	  res[frame][xx][yy] += gker[i + ker_half][j + ker_half];

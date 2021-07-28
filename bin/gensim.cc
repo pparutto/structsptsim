@@ -368,7 +368,7 @@ int main(int argc, char** argv)
   unsigned short*** imgs =
     raw_image_simulator(length, p_opts.width, p_opts.height, p_opts.pxsize,
 			p_opts.DT, 1000.0, 0.2, sim->trajs());
-
+  //0.2
   TIFF* tif = TIFFOpen((p_opts.outdir +"/simulated_raw_data.tif").c_str(),
 		       "w");
   for (unsigned k = 0; k < length; ++k)
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
     TIFFSetField(tif, TIFFTAG_IMAGELENGTH, p_opts.height);
     TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
     TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
-    for (unsigned i = 0; i < p_opts.width; ++i)
+    for (unsigned i = 0; i < p_opts.height; ++i)
       TIFFWriteScanline(tif, imgs[k][i], i);
     TIFFWriteDirectory(tif);
   }
