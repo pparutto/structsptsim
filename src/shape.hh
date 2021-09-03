@@ -19,6 +19,7 @@ public:
 class Box: public Shape
 {
 public:
+  Box();
   Box(const Point& lower_left, const Point& upper_right);
   Box(const Box& b) = default;
 

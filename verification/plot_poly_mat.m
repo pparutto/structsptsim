@@ -1,13 +1,23 @@
-%addpath('/tmp/a')
-addpath('/tmp/b')
-%addpath('/tmp/c')
-%addpath('/tmp/d')
-%addpath('/mnt/data/SPT_method/simu/fullcell/simus/ER9_VERYNICE_MMStack_Pos0.ome_Simple Segmentation_cleaned_binary_poly.poly_0.05_10')
+addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
+%addpath('/mnt/data/SPT_method/simu/ER/simus/210505_C2-Sec61b_Halo-paJF646+400uMBSA_004.czi_Simple Segmentation_binary_22.poly_5_10')
+%addpath('/mnt/data/SPT_method/simu/ER/simus/210505_C2-Sec61b_Halo-paJF646+400uMBSA_005.czi_Simple Segmentation_binary_14.poly_0.5_40')
+
+%start-box 17.91,45.94;19.50,47.56
+%stop-box 35.16,54.15;36.69,55.80
 
 pxs = 0.0967821;
 [bp, dp] = polys();
 %[bp, dp] = load_polys();
 
+start_b = [];
+if exist('start_box.m', 'file') == 2
+    start_b = start_box();
+end
+
+stop_b = [];
+if exist('stop_box.m', 'file') == 2
+    stop_b = stop_box();
+end
 
 figure
 hold on
@@ -16,8 +26,8 @@ for i=1:length(bp)
     plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k')
     text(mean(bp{i}(:,1)), mean(bp{i}(:,2)), sprintf('%d', i))
 end
-plot(1194, 207.3, 'or')
-plot(1194 * [1 1], [207.3 1300], 'r')
+%plot(1194, 207.3, 'or')
+%plot(1194 * [1 1], [207.3 1300], 'r')
 
 % plot(102, 95, 'or')
 % plot(102 * [1 1], [95 150], 'r')
@@ -47,5 +57,21 @@ for i=1:length(dp)
         plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), ':', 'LineWidth', 2)
     end
 end
+
+
+if ~isempty(start_b)
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r')
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(2,2), 'r')
+    plot([1 1] * start_b(1,1), [start_b(1,2), start_b(2,2)], 'r')
+    plot([1 1] * start_b(2,1), [start_b(1,2), start_b(2,2)], 'r')
+end
+if ~isempty(stop_b)
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(1,2), 'r')
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(2,2), 'r')
+    plot([1 1] * stop_b(1,1), [stop_b(1,2), stop_b(2,2)], 'r')
+    plot([1 1] * stop_b(2,1), [stop_b(1,2), stop_b(2,2)], 'r')
+end
 hold off
+
 daspect([1 1 1])
+set (gcf, 'WindowButtonMotionFcn', @mouseMove);

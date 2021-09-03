@@ -2,7 +2,6 @@
 #include "simulation_end_condition.hh"
 
 #include <list>
-
 #include <iostream>
 
 namespace
@@ -18,9 +17,9 @@ namespace
 	tg->generate_step();
 	done = true;
       }
-      catch (std::runtime_error& e)
+      catch (std::exception& e)
       {
-	tg->generate_step();
+	std::cerr << e.what() << std::endl;
       }
     }
   }
@@ -184,7 +183,7 @@ SimulationEmpirical::run()
 	this->trajs_.push_back(tg->generate());
 	delete tg;
       }
-      catch (std::runtime_error& e)
+      catch (std::exception& e)
       {
 	std::cerr << e.what() << std::endl;
       }

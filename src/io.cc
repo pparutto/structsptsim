@@ -317,6 +317,26 @@ polys_from_inkscape_path(const std::string& fname)
   return new MultiplePolygon(res);
 }
 
+void save_box_matlab(const Box& box, const std::string& fname,
+		     const std::string& fun_name)
+{
+  std::ofstream f;
+  f.open(fname);
+
+  if (!f.is_open())
+  {
+    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
+    return;
+  }
+
+  f << "function box = " << fun_name << "()" << std::endl;
+  f << "  box = [" << box.lower_left()[0] << " " << box.lower_left()[1]
+    << "; " << box.upper_right()[0] << " " << box.upper_right()[1] << "];"
+    << std::endl;
+  f << "end" << std::endl;
+  f.close();
+}
+
 void
 save_poly_matlab(const CompoundPolygon& poly, const std::string& fname)
 {
@@ -449,4 +469,22 @@ load_characs(const std::string& fname)
   }
 
   return res;
+}
+
+Box
+parse_box(const std::string& box_line)
+{
+  std::string tmp;
+  std::istringstream ss(box_line);
+
+  std::getline(ss, tmp, ',');
+  double ll_x = std::stod(tmp);
+  std::getline(ss, tmp, ';');
+  double ll_y = std::stod(tmp);
+  std::getline(ss, tmp, ',');
+  double tr_x = std::stod(tmp);
+  std::getline(ss, tmp);
+  double tr_y = std::stod(tmp);
+
+  return Box({ll_x, ll_y}, {tr_x, tr_y});
 }

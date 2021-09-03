@@ -53,6 +53,19 @@ protected:
   const Shape& reg_;
 };
 
+class EnterRegionEndCondition: public TrajectoryEndCondition
+{
+public:
+  EnterRegionEndCondition(const Shape& reg);
+  ~EnterRegionEndCondition() {}
+
+  virtual bool evaluate(const Trajectory& traj);
+  virtual EnterRegionEndCondition* clone_reset() override;
+protected:
+  const Shape& reg_;
+};
+
+
 class CompoundEndCondition: public TrajectoryEndCondition
 {
 public:

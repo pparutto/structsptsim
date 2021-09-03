@@ -59,6 +59,24 @@ EscapeEndCondition::clone_reset()
   return new EscapeEndCondition(this->reg_);
 }
 
+EnterRegionEndCondition::EnterRegionEndCondition(const Shape& reg)
+  : reg_(reg)
+{
+}
+
+bool
+EnterRegionEndCondition::evaluate(const Trajectory& traj)
+{
+  return this->reg_.inside(to_point(traj.at(traj.size() - 1)));
+}
+
+EnterRegionEndCondition*
+EnterRegionEndCondition::clone_reset()
+{
+  return new EnterRegionEndCondition(this->reg_);
+}
+
+
 CompoundEndCondition::
 CompoundEndCondition(std::vector<TrajectoryEndCondition*>& end_conds)
   : end_conds_(end_conds)

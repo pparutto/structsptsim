@@ -18,7 +18,7 @@ struct TrajectoryCharacs
 using TrajectoryCharacsMap = std::map<int, std::vector<TrajectoryCharacs> >;
 
 enum MotionType {DISTRIB, BROWNIAN};
-enum TrajLenType {FIXED, EXP};
+enum TrajLenType {FIXED, EXP, REG};
 enum TrajGenType {NTRAJS, NFRAMES, EMPIRICAL};
 
 struct ProgramOptions
@@ -54,6 +54,10 @@ struct ProgramOptions
   double D = NAN;
   std::string cdf_path;
 
+  bool use_start_reg;
+  Box start_reg;
+  Box stop_reg;
+
   std::string outdir;
 
   unsigned t_ratio()
@@ -78,6 +82,9 @@ void save_params_csv(const std::string& fname,
 Polygon poly_from_csv_path(const std::string& fname);
 MultiplePolygon* polys_from_inkscape_path(const std::string& fname);
 
+void save_box_matlab(const Box& poly, const std::string& fname,
+		     const std::string& fun_name);
+
 void save_poly_matlab(const CompoundPolygon& poly, const std::string& fname);
 void save_polys_matlab(const MultiplePolygon& poly,
 		       const std::string& fname);
@@ -86,5 +93,7 @@ void save_poly_txt(const CompoundPolygon& poly, const std::string& fname);
 
 
 TrajectoryCharacsMap load_characs(const std::string& fname);
+
+Box parse_box(const std::string& box_line);
 
 #endif /// !IO_HH

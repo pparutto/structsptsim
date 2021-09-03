@@ -3,6 +3,18 @@
 
 # include "shape.hh"
 
+class CollisionException: public std::exception
+{
+public:
+  CollisionException (const Segment& s, std::string what);
+  ~CollisionException() = default;
+  virtual const char* what() const noexcept override;
+
+protected:
+  const Segment s_;
+  const std::string what_;
+};
+
 class Collider
 {
 public:

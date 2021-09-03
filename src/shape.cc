@@ -5,9 +5,18 @@
 #include <cassert>
 #include <iostream>
 
+#include "collider.hh"
 #include "utils.hh"
 
 Shape::~Shape()
+{
+}
+
+Box::Box()
+  : lower_left_({NAN, NAN})
+  , upper_right_({NAN, NAN})
+  , width_(NAN)
+  , height_(NAN)
 {
 }
 
@@ -293,7 +302,7 @@ Polygon::intersect_with(const Segment& s1) const
   while (i != 0);
 
   if (!already)
-    throw std::runtime_error("Segment did not collide with polygon");
+    throw CollisionException(s1, "did not collide");
 
   return seg;
 }

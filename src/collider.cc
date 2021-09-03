@@ -4,7 +4,24 @@
 #include "utils.hh"
 
 #include <iostream>
+#include <sstream>
 #include <cassert>
+
+CollisionException::CollisionException (const Segment& s, std::string what)
+  : s_(s)
+  , what_(what)
+{
+}
+
+const char*
+CollisionException::what() const noexcept
+{
+  std::stringstream res;
+  res << "Segment " << this->s_.p1() << " -> " << this->s_.p2() << " "
+      << this->what_;
+  return res.str().c_str();
+}
+
 
 Collider::~Collider()
 {
@@ -155,5 +172,5 @@ MultiplePolygonCollider::collide(const Point& p1, const Point& p2) const
     if (!coll.outside(p1) && coll.outside(p2))
       return coll.collide(p1, p2);
 
-  throw std::runtime_error("Segment did not collide");
+  throw CollisionException(Segment(p1, p2), "did not collide");
 }

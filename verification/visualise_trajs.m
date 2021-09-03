@@ -1,12 +1,48 @@
 %addpath('/tmp');
 
-%[base_poly, polys] = load_polys();
+%addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1')
+addpath('/tmp/test')
+[bp, dp] = polys();
 
-tab = dlmread('/tmp/sim/trajs_empirical_DT=0.006000_lambdaNpts=0.090909.csv', ',');
+start_b = [];
+if exist('start_box.m', 'file') == 2
+    start_b = start_box();
+end
+
+stop_b = [];
+if exist('stop_box.m', 'file') == 2
+    stop_b = stop_box();
+end
+
+%tab = dlmread('/tmp/sim/trajs_empirical_DT=0.006000_lambdaNpts=0.090909.csv', ',');
+%tab = dlmread('/mnt/data/SPT_method/simu/fullcell/simus/ER9_VERYNICE_MMStack_Pos0.ome_Simple Segmentation_cleaned_binary_poly.poly_0.05_15/trajs.csv');
+%tab = dlmread('/mnt/data/SPT_method/simu/fullcell/simus/regions/1/trajs.csv', ',');
+tab = dlmread('/tmp/test/trajs.csv', ',');
 
 figure
 hold on
+for i=1:length(bp)
+    plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k')
+    for j=1:length(dp{i})
+        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'k')
+    end
+end
+
+if ~isempty(start_b)
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r')
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(2,2), 'r')
+    plot([1 1] * start_b(1,1), [start_b(1,2), start_b(2,2)], 'r')
+    plot([1 1] * start_b(2,1), [start_b(1,2), start_b(2,2)], 'r')
+end
+if ~isempty(stop_b)
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(1,2), 'm')
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(2,2), 'm')
+    plot([1 1] * stop_b(1,1), [stop_b(1,2), stop_b(2,2)], 'm')
+    plot([1 1] * stop_b(2,1), [stop_b(1,2), stop_b(2,2)], 'm')
+end
+
 Utils.show_trajectories(tab);
+hold off
 daspect([1 1 1])
 
 

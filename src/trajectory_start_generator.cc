@@ -73,6 +73,31 @@ RandomTrajectoryStartGenerator::generate()
   return p;
 }
 
+RandomBoxInPolyTrajectoryStartGenerator::
+RandomBoxInPolyTrajectoryStartGenerator(std::mt19937_64& ng,
+					const Shape& poly,
+					const Box& box)
+  : ng_(ng)
+  , poly_(poly)
+  , rnd_box_(RandomBoxTrajectoryStartGenerator(ng, box))
+{
+}
+
+RandomBoxInPolyTrajectoryStartGenerator::
+~RandomBoxInPolyTrajectoryStartGenerator()
+{
+}
+
+Point
+RandomBoxInPolyTrajectoryStartGenerator::generate()
+{
+  Point p = this->rnd_box_.generate();
+  while (!this->poly_.inside(p))
+    p = this->rnd_box_.generate();
+
+  return p;
+}
+
 MultiplePolysRandomTrajectoryStartGenerator::
 MultiplePolysRandomTrajectoryStartGenerator(std::mt19937_64& ng,
 					    const MultiplePolygon& polys)

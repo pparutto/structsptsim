@@ -52,6 +52,22 @@ protected:
   RandomBoxTrajectoryStartGenerator rnd_box_;
 };
 
+class RandomBoxInPolyTrajectoryStartGenerator: public TrajectoryStartGenerator
+{
+public:
+  RandomBoxInPolyTrajectoryStartGenerator(std::mt19937_64& ng,
+					  const Shape& poly,
+					  const Box& box);
+  virtual ~RandomBoxInPolyTrajectoryStartGenerator();
+
+  virtual Point generate() override;
+protected:
+  std::mt19937_64& ng_;
+  const Shape& poly_;
+  RandomBoxTrajectoryStartGenerator rnd_box_;
+};
+
+
 class MultiplePolysRandomTrajectoryStartGenerator:
   public TrajectoryStartGenerator
 {

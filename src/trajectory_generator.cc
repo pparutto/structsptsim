@@ -30,9 +30,27 @@ void
 TrajectoryGenerator::init()
 {
   assert(this->traj_rec_->traj().empty());
-  Point p = this->traj_start_.generate();
+
+  bool done = false;
+  Point p = {0, 0};
+  while (!done)
+  {
+    try
+    {
+      this->traj_start_.generate();
+      for (int i = 0; i < 500 && this->collider_.outside(p); ++i)
+	p = this->traj_start_.generate();
+      done = true;
+    }
+    catch (std::runtime_error& e)
+    {
+      std::cerr << "Re-launching initial point generation" << std::endl;
+    }
+  }
+
   if (this->collider_.outside(p))
-    throw std::runtime_error("Initial point outside polygons");
+    throw std::runtime_error("Failed to generate a point in polygon");
+
   this->traj_rec_->record(p);
 }
 
@@ -86,10 +104,9 @@ TrajectoryGenerator::generate()
 	this->generate_step();
 	done = true;
       }
-      catch (std::runtime_error& e)
+      catch (std::exception& e)
       {
-	this->generate_step();
-	std::cout << "error" << std::endl;
+	std::cerr << e.what() << std::endl;
       }
     }
   }

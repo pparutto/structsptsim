@@ -3,10 +3,9 @@
 #include <iomanip>
 #include <random>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <cassert>
-
-#include <tiffio.h>
 
 #include "tclap/CmdLine.h"
 
@@ -18,14 +17,44 @@
 
 #include "utils.hh"
 
+#include <tiffio.h>
 #include "raw_image_simulator.hh"
 
+void generate_tif_stack(const TrajectoryEnsemble& trajs, double width,
+			double height, unsigned length, double pxsize,
+			double DT, const std::string& outfile)
+{
+  //Pierre: add the two fixed values as arguments
+  unsigned short*** imgs =
+    raw_image_simulator(length, width, height, pxsize, DT,
+			1000.0, 0.2, trajs);
+
+  TIFF* tif = TIFFOpen(outfile.c_str(), "w");
+  for (unsigned k = 0; k < length; ++k)
+  {
+    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+    for (unsigned i = 0; i < height; ++i)
+      TIFFWriteScanline(tif, imgs[k][i], i);
+    TIFFWriteDirectory(tif);
+  }
+  TIFFClose(tif);
+
+  for (unsigned k = 0; k < length; ++k)
+  {
+    for (unsigned i = 0; i < width; ++i)
+      delete[] imgs[k][i];
+    delete[] imgs[k];
+  }
+  delete[] imgs;
+}
 
 void create_dir_if_not_exist(const std::string& path)
 {
     struct stat info;
-
-    if(stat(path.c_str(), &info) != 0 || ! (info.st_mode & S_IFDIR))
+    if (stat(path.c_str(), &info) != 0 || !(info.st_mode & S_IFDIR))
     {
       mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
       std::cout << "Created directory: " << path << std::endl;
@@ -50,6 +79,16 @@ int main(int argc, char** argv)
     TCLAP::ValueArg<double> pxsize_arg
       ("", "pxsize", "", false, NAN, "Pixel size for polygon (µm)");
     cmd.add(pxsize_arg);
+
+    TCLAP::ValueArg<std::string> start_box_arg
+      ("", "start-box", "", false, "",
+       "Box to start trajectories (format: llx,lly;trx,try)");
+    cmd.add(start_box_arg);
+
+    TCLAP::ValueArg<std::string> stop_box_arg
+      ("", "stop-box", "", false, "",
+       "Box to end trajectories (format: llx,lly;trx,try)");
+    cmd.add(stop_box_arg);
 
     TCLAP::ValueArg<double> exp_l_arg
       ("", "npts-exp", "", false, NAN, "Exponential λ traj. length");
@@ -124,9 +163,10 @@ int main(int argc, char** argv)
       return 0;
     }
 
-    if (!(Npts_arg.isSet() ^ exp_l_arg.isSet()) ^ empirical_tr_arg.isSet())
+    if (!(Npts_arg.isSet() ^ exp_l_arg.isSet() ^ empirical_tr_arg.isSet() ^
+	  stop_box_arg.isSet()))
     {
-      std::cerr << "ERROR: either npts-fixed, npts-exp or empirical-trajs must be set"
+      std::cerr << "ERROR: either npts-fixed, npts-exp, empirical-trajs or stop-box must be set"
 		<< std::endl;
       return 0;
     }
@@ -152,7 +192,18 @@ int main(int argc, char** argv)
       p_opts.pxsize = pxsize_arg.getValue();
     }
 
-    if (exp_l_arg.isSet())
+    if (start_box_arg.isSet())
+    {
+      p_opts.use_start_reg = true;
+      p_opts.start_reg = parse_box(start_box_arg.getValue());
+    }
+
+    if (stop_box_arg.isSet())
+    {
+      p_opts.tr_len_type = TrajLenType::REG;
+      p_opts.stop_reg = parse_box(stop_box_arg.getValue());
+    }
+    else if (exp_l_arg.isSet())
     {
       p_opts.tr_len_type = EXP;
       p_opts.pdist =
@@ -215,6 +266,18 @@ int main(int argc, char** argv)
 
 
   create_dir_if_not_exist(p_opts.outdir);
+  //the above function will create only one sub-directory
+  //if multiple are missing it will fail.
+  {
+    struct stat info;
+    if (errno != EEXIST &&
+	(stat(p_opts.outdir.c_str(), &info) != 0 || !S_ISDIR(info.st_mode)))
+    {
+      std::cerr << "ERROR: could not access output directory:"
+		<< p_opts.outdir << std::endl;
+    return 0;
+    }
+  }
 
   std::cout << std::setprecision(15);
 
@@ -250,7 +313,16 @@ int main(int argc, char** argv)
     }
 
     if (p_opts.export_poly_mat)
+    {
       save_polys_matlab(*polys, p_opts.outdir + "/polys.m");
+
+      if (p_opts.use_start_reg)
+	save_box_matlab(p_opts.start_reg, p_opts.outdir + "/start_box.m",
+			"start_box");
+      if (p_opts.tr_len_type == TrajLenType::REG)
+	save_box_matlab(p_opts.stop_reg, p_opts.outdir + "/stop_box.m",
+			"stop_box");
+    }
   }
   else
   {
@@ -265,11 +337,25 @@ int main(int argc, char** argv)
 
   TrajectoryStartGenerator* start_gen = nullptr;
   if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+  {
+    std::cout << "Start point generator: Fixed" << std::endl;
     start_gen = new FixedPointTrajectoryStartGenerator({0.0, 0.0});
+  }
+  else if (p_opts.use_start_reg)
+  {
+    std::cout << "Start point generator: Box" << std::endl;
+    start_gen = new RandomBoxInPolyTrajectoryStartGenerator(mt, *poly, p_opts.start_reg);
+  }
   else if (p_opts.use_poly)
+  {
+    std::cout << "Start point generator: Poly" << std::endl;
     start_gen = new MultiplePolysRandomTrajectoryStartGenerator(mt, *dynamic_cast<MultiplePolygon*>(poly));
+  }
   else
+  {
+    std::cout << "Start point generator: Poly bounding box" << std::endl;
     start_gen = new RandomBoxTrajectoryStartGenerator(mt, *dynamic_cast<Box*>(poly));
+  }
 
 
   Motion* motion = nullptr;
@@ -284,11 +370,27 @@ int main(int argc, char** argv)
 
   TrajectoryEndCondition* traj_end_cond = nullptr;
   if (p_opts.tr_len_type == EXP)
+  {
+    std::cout << "Trajectory end condition: exponential npts (lambda="
+	      << (double) p_opts.pdist.lambda() << ")" << std::endl;
     traj_end_cond = new NumberPointsExpEndCondition(p_opts.pdist, mt);
+  }
   else if (p_opts.tr_len_type == FIXED)
+  {
+    std::cout << "Trajectory end condition: npts="
+	      << p_opts.Npts << std::endl;
     traj_end_cond = new NumberPointsEndCondition(p_opts.Npts);
+  }
+  else if (p_opts.tr_len_type == REG)
+  {
+    std::cout << "Trajectory end condition: enter region" << std::endl;
+    traj_end_cond = new EnterRegionEndCondition(p_opts.stop_reg);
+  }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+  {
+    std::cout << "Trajectory end condition: empirical" << std::endl;
     traj_end_cond = new NumberPointsEndCondition(0);
+  }
   else
     assert(false);
 
@@ -355,41 +457,22 @@ int main(int argc, char** argv)
 
   delete traj_end_cond;
 
-  std::cout << "Generating images" << std::endl;
-  unsigned length = 0;
-  if (p_opts.tr_gen_type == NFRAMES)
-    length = p_opts.Nframes;
-  else
+  if (p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
-    for (const Trajectory& traj: sim->trajs())
-      length = traj.size() > length ? traj.size() : length;
-  }
+    std::cout << "Generating images" << std::endl;
 
-  unsigned short*** imgs =
-    raw_image_simulator(length, p_opts.width, p_opts.height, p_opts.pxsize,
-			p_opts.DT, 1000.0, 0.2, sim->trajs());
-  //0.2
-  TIFF* tif = TIFFOpen((p_opts.outdir +"/simulated_raw_data.tif").c_str(),
-		       "w");
-  for (unsigned k = 0; k < length; ++k)
-  {
-    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, p_opts.width);
-    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, p_opts.height);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
-    for (unsigned i = 0; i < p_opts.height; ++i)
-      TIFFWriteScanline(tif, imgs[k][i], i);
-    TIFFWriteDirectory(tif);
+    unsigned length = 0;
+    if (p_opts.tr_gen_type == NFRAMES)
+      length = p_opts.Nframes;
+    else
+    {
+      for (const Trajectory& traj: sim->trajs())
+	length = traj.size() > length ? traj.size() : length;
+    }
+    generate_tif_stack(sim->trajs(), p_opts.width, p_opts.height,
+		       length, p_opts.pxsize, p_opts.DT,
+		       p_opts.outdir + "/simulated_raw_data.tif");
   }
-  TIFFClose(tif);
-
-  for (unsigned k = 0; k < length; ++k)
-  {
-    for (unsigned i = 0; i < p_opts.width; ++i)
-      delete[] imgs[k][i];
-    delete[] imgs[k];
-  }
-  delete[] imgs;
 
   delete poly;
   delete collider;
