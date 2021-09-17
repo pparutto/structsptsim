@@ -7,41 +7,56 @@
 #include "utils.hh"
 #include "segment.hh"
 
-Point to_point(const TimedPoint& tp)
+template <int N>
+Point<N> to_point(const TimedPoint<N>& tp)
 {
-  return {tp[1], tp[2]};
+  Point<N> res;
+  for (int i = 0; i < N; ++i)
+    res[i] = tp[i+1];
+  return res;
+}
+
+template <int N>
+bool
+operator== (const Point<2>& p1, const Point<2>& p2)
+{
+  for (int i = 0; i < N; ++i)
+    if (std::abs(p1[i] - p2[i]) > EPSILON)
+      return false;
+  return true;
+}
+
+template <int N>
+Point<N> operator- (const Point<N>& p1, const Point<N>& p2)
+{
+  Point<N> res = p1;
+  for (int i = 0; i < N; ++i)
+    res[i] -= p2[i];
+  return res;
+}
+
+template <int N>
+Point<N> operator+ (const Point<N>& p1, const Point<N>& p2)
+{
+  Point<N> res = p1;
+  for (int i = 0; i < N; ++i)
+    res[i] += p2[i];
+  return res;
 }
 
 bool
-operator== (const Point& p1, const Point& p2)
-{
-  return (std::abs(p1[0] - p2[0]) < EPSILON &&
-	  std::abs(p1[1] - p2[1]) < EPSILON);
-}
-
-Point operator- (const Point& p1, const Point& p2)
-{
-  return {p1[0] - p2[0], p1[1] - p2[1]};
-}
-
-Point operator+ (const Point& p1, const Point& p2)
-{
-  return {p1[0] + p2[0], p1[1] + p2[1]};
-}
-
-bool
-colinear(const Point& p1, const Point& p2, const Point& p3)
+colinear(const Point<2>& p1, const Point<2>& p2, const Point<2>& p3)
 {
   return orientation(p1, p2, p3) == COLINEAR;
 }
 
 Orientation
-orientation(const Point& p1, const Point& p2, const Point& p3)
+orientation(const Point<2>& p1, const Point<2>& p2, const Point<2>& p3)
 {
   double v = ((p2[1] - p1[1]) * (p3[0] - p2[0]) -
 	      (p2[0] - p1[0]) * (p3[1] - p2[1]));
 
-  Segment s = Segment(p1, p2);
+  Segment<2> s = Segment<2>(p1, p2);
   if (std::abs(v) < EPSILON && s.distance(p3) < EPSILON)
     return COLINEAR;
   if (v > EPSILON)
@@ -49,32 +64,39 @@ orientation(const Point& p1, const Point& p2, const Point& p3)
   return COUNTERCLOCKWISE;
 }
 
-double dot(const Vec& v1, const Vec& v2)
+template <int N>
+double dot(const Vec<N>& v1, const Vec<N>& v2)
 {
-  return v1[0] * v2[0] + v1[1] * v2[1];
+  double res = 0;
+  for (int i = 0; i < N; ++i)
+    res += v1[i] * v2[i];
+  return res;
 }
 
-double norm(const Vec& v)
+template <int N>
+double norm(const Vec<N>& v)
 {
-  return sqrt(v[0]*v[0] + v[1]*v[1]);
+  double res = 0;
+  for (int i = 0; i < N; ++i)
+    res += v[i] * v[i];
+  return sqrt(res);
 }
 
-double dist(const Point& p1, const Point& p2)
+template <int N>
+double dist(const Point<N>& p1, const Point<N>& p2)
 {
-  return sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) +
-	      (p1[1] - p2[1]) * (p1[1] - p2[1]));
+  double res = 0;
+  for (int i = 0; i < N; ++i)
+    res += (p1[i] - p2[i]) * (p1[i] - p2[i]);
+  return sqrt(res);
 }
 
+template <int N>
 std::ostream&
-operator<< (std::ostream& os, const Point& pt)
+operator<< (std::ostream& os, const std::array<double, N>& pt)
 {
-  os << pt[0] << " " << pt[1];
-  return os;
-}
-
-std::ostream&
-operator<< (std::ostream& os, const TimedPoint& pt)
-{
-  os << pt[0] << " " << pt[1] << " " << pt[2];
+  os << pt[0];
+  for (int i = 1; i < N; ++i)
+    os << " " << pt[i];
   return os;
 }

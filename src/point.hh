@@ -4,28 +4,48 @@
 # include <array>
 # include <vector>
 
-using Point = std::array<double, 2>;
-using Vec = std::array<double, 2>;
-using TimedPoint = std::array<double, 3>;
+template <int N>
+using Point = std::array<double, N>;
 
-using PointEnsemble = std::vector<Point>;
+template <int N>
+using Vec = std::array<double, N>;
+
+template <int N>
+using TimedPoint = std::array<double, N+1>;
+
+template <int N>
+using PointEnsemble = std::vector<Point<N>>;
 
 enum Orientation {COLINEAR, CLOCKWISE, COUNTERCLOCKWISE};
 
-Point to_point(const TimedPoint& tp);
+template <int N>
+Point<N> to_point(const TimedPoint<N>& tp);
 
-bool colinear(const Point& p1, const Point& p2, const Point& p3);
-bool operator== (const Point& p1, const Point& p2);
-Point operator- (const Point& p1, const Point& p2);
-Point operator+ (const Point& p1, const Point& p2);
+bool colinear(const Point<2>& p1, const Point<2>& p2,
+	      const Point<2>& p3);
 
-Orientation orientation(const Point& p1, const Point& p2, const Point& p3);
+template<int N>
+bool operator== (const Point<N>& p1, const Point<N>& p2);
 
-double dot(const Vec& v1, const Vec& v2);
-double norm(const Vec& v);
-double dist(const Point& p1, const Point& p2);
+template<int N>
+Point<N> operator- (const Point<N>& p1, const Point<N>& p2);
 
-std::ostream& operator<< (std::ostream& os, const Point& pt);
-std::ostream& operator<< (std::ostream& os, const TimedPoint& pt);
+template<int N>
+Point<N> operator+ (const Point<N>& p1, const Point<N>& p2);
+
+Orientation orientation(const Point<2>& p1, const Point<2>& p2,
+			const Point<2>& p3);
+
+template<int N>
+double dot(const Point<N>& v1, const Point<N>& v2);
+
+template<int N>
+double norm(const Point<N>& v);
+
+template<int N>
+double dist(const Point<N>& p1, const Point<N>& p2);
+
+template<int N>
+std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt);
 
 #endif /// !POINT_HH

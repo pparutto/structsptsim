@@ -3,31 +3,34 @@
 
 # include "point.hh"
 
+template <int N>
 class Segment
 {
 public:
-  Segment(const Point& p1, const Point& p2);
+  Segment(const Point<N>& p1, const Point<N>& p2);
 
-  const Point& p1() const;
-  const Point& p2() const;
+  const Point<N>& p1() const;
+  const Point<N>& p2() const;
 
-  double distance(const Point& p) const;
-  bool on_segment(const Point& p) const;
-  Vec vector() const;
-  Vec normal() const;
+  double distance(const Point<N>& p) const;
+  bool on_segment(const Point<N>& p) const;
+  Vec<N> vector() const;
+  Vec<N> normal() const;
 
-  Segment invert() const;
+  Segment<N> invert() const;
 
   std::string plot_str(const std::string& col) const;
 
-  static bool intersect(const Segment& s1, const Segment& s2);
-  static Point intersection_point(const Segment& s1, const Segment& s2);
-  static Point reflect(const Segment& s1, const Segment& s2);
+  static bool intersect(const Segment<N>& s1, const Segment<N>& s2);
+  static Point<N> intersection_point(const Segment<N>& s1,
+				     const Segment<N>& s2);
+  static Point<N> reflect(const Segment<N>& s1, const Segment<N>& s2);
 protected:
-  Point p1_;
-  Point p2_;
+  Point<N> p1_;
+  Point<N> p2_;
 };
 
-std::ostream& operator<< (std::ostream& os, const Segment& seg);
+template <int N>
+std::ostream& operator<< (std::ostream& os, const Segment<N>& seg);
 
 #endif /// !SEGMENT_HH
