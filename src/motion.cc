@@ -2,7 +2,8 @@
 
 # include <cmath>
 
-BrownianMotion::BrownianMotion(std::mt19937_64& ng, double D, double dt)
+template <size_t N>
+BrownianMotion<N>::BrownianMotion(std::mt19937_64& ng, double D, double dt)
   : ng_(ng)
   , randn_()
   , D_(D)
@@ -11,15 +12,19 @@ BrownianMotion::BrownianMotion(std::mt19937_64& ng, double D, double dt)
 {
 }
 
-Point
-BrownianMotion::step_euler(const Point& p)
+template <size_t N>
+Point<N>
+BrownianMotion<N>::step_euler(const Point<N>& p)
 {
-  return {p[0] + this->s2Ddt_ * this->randn_(this->ng_),
-	  p[1] + this->s2Ddt_ * this->randn_(this->ng_)};
+  Point<N> res;
+  for (size_t i = 0; i < N; ++i)
+    res[i] = p[i] + this->s2Ddt_ * this->randn_(this->ng_);
+  return res;
 }
 
+template <size_t N>
 bool
-BrownianMotion::subsample() const
+BrownianMotion<N>::subsample() const
 {
   return true;
 }
@@ -34,13 +39,11 @@ EmpiricalMotion(std::mt19937_64& ng, CumDistribFunction& ivel_cdf,
 {
 }
 
-Point
-EmpiricalMotion::step_euler(const Point& p)
+Point<2>
+EmpiricalMotion::step_euler(const Point<2>& p)
 {
-  //std::cout << "p = " << p[0] << " " << p[1] << std::endl;
   double r = this->ivel_cdf_.draw(this->randu_(this->ng_)) * this->dt_;
   double ang = this->randu_(this->ng_) * 2 * M_PI;
-  //std::cout << "pp = " << p[0] + r * cos(ang) << " " << p[1] + r * sin(ang) << std::endl;
   return {p[0] + r * cos(ang), p[1] + r * sin(ang)};
 }
 

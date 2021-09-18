@@ -5,9 +5,13 @@
 
 # include "point.hh"
 
-using  Trajectory = std::vector<TimedPoint>;
-using  TrajectoryEnsemble = std::vector<Trajectory>;
+template <size_t N>
+using Trajectory = std::vector<TimedPoint<N>>;
 
-TimedPoint from_point(double t, const Point& p);
+template <size_t N>
+using TrajectoryEnsemble = std::vector<Trajectory<N>>;
+
+template <size_t N>
+TimedPoint<N> from_point(double t, const Point<N>& p);
 
 #endif /// !TRAJECTORY_HH

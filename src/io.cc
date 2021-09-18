@@ -7,8 +7,9 @@
 
 #include "utils.hh"
 
+template <size_t N>
 void
-save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble& trajs)
+save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble<N>& trajs)
 {
   std::ofstream f;
   f.open(fname);
@@ -20,10 +21,15 @@ save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble& trajs)
   }
 
   int cpt = 0;
-  for (const Trajectory& traj: trajs)
+  for (const Trajectory<N>& traj: trajs)
   {
-    for (const TimedPoint& p: traj)
-      f << cpt << "," << p[0] << "," << p[1] << "," << p[2] << std::endl;
+    for (const TimedPoint<N>& p: traj)
+    {
+      f << cpt;
+      for (size_t i = 0; i < N + 1; ++i)
+	f << "," << traj[i];
+      f << std::endl;
+    }
     ++cpt;
   }
   f.close();
@@ -113,12 +119,12 @@ poly_from_csv_path(const std::string& fname)
   if (!ifs.is_open())
   {
     std::cout << "ERROR file not found: " << fname << std::endl;
-    return Polygon(std::vector<Point> ());
+    return Polygon(std::vector<Point<2>> ());
   }
 
   std::string line;
   std::string tmp;
-  std::vector<Point> res;
+  std::vector<Point<2>> res;
   while (std::getline(ifs, line))
   {
     std::istringstream ss(line);
@@ -146,7 +152,7 @@ bool is_letter(const std::string& s)
   return (s[0] >= 'a' && s[0] <= 'z') || (s[0] >= 'A' && s[0] <= 'Z');
 }
 
-Point read_point(const std::string& s)
+Point<2> read_point(const std::string& s)
 {
   std::istringstream ss(s);
   std::string tmp;
@@ -176,8 +182,8 @@ polys_from_inkscape_path(const std::string& fname)
   std::string line;
   while(std::getline(ifs, line))
   {
-    Point pos = {0, 0};
-    PointEnsemble cur_pe;
+    Point<2> pos = {0, 0};
+    PointEnsemble<2> cur_pe;
 
     std::string tmp;
     std::istringstream ss(line);
@@ -216,7 +222,7 @@ polys_from_inkscape_path(const std::string& fname)
 	std::getline(ss, tmp, ' ');
 	while (!is_letter(tmp))
 	{
-	  pos = pos + (Point) {0, std::stod(tmp)};
+	  pos = pos + (Point<2>) {0, std::stod(tmp)};
 	  cur_pe.push_back(pos);
 	  std::getline(ss, tmp, ' ');
 	}
@@ -236,7 +242,7 @@ polys_from_inkscape_path(const std::string& fname)
 	std::getline(ss, tmp, ' ');
 	while (!is_letter(tmp))
 	{
-	  pos = pos + (Point) {std::stod(tmp), 0};
+	  pos = pos + (Point<2>) {std::stod(tmp), 0};
 	  cur_pe.push_back(pos);
 	  std::getline(ss, tmp, ' ');
 	}
@@ -294,6 +300,8 @@ polys_from_inkscape_path(const std::string& fname)
 	  idxs.push_back(j);
 	}
 
+	if (!ins)
+	  std::cout << "FAILED" << std::endl;
 	//sanity check for ER
 	// if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
 	//     !ins)
@@ -429,7 +437,7 @@ save_poly_txt(const CompoundPolygon& poly, const std::string& fname)
 }
 
 
-TrajectoryCharacs::TrajectoryCharacs(Point pos, int npts)
+TrajectoryCharacs::TrajectoryCharacs(Point<2> pos, int npts)
   : p0(pos)
   , npts(npts)
 {

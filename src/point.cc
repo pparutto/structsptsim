@@ -7,7 +7,16 @@
 #include "utils.hh"
 #include "segment.hh"
 
-template <int N>
+template <size_t N>
+Point<N> zero()
+{
+  Point<N> res;
+  for (size_t i = 0; i < N; ++i)
+    res[i] = 0;
+  return res;
+}
+
+template <size_t N>
 Point<N> to_point(const TimedPoint<N>& tp)
 {
   Point<N> res;
@@ -16,7 +25,7 @@ Point<N> to_point(const TimedPoint<N>& tp)
   return res;
 }
 
-template <int N>
+template <size_t N>
 bool
 operator== (const Point<2>& p1, const Point<2>& p2)
 {
@@ -26,16 +35,19 @@ operator== (const Point<2>& p1, const Point<2>& p2)
   return true;
 }
 
-template <int N>
+template <size_t N>
 Point<N> operator- (const Point<N>& p1, const Point<N>& p2)
 {
-  Point<N> res = p1;
-  for (int i = 0; i < N; ++i)
-    res[i] -= p2[i];
-  return res;
+  return p1;
+  // Point<N> res;
+  // for (int i = 0; i < N; ++i)
+  //   res[i] = p1[i] - p2[i];
+  // return res;
 }
 
-template <int N>
+//template Point<2> operator-<2> (const Point<2>& p1, const Point<2>& p2);
+
+template <size_t N>
 Point<N> operator+ (const Point<N>& p1, const Point<N>& p2)
 {
   Point<N> res = p1;
@@ -64,7 +76,7 @@ orientation(const Point<2>& p1, const Point<2>& p2, const Point<2>& p3)
   return COUNTERCLOCKWISE;
 }
 
-template <int N>
+template <size_t N>
 double dot(const Vec<N>& v1, const Vec<N>& v2)
 {
   double res = 0;
@@ -73,7 +85,7 @@ double dot(const Vec<N>& v1, const Vec<N>& v2)
   return res;
 }
 
-template <int N>
+template <size_t N>
 double norm(const Vec<N>& v)
 {
   double res = 0;
@@ -82,7 +94,7 @@ double norm(const Vec<N>& v)
   return sqrt(res);
 }
 
-template <int N>
+template <size_t N>
 double dist(const Point<N>& p1, const Point<N>& p2)
 {
   double res = 0;
@@ -91,7 +103,7 @@ double dist(const Point<N>& p1, const Point<N>& p2)
   return sqrt(res);
 }
 
-template <int N>
+template <size_t N>
 std::ostream&
 operator<< (std::ostream& os, const std::array<double, N>& pt)
 {

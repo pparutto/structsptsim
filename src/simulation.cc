@@ -6,8 +6,9 @@
 
 namespace
 {
+  template <size_t N>
   void
-  generate_step_unstuck(TrajectoryGenerator* tg)
+  generate_step_unstuck(TrajectoryGenerator<N>* tg)
   {
     bool done = false;
     while (!done)
@@ -25,35 +26,40 @@ namespace
   }
 }
 
-Simulation::Simulation(TrajectoryGeneratorFactory& traj_gen_facto)
+template <size_t N>
+Simulation<N>::Simulation(TrajectoryGeneratorFactory<N>& traj_gen_facto)
   : traj_gen_facto_(traj_gen_facto)
   , trajs_()
 {
 }
 
-Simulation::~Simulation()
+template <size_t N>
+Simulation<N>::~Simulation()
 {
 }
 
-SimulationTrajectory::
-SimulationTrajectory(TrajectoryGeneratorFactory& traj_gen_facto,
-		     SimulationEndCondition& end_cond)
-  : Simulation(traj_gen_facto)
+template <size_t N>
+SimulationTrajectory<N>::
+SimulationTrajectory(TrajectoryGeneratorFactory<N>& traj_gen_facto,
+		     SimulationEndCondition<N>& end_cond)
+  : Simulation<N>(traj_gen_facto)
   , end_cond_(end_cond)
 {
 }
 
-SimulationTrajectory::~SimulationTrajectory()
+template <size_t N>
+SimulationTrajectory<N>::~SimulationTrajectory()
 {
 }
 
+template <size_t N>
 void
-SimulationTrajectory::run()
+SimulationTrajectory<N>::run()
 {
   int cpt = 0;
   while (!this->end_cond_.evaluate(*this))
   {
-    TrajectoryGenerator* tg = this->traj_gen_facto_.get(0.0);
+    TrajectoryGenerator<N>* tg = this->traj_gen_facto_.get(0.0);
     std::cout << cpt << std::endl;
     this->trajs_.push_back(tg->generate());
 
@@ -62,14 +68,14 @@ SimulationTrajectory::run()
   }
 }
 
-
-SimulationDensity::
-SimulationDensity(TrajectoryGeneratorFactory& traj_gen_facto,
-		  SimulationEndCondition& end_cond,
+template <size_t N>
+SimulationDensity<N>::
+SimulationDensity(TrajectoryGeneratorFactory<N>& traj_gen_facto,
+		  SimulationEndCondition<N>& end_cond,
 		  unsigned ntrajs,
 		  double DT,
 		  unsigned tratio)
-  : Simulation(traj_gen_facto)
+  : Simulation<N>(traj_gen_facto)
   , end_cond_(end_cond)
   , ntrajs_(ntrajs)
   , DT_(DT)
@@ -77,14 +83,16 @@ SimulationDensity(TrajectoryGeneratorFactory& traj_gen_facto,
 {
 }
 
-SimulationDensity::~SimulationDensity()
+template <size_t N>
+SimulationDensity<N>::~SimulationDensity()
 {
 }
 
+template <size_t N>
 void
-SimulationDensity::run()
+SimulationDensity<N>::run()
 {
-  std::list<TrajectoryGenerator*> alive_trajs;
+  std::list<TrajectoryGenerator<N>*> alive_trajs;
   for (unsigned i = 0; i < this->ntrajs_; ++i)
   {
     alive_trajs.push_back(this->traj_gen_facto_.get(0.0));
@@ -92,11 +100,11 @@ SimulationDensity::run()
   }
 
   int frame = 1;
-  std::list<TrajectoryGenerator*> new_trajs;
+  std::list<TrajectoryGenerator<N>*> new_trajs;
   while (!this->end_cond_.evaluate(*this))
   {
     std::cout << frame << std::endl;
-    for (TrajectoryGenerator* tg: alive_trajs)
+    for (TrajectoryGenerator<N>* tg: alive_trajs)
     {
       if (tg->subsample())
       {
@@ -110,13 +118,14 @@ SimulationDensity::run()
     alive_trajs.insert(alive_trajs.end(), new_trajs.begin(), new_trajs.end());
     new_trajs.clear();
 
-    std::list<std::list<TrajectoryGenerator*>::iterator> to_del;
-    for (std::list<TrajectoryGenerator*>::iterator it = alive_trajs.begin();
+    std::list<typename std::list<TrajectoryGenerator<N>*>::iterator> to_del;
+    for (typename std::list<TrajectoryGenerator<N>*>::iterator it =
+	   alive_trajs.begin();
 	 it != alive_trajs.end(); ++it)
       if ((*it)->finished())
 	to_del.push_back(it);
 
-    for (std::list<TrajectoryGenerator*>::iterator del: to_del)
+    for (typename std::list<TrajectoryGenerator<N>*>::iterator del: to_del)
     {
       this->trajs_.push_back((*del)->get());
       delete (*del);
@@ -130,13 +139,13 @@ SimulationDensity::run()
     ++frame;
   }
 
-  for (TrajectoryGenerator* tgen: alive_trajs)
+  for (TrajectoryGenerator<N>* tgen: alive_trajs)
   {
     this->trajs_.push_back(tgen->get());
     delete tgen;
   }
 
-  for (TrajectoryGenerator* tgen: new_trajs)
+  for (TrajectoryGenerator<N>* tgen: new_trajs)
     delete tgen;
 
   alive_trajs.clear();
@@ -144,7 +153,7 @@ SimulationDensity::run()
 
 
 SimulationEmpirical::
-SimulationEmpirical(TrajectoryGeneratorFactory& traj_gen_facto,
+SimulationEmpirical(TrajectoryGeneratorFactory<2>& traj_gen_facto,
 		    const TrajectoryCharacsMap& traj_characs,
 		    double DT)
   : Simulation(traj_gen_facto)
@@ -161,9 +170,9 @@ SimulationEmpirical::
 void
 SimulationEmpirical::run()
 {
-  NumberPointsEndCondition& end_cond = dynamic_cast<NumberPointsEndCondition&>
+  NumberPointsEndCondition<2>& end_cond = dynamic_cast<NumberPointsEndCondition<2>&>
     (this->traj_gen_facto_.traj_end_facto().template_condition());
-  FixedPointTrajectoryStartGenerator& start = dynamic_cast<FixedPointTrajectoryStartGenerator&>
+  FixedPointTrajectoryStartGenerator<2>& start = dynamic_cast<FixedPointTrajectoryStartGenerator<2>&>
     (this->traj_gen_facto_.traj_start());
 
   for (TrajectoryCharacsMap::const_iterator it = this->traj_characs_.begin();
@@ -177,7 +186,7 @@ SimulationEmpirical::run()
       //std::cout << it->first << std::endl;
       try
       {
-	TrajectoryGenerator* tg =
+	TrajectoryGenerator<2>* tg =
 	  this->traj_gen_facto_.get(it->first * this->DT_);
 
 	this->trajs_.push_back(tg->generate());

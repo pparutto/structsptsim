@@ -6,15 +6,17 @@
 # include "trajectory.hh"
 # include "shape.hh"
 
+template <size_t N>
 class TrajectoryEndCondition
 {
 public:
   virtual ~TrajectoryEndCondition() = default;
-  virtual bool evaluate(const Trajectory& traj) = 0;
-  virtual TrajectoryEndCondition* clone_reset() = 0;
+  virtual bool evaluate(const Trajectory<N>& traj) = 0;
+  virtual TrajectoryEndCondition<N>* clone_reset() = 0;
 };
 
-class NumberPointsEndCondition: public TrajectoryEndCondition
+template <size_t N>
+class NumberPointsEndCondition: public TrajectoryEndCondition<N>
 {
 public:
   NumberPointsEndCondition(unsigned max_npts);
@@ -22,72 +24,77 @@ public:
 
   void update_max_npts(unsigned new_max);
 
-  virtual bool evaluate(const Trajectory& traj) override;
-  virtual NumberPointsEndCondition* clone_reset() override;
+  virtual bool evaluate(const Trajectory<N>& traj) override;
+  virtual NumberPointsEndCondition<N>* clone_reset() override;
 protected:
   unsigned max_npts_;
 };
 
-class NumberPointsExpEndCondition: public NumberPointsEndCondition
+template <size_t N>
+class NumberPointsExpEndCondition: public NumberPointsEndCondition<N>
 {
 public:
   NumberPointsExpEndCondition(std::exponential_distribution<double>& distrib,
 			      std::mt19937_64& mt);
   ~NumberPointsExpEndCondition() {}
 
-  virtual NumberPointsExpEndCondition* clone_reset() override;
+  virtual NumberPointsExpEndCondition<N>* clone_reset() override;
 protected:
   std::exponential_distribution<double> distrib_;
   std::mt19937_64& mt_;
 };
 
-class EscapeEndCondition: public TrajectoryEndCondition
+template <size_t N>
+class EscapeEndCondition: public TrajectoryEndCondition<N>
 {
 public:
-  EscapeEndCondition(const Shape& reg);
+  EscapeEndCondition(const Shape<N>& reg);
   ~EscapeEndCondition() {}
 
-  virtual bool evaluate(const Trajectory& traj);
+  virtual bool evaluate(const Trajectory<N>& traj);
   virtual EscapeEndCondition* clone_reset() override;
 protected:
-  const Shape& reg_;
+  const Shape<N>& reg_;
 };
 
-class EnterRegionEndCondition: public TrajectoryEndCondition
+template <size_t N>
+class EnterRegionEndCondition: public TrajectoryEndCondition<N>
 {
 public:
-  EnterRegionEndCondition(const Shape& reg);
+  EnterRegionEndCondition(const Shape<N>& reg);
   ~EnterRegionEndCondition() {}
 
-  virtual bool evaluate(const Trajectory& traj);
-  virtual EnterRegionEndCondition* clone_reset() override;
+  virtual bool evaluate(const Trajectory<N>& traj);
+  virtual EnterRegionEndCondition<N>* clone_reset() override;
 protected:
-  const Shape& reg_;
+  const Shape<N>& reg_;
 };
 
 
-class CompoundEndCondition: public TrajectoryEndCondition
+template <size_t N>
+class CompoundEndCondition: public TrajectoryEndCondition<N>
 {
 public:
-  CompoundEndCondition(std::vector<TrajectoryEndCondition*>& end_conds);
+  CompoundEndCondition(std::vector<TrajectoryEndCondition<N>*>& end_conds);
   ~CompoundEndCondition();
 
-  virtual bool evaluate(const Trajectory& traj);
+  virtual bool evaluate(const Trajectory<N>& traj);
   virtual CompoundEndCondition* clone_reset() override;
 protected:
-  std::vector<TrajectoryEndCondition*> end_conds_;
+  std::vector<TrajectoryEndCondition<N>*> end_conds_;
 };
 
+template <size_t N>
 class TrajectoryEndConditionFactory
 {
  public:
-  TrajectoryEndConditionFactory(TrajectoryEndCondition& template_condition);
+  TrajectoryEndConditionFactory(TrajectoryEndCondition<N>& template_condition);
 
-  TrajectoryEndCondition* get();
+  TrajectoryEndCondition<N>* get();
 
-  TrajectoryEndCondition& template_condition();
+  TrajectoryEndCondition<N>& template_condition();
  protected:
-  TrajectoryEndCondition& template_condition_;
+  TrajectoryEndCondition<N>& template_condition_;
 };
 
 #endif /// !TRAJECTORY_END_CONDITION_HH

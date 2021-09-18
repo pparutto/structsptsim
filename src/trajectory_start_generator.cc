@@ -2,30 +2,35 @@
 
 #include <iostream>
 
-TrajectoryStartGenerator::~TrajectoryStartGenerator()
+template <size_t N>
+TrajectoryStartGenerator<N>::~TrajectoryStartGenerator()
 {
 }
 
-FixedPointTrajectoryStartGenerator::
-FixedPointTrajectoryStartGenerator(const Point& pt)
+template <size_t N>
+FixedPointTrajectoryStartGenerator<N>::
+FixedPointTrajectoryStartGenerator(const Point<N>& pt)
   : pt_(pt)
 {
 }
 
-FixedPointTrajectoryStartGenerator::
+template <size_t N>
+FixedPointTrajectoryStartGenerator<N>::
 ~FixedPointTrajectoryStartGenerator()
 {
 }
 
+template <size_t N>
 void
-FixedPointTrajectoryStartGenerator::
-update_start_point(const Point& new_pt)
+FixedPointTrajectoryStartGenerator<N>::
+update_start_point(const Point<N>& new_pt)
 {
   this->pt_ = new_pt;
 }
 
-Point
-FixedPointTrajectoryStartGenerator::generate()
+template <size_t N>
+Point<N>
+FixedPointTrajectoryStartGenerator<N>::generate()
 {
   return this->pt_;
 }
@@ -43,7 +48,7 @@ RandomBoxTrajectoryStartGenerator::
 {
 }
 
-Point
+Point<2>
 RandomBoxTrajectoryStartGenerator::generate()
 {
   return {this->box_.lower_left()[0] + this->randu_(this->ng_) * this->box_.width(),
@@ -51,7 +56,7 @@ RandomBoxTrajectoryStartGenerator::generate()
 }
 
 RandomTrajectoryStartGenerator::
-RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape& shape)
+RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape<2>& shape)
   : ng_(ng)
   , shape_(shape)
   , rnd_box_(RandomBoxTrajectoryStartGenerator(ng, shape.bounding_box()))
@@ -63,10 +68,10 @@ RandomTrajectoryStartGenerator::
 {
 }
 
-Point
+Point<2>
 RandomTrajectoryStartGenerator::generate()
 {
-  Point p = this->rnd_box_.generate();
+  Point<2> p = this->rnd_box_.generate();
   while (!this->shape_.inside(p))
     p = this->rnd_box_.generate();
 
@@ -75,7 +80,7 @@ RandomTrajectoryStartGenerator::generate()
 
 RandomBoxInPolyTrajectoryStartGenerator::
 RandomBoxInPolyTrajectoryStartGenerator(std::mt19937_64& ng,
-					const Shape& poly,
+					const Shape<2>& poly,
 					const Box& box)
   : ng_(ng)
   , poly_(poly)
@@ -88,10 +93,10 @@ RandomBoxInPolyTrajectoryStartGenerator::
 {
 }
 
-Point
+Point<2>
 RandomBoxInPolyTrajectoryStartGenerator::generate()
 {
-  Point p = this->rnd_box_.generate();
+  Point<2> p = this->rnd_box_.generate();
   while (!this->poly_.inside(p))
     p = this->rnd_box_.generate();
 
@@ -128,7 +133,7 @@ MultiplePolysRandomTrajectoryStartGenerator::
 {
 }
 
-Point
+Point<2>
 MultiplePolysRandomTrajectoryStartGenerator::generate()
 {
   double p = this->randu_(this->ng_);

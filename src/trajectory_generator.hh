@@ -9,54 +9,56 @@
 # include "trajectory_recorder.hh"
 # include "collider.hh"
 
+template <size_t N>
 class TrajectoryGenerator
 {
 public:
-  TrajectoryGenerator(TrajectoryStartGenerator& traj_start,
-		      Motion& motion_model,
-		      TrajectoryEndCondition* traj_end,
-		      TrajectoryRecorder* traj_rec,
-		      Collider& collider);
+  TrajectoryGenerator(TrajectoryStartGenerator<N>& traj_start,
+		      Motion<N>& motion_model,
+		      TrajectoryEndCondition<N>* traj_end,
+		      TrajectoryRecorder<N>* traj_rec,
+		      Collider<N>& collider);
   ~TrajectoryGenerator();
 
   void init();
   void generate_step();
   bool finished();
   double cur_t();
-  Trajectory get();
+  Trajectory<N> get();
 
-  Trajectory generate();
+  Trajectory<N> generate();
 
   bool subsample() const;
 
 protected:
-  TrajectoryStartGenerator& traj_start_;
-  Motion& motion_model_;
-  TrajectoryEndCondition* traj_end_;
-  TrajectoryRecorder* traj_rec_;
-  Collider& collider_;
+  TrajectoryStartGenerator<N>& traj_start_;
+  Motion<N>& motion_model_;
+  TrajectoryEndCondition<N>* traj_end_;
+  TrajectoryRecorder<N>* traj_rec_;
+  Collider<N>& collider_;
 };
 
+template <size_t N>
 class TrajectoryGeneratorFactory
 {
 public:
-  TrajectoryGeneratorFactory(TrajectoryStartGenerator& traj_start,
-			     Motion& motion_model,
-			     TrajectoryEndConditionFactory& traj_end_facto,
-			     TrajectoryRecorderFactory& traj_rec_facto,
-			     Collider& collider);
+  TrajectoryGeneratorFactory(TrajectoryStartGenerator<N>& traj_start,
+			     Motion<N>& motion_model,
+			     TrajectoryEndConditionFactory<N>& traj_end_facto,
+			     TrajectoryRecorderFactory<N>& traj_rec_facto,
+			     Collider<N>& collider);
 
-  TrajectoryGenerator* get(double t0) const;
+  TrajectoryGenerator<N>* get(double t0) const;
 
-  TrajectoryStartGenerator& traj_start();
-  TrajectoryEndConditionFactory& traj_end_facto();
+  TrajectoryStartGenerator<N>& traj_start();
+  TrajectoryEndConditionFactory<N>& traj_end_facto();
 
 protected:
-  TrajectoryStartGenerator& traj_start_;
-  Motion& motion_model_;
-  TrajectoryEndConditionFactory& traj_end_facto_;
-  TrajectoryRecorderFactory& traj_rec_facto_;
-  Collider& collider_;
+  TrajectoryStartGenerator<N>& traj_start_;
+  Motion<N>& motion_model_;
+  TrajectoryEndConditionFactory<N>& traj_end_facto_;
+  TrajectoryRecorderFactory<N>& traj_rec_facto_;
+  Collider<N>& collider_;
 };
 
 

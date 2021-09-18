@@ -10,10 +10,10 @@
 
 struct TrajectoryCharacs
 {
-  Point p0;
+  Point<2> p0;
   int npts;
 
-  TrajectoryCharacs(Point pos, int npts);
+  TrajectoryCharacs(Point<2> pos, int npts);
 };
 using TrajectoryCharacsMap = std::map<int, std::vector<TrajectoryCharacs> >;
 
@@ -72,8 +72,9 @@ struct ProgramOptions
 };
 
 
+template <size_t N>
 void save_trajectories_csv(const std::string& fname,
-			   const TrajectoryEnsemble& trajs);
+			   const TrajectoryEnsemble<N>& trajs);
 
 void save_params_csv(const std::string& fname,
 		     const ProgramOptions opts);

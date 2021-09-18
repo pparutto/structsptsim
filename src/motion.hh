@@ -9,23 +9,23 @@
 # include "trajectory_recorder.hh"
 # include "cum_distrib_function.hh"
 
-
+template <size_t N>
 class Motion
 {
 public:
   virtual ~Motion() = default;
-  virtual Point step_euler(const Point& p) = 0;
+  virtual Point<N> step_euler(const Point<N>& p) = 0;
   virtual bool subsample() const = 0;
-protected:
 };
 
-class BrownianMotion: public Motion
+template <size_t N>
+class BrownianMotion: public Motion<N>
 {
 public:
   virtual ~BrownianMotion() = default;
   BrownianMotion(std::mt19937_64& ng, double D, double dt);
 
-  virtual Point step_euler(const Point& p) override;
+  virtual Point<N> step_euler(const Point<N>& p) override;
   virtual bool subsample() const override;
 
   double dt() const { return this->dt_; }
@@ -37,14 +37,14 @@ protected:
   double s2Ddt_;
 };
 
-class EmpiricalMotion: public Motion
+class EmpiricalMotion: public Motion<2>
 {
 public:
   virtual ~EmpiricalMotion() = default;
   EmpiricalMotion(std::mt19937_64& ng, CumDistribFunction& ivel_cdf,
 		  double dt);
 
-  virtual Point step_euler(const Point& p) override;
+  virtual Point<2> step_euler(const Point<2>& p) override;
   virtual bool subsample() const override;
 
   double dt() const { return this->dt_; }

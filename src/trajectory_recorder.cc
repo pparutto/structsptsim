@@ -4,7 +4,8 @@
 #include <iostream>
 #include <cassert>
 
-TrajectoryRecorder::
+template <size_t N>
+TrajectoryRecorder<N>::
 TrajectoryRecorder(double t0, double DT)
   : t0_(t0)
   , DT_(DT)
@@ -12,80 +13,90 @@ TrajectoryRecorder(double t0, double DT)
 {
 }
 
-TimedPoint
-TrajectoryRecorder::last_rec_point() const
+template <size_t N>
+TimedPoint<N>
+TrajectoryRecorder<N>::last_rec_point() const
 {
   return this->traj_[this->traj_.size()-1];
 }
 
-FullTrajectoryRecorder::
+template <size_t N>
+FullTrajectoryRecorder<N>::
 FullTrajectoryRecorder(double t0, double DT)
-  : TrajectoryRecorder(t0, DT)
+  : TrajectoryRecorder<N>(t0, DT)
 {
 }
 
-FullTrajectoryRecorder*
-FullTrajectoryRecorder::clone_reset(double t0) const
+template <size_t N>
+FullTrajectoryRecorder<N>*
+FullTrajectoryRecorder<N>::clone_reset(double t0) const
 {
-  return new FullTrajectoryRecorder(t0, this->DT_);
+  return new FullTrajectoryRecorder<N>(t0, this->DT_);
 }
 
+template <size_t N>
 void
-FullTrajectoryRecorder::record(const Point& p)
+FullTrajectoryRecorder<N>::record(const Point<N>& p)
 {
-  this->traj_.push_back(TimedPoint({this->t0_ + this->traj_.size() * this->DT_,
+  this->traj_.push_back(TimedPoint<N>({this->t0_ + this->traj_.size() * this->DT_,
 				    p[0], p[1]}));
 }
 
-TimedPoint
-FullTrajectoryRecorder::last_simu_point() const
+template <size_t N>
+TimedPoint<N>
+FullTrajectoryRecorder<N>::last_simu_point() const
 {
   assert(!this->traj_.empty());
   return this->traj_[this->traj_.size()-1];
 }
 
 
-
-SubsambleTrajectoryRecorder::
+template <size_t N>
+SubsambleTrajectoryRecorder<N>::
 SubsambleTrajectoryRecorder(double t0, double DT, unsigned step)
-  : TrajectoryRecorder(t0, DT)
+  : TrajectoryRecorder<N>(t0, DT)
   , step_(step)
   , cnt_(0)
   , last_simu_pt_({NAN, NAN, NAN})
 {
 }
 
-SubsambleTrajectoryRecorder*
-SubsambleTrajectoryRecorder::clone_reset(double t0) const
+template <size_t N>
+SubsambleTrajectoryRecorder<N>*
+SubsambleTrajectoryRecorder<N>::clone_reset(double t0) const
 {
-  return new SubsambleTrajectoryRecorder(t0, this->DT_, this->step_);
+  return new SubsambleTrajectoryRecorder<N>(t0, this->DT_, this->step_);
 }
 
+template <size_t N>
 void
-SubsambleTrajectoryRecorder::record(const Point& p)
+SubsambleTrajectoryRecorder<N>::record(const Point<N>& p)
 {
-  TimedPoint tp({this->t0_ + this->traj_.size() * this->DT_,
-		 p[0], p[1]});
+  TimedPoint<N> tp({this->t0_ + this->traj_.size() * this->DT_,
+		    p[0], p[1]});
   this->last_simu_pt_ = tp;
   if (this->cnt_ % this->step_ == 0)
     this->traj_.push_back(tp);
   ++this->cnt_;
 }
 
-TimedPoint
-SubsambleTrajectoryRecorder::last_simu_point() const
+template <size_t N>
+TimedPoint<N>
+SubsambleTrajectoryRecorder<N>::last_simu_point() const
 {
   return this->last_simu_pt_;
 }
 
-TrajectoryRecorderFactory::
-TrajectoryRecorderFactory(TrajectoryRecorder& recorder_template)
+template <size_t N>
+TrajectoryRecorderFactory<N>::
+TrajectoryRecorderFactory(TrajectoryRecorder<N>& recorder_template)
   : recorder_template_(recorder_template)
 {
 }
 
-TrajectoryRecorder*
-TrajectoryRecorderFactory::get(double t0)
+template <size_t N>
+TrajectoryRecorder<N>*
+TrajectoryRecorderFactory<N>::get(double t0)
 {
   return this->recorder_template_.clone_reset(t0);
 }

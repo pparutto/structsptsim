@@ -7,14 +7,17 @@
 #include <sstream>
 #include <cassert>
 
-CollisionException::CollisionException (const Segment& s, std::string what)
+template <size_t N>
+CollisionException<N>::CollisionException (const Segment<N>& s,
+					   std::string what)
   : s_(s)
   , what_(what)
 {
 }
 
+template <size_t N>
 const char*
-CollisionException::what() const noexcept
+CollisionException<N>::what() const noexcept
 {
   std::stringstream res;
   res << "Segment " << this->s_.p1() << " -> " << this->s_.p2() << " "
@@ -22,24 +25,27 @@ CollisionException::what() const noexcept
   return res.str().c_str();
 }
 
-
-Collider::~Collider()
+template <size_t N>
+Collider<N>::~Collider()
 {
 };
 
-NoneCollider::~NoneCollider()
+template <size_t N>
+NoneCollider<N>::~NoneCollider()
 {
 }
 
+template <size_t N>
 bool
-NoneCollider::outside(const Point& p) const
+NoneCollider<N>::outside(const Point<N>& p) const
 {
   (void) p;
   return false;
 }
 
-Point
-NoneCollider::collide(const Point& p1, const Point& p2) const
+template <size_t N>
+Point<N>
+NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
 {
   (void) p1;
   return p2;
@@ -55,17 +61,17 @@ BoxCollider::~BoxCollider()
 }
 
 bool
-BoxCollider::outside(const Point& p) const
+BoxCollider::outside(const Point<2>& p) const
 {
   return !this->box_.inside(p);
 }
 
-Point
-BoxCollider::collide(const Point& p1, const Point& p2) const
+Point<2>
+BoxCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 {
   (void) p1;
 
-  Point res = p2;
+  Point<2> res = p2;
 
   while (this->outside(res))
   {
@@ -98,7 +104,7 @@ PolygonCollider::~PolygonCollider()
 }
 
 bool
-PolygonCollider::outside(const Point& p) const
+PolygonCollider::outside(const Point<2>& p) const
 {
   return !this->poly_.inside(p);
 }
@@ -113,26 +119,26 @@ PolygonCollider::outside(const Point& p) const
 
 //In this case, we would need to change the function to consider it
 //only the first time
-Point
-PolygonCollider::collide(const Point& p1, const Point& p2) const
+Point<2>
+PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 {
-  Segment s1(p1, p2);
+  Segment<2> s1(p1, p2);
 
   int cnt = 0;
 
-  Point p = p1;
-  Point pp = p2;
+  Point<2> p = p1;
+  Point<2> pp = p2;
   do
   {
     //std::cout << p << " " << pp << ";" <<  std::endl;
-    Segment s2 = this->poly_.intersect_with(s1);
+    Segment<2> s2 = this->poly_.intersect_with(s1);
 
-    pp = Segment::reflect(s1, s2);
-    p = Segment::intersection_point(s1, s2);
+    pp = Segment<2>::reflect(s1, s2);
+    p = Segment<2>::intersection_point(s1, s2);
 
     //Vec norm = s2.normal();
     //p = {p[0] + DELTA_REPL * norm[0], p[1] + DELTA_REPL * norm[1]};
-    s1 = Segment(p, pp);
+    s1 = Segment<2>(p, pp);
 
     ++cnt;
     if (cnt > 20)
@@ -157,7 +163,7 @@ MultiplePolygonCollider::~MultiplePolygonCollider()
 }
 
 bool
-MultiplePolygonCollider::outside(const Point& p) const
+MultiplePolygonCollider::outside(const Point<2>& p) const
 {
   for (const PolygonCollider& coll: this->colliders_)
     if (!coll.outside(p))
@@ -165,12 +171,12 @@ MultiplePolygonCollider::outside(const Point& p) const
   return true;
 }
 
-Point
-MultiplePolygonCollider::collide(const Point& p1, const Point& p2) const
+Point<2>
+MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 {
   for (const PolygonCollider& coll: this->colliders_)
     if (!coll.outside(p1) && coll.outside(p2))
       return coll.collide(p1, p2);
 
-  throw CollisionException(Segment(p1, p2), "did not collide");
+  throw CollisionException(Segment<2>(p1, p2), "did not collide");
 }

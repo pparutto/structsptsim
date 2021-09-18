@@ -1,33 +1,39 @@
 #ifndef SIMULATION_END_CONDITION_HH_
 #define SIMULATION_END_CONDITION_HH_
 
+# include <cstdlib>
+
+template <size_t N>
 class Simulation;
 
+template <size_t N>
 class SimulationEndCondition
 {
 public:
   virtual ~SimulationEndCondition();
-  virtual bool evaluate(const Simulation& sim) = 0;
+  virtual bool evaluate(const Simulation<N>& sim) = 0;
 };
 
-class NumberTrajectoriesSimulationEndCondition: public SimulationEndCondition
+template <size_t N>
+class NumberTrajectoriesSimulationEndCondition: public SimulationEndCondition<N>
 {
 public:
   NumberTrajectoriesSimulationEndCondition(unsigned max_ntrajs);
   virtual ~NumberTrajectoriesSimulationEndCondition();
 
-  virtual bool evaluate(const Simulation& sim) override;
+  virtual bool evaluate(const Simulation<N>& sim) override;
 protected:
   unsigned max_ntrajs_;
 };
 
-class NumberFramesSimulationEndCondition: public SimulationEndCondition
+template <size_t N>
+class NumberFramesSimulationEndCondition: public SimulationEndCondition<N>
 {
 public:
   NumberFramesSimulationEndCondition(unsigned max_frames);
   virtual ~NumberFramesSimulationEndCondition();
 
-  virtual bool evaluate(const Simulation& sim) override;
+  virtual bool evaluate(const Simulation<N>& sim) override;
 protected:
   unsigned cur_frame_;
   unsigned max_frames_;

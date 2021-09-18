@@ -1,7 +1,6 @@
-%addpath('/tmp');
+addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/10');
 
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1')
-addpath('/tmp/test')
 [bp, dp] = polys();
 
 start_b = [];
@@ -17,7 +16,7 @@ end
 %tab = dlmread('/tmp/sim/trajs_empirical_DT=0.006000_lambdaNpts=0.090909.csv', ',');
 %tab = dlmread('/mnt/data/SPT_method/simu/fullcell/simus/ER9_VERYNICE_MMStack_Pos0.ome_Simple Segmentation_cleaned_binary_poly.poly_0.05_15/trajs.csv');
 %tab = dlmread('/mnt/data/SPT_method/simu/fullcell/simus/regions/1/trajs.csv', ',');
-tab = dlmread('/tmp/test/trajs.csv', ',');
+tab = dlmread('trajs.csv', ',');
 
 figure
 hold on

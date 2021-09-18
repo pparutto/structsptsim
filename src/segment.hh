@@ -3,7 +3,7 @@
 
 # include "point.hh"
 
-template <int N>
+template <size_t N>
 class Segment
 {
 public:
@@ -30,7 +30,7 @@ protected:
   Point<N> p2_;
 };
 
-template <int N>
+template <size_t N>
 std::ostream& operator<< (std::ostream& os, const Segment<N>& seg);
 
 #endif /// !SEGMENT_HH

@@ -37,7 +37,7 @@ gaussian_kernel(double*** res, double I0, double s, unsigned size,
 unsigned short***
 raw_image_simulator(unsigned length, unsigned width, unsigned height,
 		    double pxsize, double DT, double I0, double sigma,
-		    const TrajectoryEnsemble& trajs)
+		    const TrajectoryEnsemble<2>& trajs)
 {
   std::cout << width << " " << height << std::endl;
   unsigned short*** res = new unsigned short**[length];
@@ -58,9 +58,9 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
     gker[i] = new double[2 * ker_half + 1];
 
 
-  for (const Trajectory& traj: trajs)
+  for (const Trajectory<2>& traj: trajs)
   {
-    for (const TimedPoint& p: traj)
+    for (const TimedPoint<2>& p: traj)
     {
       int frame = (int) round(p[0] / DT);
 

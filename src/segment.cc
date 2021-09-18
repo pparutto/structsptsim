@@ -4,21 +4,21 @@
 #include <cassert>
 #include <iostream>
 
-template <int N>
+template <size_t N>
 Segment<N>::Segment(const Point<N>& p1, const Point<N>& p2)
   : p1_(p1)
   , p2_(p2)
 {
 }
 
-template <int N>
+template <size_t N>
 const Point<N>&
 Segment<N>::p1() const
 {
   return this->p1_;
 }
 
-template <int N>
+template <size_t N>
 const Point<N>&
 Segment<N>::p2() const
 {
@@ -36,7 +36,7 @@ Segment<2>::distance(const Point<2>& p) const
 	  d);
 }
 
-template <int N>
+template <size_t N>
 double
 Segment<N>::distance(const Point<N>& p) const
 {
@@ -63,7 +63,7 @@ Segment<2>::on_segment(const Point<2>& p) const
 	  p[1] >= std::min(this->p1_[1], this->p2_[1]));
 }
 
-template <int N>
+template <size_t N>
 bool
 Segment<N>::on_segment(const Point<N>& p) const
 {
@@ -71,11 +71,21 @@ Segment<N>::on_segment(const Point<N>& p) const
   return false;
 }
 
-template <int N>
+template <size_t N>
+Point<N> minus(const Point<N>& p1, const Point<N>& p2)
+{
+  Point<N> res = p1;
+  for (size_t i = 0; i < N; ++i)
+    res[i] -= p2[i];
+  return res;
+}
+
+template <size_t N>
 Vec<N>
 Segment<N>::vector() const
 {
-  return this->p2_ - this->p1_;
+  Point<N> res = minus(this->p2_, this->p1_); //this->p2_ - this->p1_;
+  return (Vec<N>) res;//this->p2_ - this->p1_;
 }
 
 template <>
@@ -83,25 +93,25 @@ Vec<2>
 Segment<2>::normal() const
 {
   Vec<2> v = this->vector();
-  double n = norm(v);
+  double n = norm<2>(v);
   return {-v[1] / n, v[0] / n};
 }
 
-template <int N>
+template <size_t N>
 Vec<N>
 Segment<N>::normal() const
 {
   return Vec<N> ();
 }
 
-template <int N>
+template <size_t N>
 Segment<N>
 Segment<N>::invert() const
 {
   return Segment<N>(this->p2_, this->p1_);
 }
 
-template <int N>
+template <size_t N>
 std::string
 Segment<N>::plot_str(const std::string& col) const
 {
@@ -131,7 +141,7 @@ Segment<2>::intersect(const Segment<2>& s1, const Segment<2>& s2)
   return false;
 }
 
-template <int N>
+template <size_t N>
 bool
 Segment<N>::intersect(const Segment<N>& s1, const Segment<N>& s2)
 {
@@ -144,16 +154,16 @@ Segment<N>::intersect(const Segment<N>& s1, const Segment<N>& s2)
 Point<2> project_on_line(const Point<2>& p, const Segment<2>& s)
 {
   // get dot product of e1, e2
-  Vec e1 = s.vector();
-  Vec e2 = Segment(p, s.p1()).vector();
-  double valDp = dot(e1, e2);
+  Vec<2> e1 = s.vector();
+  Vec<2> e2 = Segment<2>(p, s.p1()).vector();
+  double valDp = dot<2>(e1, e2);
 
-  double l = norm(e1);
+  double l = norm<2>(e1);
   return {s.p1()[0] + (valDp * e1[0]) / l,
 	  s.p1()[1] + (valDp * e1[1]) / l};
 }
 
-template <int N>
+template <size_t N>
 Point<N>
 Segment<N>::intersection_point(const Segment<N>& s1, const Segment<N>& s2)
 {
@@ -204,7 +214,7 @@ Point<2>
 Segment<2>::reflect(const Segment<2>& s1, const Segment<2>& s2)
 {
   //reflect s1 on s2
-  Point inter_p = Segment<2>::intersection_point(s1, s2);
+  Point<2> inter_p = Segment<2>::intersection_point(s1, s2);
   Vec<2> N = s2.normal();
 
   double s = (N[0] * (s1.p2()[0] - inter_p[0]) +
@@ -214,7 +224,7 @@ Segment<2>::reflect(const Segment<2>& s1, const Segment<2>& s2)
   return {s1.p2()[0] - 2 * s * N[0], s1.p2()[1] - 2 * s * N[1]};
 }
 
-template <int N>
+template <size_t N>
 Point<N>
 Segment<N>::reflect(const Segment<N>& s1, const Segment<N>& s2)
 {
@@ -223,7 +233,7 @@ Segment<N>::reflect(const Segment<N>& s1, const Segment<N>& s2)
   return Point<N> ();
 }
 
-template <int N>
+template <size_t N>
 std::ostream&
 operator<< (std::ostream& os, const Segment<N>& seg)
 {

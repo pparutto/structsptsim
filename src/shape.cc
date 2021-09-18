@@ -8,7 +8,8 @@
 #include "collider.hh"
 #include "utils.hh"
 
-Shape::~Shape()
+template <size_t N>
+Shape<N>::~Shape()
 {
 }
 
@@ -20,7 +21,7 @@ Box::Box()
 {
 }
 
-Box::Box(const Point& lower_left, const Point& upper_right)
+Box::Box(const Point<2>& lower_left, const Point<2>& upper_right)
   : lower_left_(lower_left)
   , upper_right_(upper_right)
   , width_(upper_right[0] - lower_left[0])
@@ -33,16 +34,16 @@ Box::~Box()
 }
 
 bool
-Box::inside(const Point& p) const
+Box::inside(const Point<2>& p) const
 {
   return (p[0] >= this->lower_left_[0] && p[0] <= this->upper_right_[0] &&
 	  p[1] >= this->lower_left_[1] && p[1] <= this->upper_right_[1]);
 }
 
-PointEnsemble
+PointEnsemble<2>
 Box::boundary() const
 {
-  PointEnsemble res;
+  PointEnsemble<2> res;
   res.push_back(this->lower_left_);
   res.push_back({this->lower_left_[0] + this->width_, this->lower_left_[1]});
   res.push_back(this->upper_right_);
@@ -57,13 +58,13 @@ Box::bounding_box() const
   return Box(this->lower_left_, this->upper_right_);
 }
 
-double orientation(const PointEnsemble& pts)
+double orientation(const PointEnsemble<2>& pts)
 {
   return ((pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) -
 	  (pts[2][0] - pts[0][0]) * (pts[1][1] - pts[0][1])) < 0;
 }
 
-bool within(const Segment& s, const Point p)
+bool within(const Segment<2>& s, const Point<2> p)
 {
   double mx = std::min(s.p1()[0], s.p2()[0]);
   double Mx = std::max(s.p1()[0], s.p2()[0]);
@@ -72,7 +73,7 @@ bool within(const Segment& s, const Point p)
   return p[0] >= mx && p[0] <= Mx && p[1] >= my && p[1] <= My;
 }
 
-Polygon::Polygon(const PointEnsemble& pts)
+Polygon::Polygon(const PointEnsemble<2>& pts)
   : pts_(pts)
 {
 }
@@ -82,7 +83,7 @@ Polygon::~Polygon()
 }
 
 bool
-my_colinear(const Segment& s1, const Segment& s2)
+my_colinear(const Segment<2>& s1, const Segment<2>& s2)
 {
   return colinear(s2.p1(), s2.p2(), s1.p1()) &&
     colinear(s2.p1(), s2.p2(), s1.p2()) &&
@@ -90,23 +91,23 @@ my_colinear(const Segment& s1, const Segment& s2)
 }
 
 bool
-Polygon::my_inside(const Point& p, bool border_is_inside) const
+Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 {
   double INF = 10000.0;
-  Point extreme = {p[0], INF};
-  Segment s1(p, extreme);
+  Point<2> extreme = {p[0], INF};
+  Segment<2> s1(p, extreme);
   int NONE = 0;
   int INTERSECT = 1;
   int COLIN = 2;
   int TOUCH = 3;
 
   int prev = NONE;
-  Segment s2(this->pts_[this->pts_.size()-1], this->pts_[0]);
+  Segment<2> s2(this->pts_[this->pts_.size()-1], this->pts_[0]);
   if (colinear(s2.p1(), s2.p2(), p) && !s2.on_segment(p))
     prev = COLIN;
-  else if(!s2.on_segment(p) && Segment::intersect(s1, s2))
+  else if(!s2.on_segment(p) && Segment<2>::intersect(s1, s2))
   {
-    if (Segment::intersection_point(s1, s2) == this->pts_[0])
+    if (Segment<2>::intersection_point(s1, s2) == this->pts_[0])
       prev = TOUCH;
     else
       prev = INTERSECT;
@@ -119,8 +120,8 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   while (start < this->pts_.size())
   {
     unsigned next = (start + 1) % this->pts_.size();
-    Segment s2(this->pts_[start], this->pts_[next]);
-    if (!my_colinear(s1, s2) && !Segment::intersect(s1, s2))
+    Segment<2> s2(this->pts_[start], this->pts_[next]);
+    if (!my_colinear(s1, s2) && !Segment<2>::intersect(s1, s2))
       break;
     ++start;
   }
@@ -133,7 +134,7 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   {
     int next = (i + 1) % this->pts_.size();
 
-    Segment s2(this->pts_[i], this->pts_[next]);
+    Segment<2> s2(this->pts_[i], this->pts_[next]);
 
     //   (within(s2, p) || within(s2, extreme) || within(s1, s2.p1()) || within(s1, s2.p2())) << std::endl;
     if (my_colinear(s1, s2))
@@ -152,12 +153,12 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
     }
     else if (s2.on_segment(p))
       return border_is_inside;
-    else if (Segment::intersect(s1, s2))
+    else if (Segment<2>::intersect(s1, s2))
     {
       if (start_chain < 0)
 	start_chain = i;
 
-      Point ip = Segment::intersection_point(s1, s2);
+      Point<2> ip = Segment<2>::intersection_point(s1, s2);
       if (prev != NONE && ip == this->pts_[i])
       {
 	//here we need to verify that the line does not just "touch"
@@ -216,23 +217,89 @@ Polygon::my_inside(const Point& p, bool border_is_inside) const
   return count % 2 == 1;
 }
 
-bool
-Polygon::inside(const Point& p) const
+
+bool feq(double a, double b, double tol)
 {
-  return this->my_inside(p, true);
+  return std::abs(a - b) < tol;
+}
+
+bool
+Polygon::my_inside2(const Point<2>& p, bool border_is_inside) const
+{
+  int n = this->pts_.size();
+  double ax = 0.0;
+  double ay = this->pts_[n-2][0];
+  double bx = this->pts_[n-1][0] - p[0];
+  double by = this->pts_[n-1][1] - p[1];
+
+  bool lup = by > ay;
+  for (int i = 0; i < n; ++i)
+  {
+    ax = bx;
+    ay = by;
+    bx = this->pts_[i][0] - p[0];
+    by = this->pts_[i][1] - p[1];
+
+    if (feq(ay, by, EPSILON))
+      continue;
+    lup = by > ay;
+  }
+
+  int depth = 0;
+  for (int i = 0; i < n; ++i)
+  {
+    ax = bx;
+    ay = by;
+    bx = this->pts_[i][0] - p[0];
+    by = this->pts_[i][1] - p[1];
+
+    if ((ay < 0 && by < 0) ||
+	(ay > 0 && by > 0) ||
+	(ax < 0 && bx < 0))
+      continue;
+
+    if (feq(ay, by, EPSILON) && std::min(ax, bx) <= 0)
+      return true;
+
+    if (feq(ay, by, EPSILON))
+      continue;
+
+    double lx = ax + (bx - ax) * (-ay) / (by - ay);
+    if (feq(lx, 0, EPSILON))
+      return border_is_inside;
+
+    if (lx > 0)
+      ++depth;
+    if (feq(ay, 0, EPSILON) && lup && by > ay)
+      --depth;
+    if (feq(ay, 0, EPSILON) && !lup && by < ay)
+      --depth;
+
+    lup = by > ay;
+  }
+
+
+  return depth % 2 == 1;
+}
+
+
+bool
+Polygon::inside(const Point<2>& p) const
+{
+  return this->my_inside2(p, true);
 }
 
 bool
 Polygon::inside(const Polygon& poly) const
 {
-  for (const Point& pt: this->pts_)
+  for (const Point<2>& pt: this->pts_)
     if (!poly.inside(pt))
       return false;
 
   return true;
 }
 
-PointEnsemble
+PointEnsemble<2>
 Polygon::boundary() const
 {
   return this->pts_;
@@ -241,10 +308,10 @@ Polygon::boundary() const
 Box
 Polygon::bounding_box() const
 {
-  Point ll = {(double) NAN, (double) NAN};
-  Point ur = {(double) NAN, (double) NAN};
+  Point<2> ll = {(double) NAN, (double) NAN};
+  Point<2> ur = {(double) NAN, (double) NAN};
 
-  for (const Point& p: this->pts_)
+  for (const Point<2>& p: this->pts_)
   {
     ll[0] = std::isnan(ll[0]) || p[0] < ll[0]? p[0] : ll[0];
     ll[1] = std::isnan(ll[1]) || p[1] < ll[1]? p[1] : ll[1];
@@ -265,24 +332,24 @@ Polygon::apply_pxsize(double pxsize)
   }
 }
 
-Segment
-Polygon::intersect_with(const Segment& s1) const
+Segment<2>
+Polygon::intersect_with(const Segment<2>& s1) const
 {
   bool already = false;
-  Segment seg({0, 0}, {0, 0});
-  Point inter_p = {0, 0};
+  Segment<2> seg({0, 0}, {0, 0});
+  Point<2> inter_p = {0, 0};
   int i = 0;
   do
   {
     int next = (i + 1) % this->pts_.size();
 
-    Segment s2(this->pts_[i], this->pts_[next]);
+    Segment<2> s2(this->pts_[i], this->pts_[next]);
 
-    if (!s2.on_segment(s1.p1()) && Segment::intersect(s1, s2))
+    if (!s2.on_segment(s1.p1()) && Segment<2>::intersect(s1, s2))
     {
       if (already)
       {
-	Point pp = Segment::intersection_point(s1, s2);
+	Point<2> pp = Segment<2>::intersection_point(s1, s2);
 	if (dist(s1.p1(), pp) < dist(s1.p1(), inter_p))
 	{
 	  seg = s2;
@@ -292,7 +359,7 @@ Polygon::intersect_with(const Segment& s1) const
       else
       {
 	already = true;
-	inter_p = Segment::intersection_point(s1, s2);
+	inter_p = Segment<2>::intersection_point(s1, s2);
 	seg = s2;
       }
     }
@@ -347,19 +414,19 @@ CompoundPolygon::~CompoundPolygon()
 }
 
 bool
-CompoundPolygon::inside(const Point& p) const
+CompoundPolygon::inside(const Point<2>& p) const
 {
   if (!this->base_.inside(p))
     return false;
 
   for (const Polygon& poly: this->diffs_)
-    if (poly.my_inside(p, false))
+    if (poly.my_inside2(p, false))
       return false;
 
   return true;
 }
 
-PointEnsemble
+PointEnsemble<2>
 CompoundPolygon::boundary() const
 {
   return this->base_.boundary();
@@ -371,7 +438,7 @@ CompoundPolygon::bounding_box() const
   return this->base_.bounding_box();
 }
 
-const PointEnsemble&
+const PointEnsemble<2>&
 CompoundPolygon::pts() const
 {
   return this->base_.pts();
@@ -385,8 +452,8 @@ CompoundPolygon::apply_pxsize(double pxsize)
     this->diffs_[i].apply_pxsize(pxsize);
 }
 
-Segment
-CompoundPolygon::intersect_with(const Segment& s1) const
+Segment<2>
+CompoundPolygon::intersect_with(const Segment<2>& s1) const
 {
   bool in_diff = false;
   const Polygon* diff = nullptr;
@@ -396,7 +463,7 @@ CompoundPolygon::intersect_with(const Segment& s1) const
 
   for (const Polygon& poly: this->diffs_)
   {
-    if (poly.my_inside(s1.p2(), false))
+    if (poly.my_inside2(s1.p2(), false))
     {
       in_diff = true;
       diff = &poly;
@@ -404,7 +471,7 @@ CompoundPolygon::intersect_with(const Segment& s1) const
     }
   }
 
-  Segment res({0, 0}, {0, 0});
+  Segment<2> res({0, 0}, {0, 0});
   if (!in_diff)
     res = this->base_.intersect_with(s1);
   else
@@ -455,7 +522,7 @@ MultiplePolygon::polys() const
 }
 
 bool
-MultiplePolygon::inside(const Point& p) const
+MultiplePolygon::inside(const Point<2>& p) const
 {
   for (const CompoundPolygon& poly: this->polys_)
     if (poly.inside(p))
@@ -463,7 +530,7 @@ MultiplePolygon::inside(const Point& p) const
   return false;
 }
 
-PointEnsemble
+PointEnsemble<2>
 MultiplePolygon::boundary() const
 {
   return {};
@@ -485,8 +552,8 @@ MultiplePolygon::empty() const
 std::ostream&
 operator<< (std::ostream& os, const Box& box)
 {
-  Point ll = box.lower_left();
-  Point tr = box.upper_right();
+  Point<2> ll = box.lower_left();
+  Point<2> tr = box.upper_right();
   os << ll[0] << " " << ll[1] << ";"
      << tr[0] << " " << tr[1] << std::endl;
   return os;
@@ -495,7 +562,7 @@ operator<< (std::ostream& os, const Box& box)
 std::ostream&
 operator<< (std::ostream& os, const Polygon& poly)
 {
-  for (const Point& p: poly.pts())
+  for (const Point<2>& p: poly.pts())
     os << p << ";" << std::endl;
   os << poly.pts()[0] << ";" << std::endl;
   return os;

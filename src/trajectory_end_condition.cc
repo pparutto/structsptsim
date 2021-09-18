@@ -3,126 +3,143 @@
 #include <iostream>
 #include <cmath>
 
-NumberPointsEndCondition::NumberPointsEndCondition(unsigned max_npts)
+template <size_t N>
+NumberPointsEndCondition<N>::NumberPointsEndCondition(unsigned max_npts)
   : max_npts_(max_npts)
 {
 }
 
+template <size_t N>
 bool
-NumberPointsEndCondition::evaluate(const Trajectory& traj)
+NumberPointsEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
   return traj.size() >= this->max_npts_;
 }
 
+template <size_t N>
 void
-NumberPointsEndCondition::update_max_npts(unsigned new_max)
+NumberPointsEndCondition<N>::update_max_npts(unsigned new_max)
 {
   this->max_npts_ = new_max;
 }
 
-NumberPointsEndCondition*
-NumberPointsEndCondition::clone_reset()
+template <size_t N>
+NumberPointsEndCondition<N>*
+NumberPointsEndCondition<N>::clone_reset()
 {
-  return new NumberPointsEndCondition(this->max_npts_);
+  return new NumberPointsEndCondition<N>(this->max_npts_);
 }
 
-NumberPointsExpEndCondition::
+template <size_t N>
+NumberPointsExpEndCondition<N>::
 NumberPointsExpEndCondition(std::exponential_distribution<double>& distrib,
 			    std::mt19937_64& mt)
-  : NumberPointsEndCondition(round(distrib(mt)))
+  : NumberPointsEndCondition<N>(round(distrib(mt)))
   , distrib_(distrib)
   , mt_(mt)
 {
 }
 
-NumberPointsExpEndCondition*
-NumberPointsExpEndCondition::clone_reset()
+template <size_t N>
+NumberPointsExpEndCondition<N>*
+NumberPointsExpEndCondition<N>::clone_reset()
 {
-  return new NumberPointsExpEndCondition(this->distrib_, this->mt_);
+  return new NumberPointsExpEndCondition<N>(this->distrib_, this->mt_);
 }
 
-EscapeEndCondition::
-EscapeEndCondition(const Shape& reg)
+template <size_t N>
+EscapeEndCondition<N>::
+EscapeEndCondition(const Shape<N>& reg)
   : reg_(reg)
 {
 }
 
+template <size_t N>
 bool
-EscapeEndCondition::evaluate(const Trajectory& traj)
+EscapeEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
   return !this->reg_.inside(to_point(traj.at(traj.size() - 1)));
 }
 
-EscapeEndCondition*
-EscapeEndCondition::clone_reset()
+template <size_t N>
+EscapeEndCondition<N>*
+EscapeEndCondition<N>::clone_reset()
 {
-  return new EscapeEndCondition(this->reg_);
+  return new EscapeEndCondition<N>(this->reg_);
 }
 
-EnterRegionEndCondition::EnterRegionEndCondition(const Shape& reg)
+template <size_t N>
+EnterRegionEndCondition<N>::EnterRegionEndCondition(const Shape<N>& reg)
   : reg_(reg)
 {
 }
 
+template <size_t N>
 bool
-EnterRegionEndCondition::evaluate(const Trajectory& traj)
+EnterRegionEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
   return this->reg_.inside(to_point(traj.at(traj.size() - 1)));
 }
 
-EnterRegionEndCondition*
-EnterRegionEndCondition::clone_reset()
+template <size_t N>
+EnterRegionEndCondition<N>*
+EnterRegionEndCondition<N>::clone_reset()
 {
-  return new EnterRegionEndCondition(this->reg_);
+  return new EnterRegionEndCondition<N>(this->reg_);
 }
 
-
-CompoundEndCondition::
-CompoundEndCondition(std::vector<TrajectoryEndCondition*>& end_conds)
+template <size_t N>
+CompoundEndCondition<N>::
+CompoundEndCondition(std::vector<TrajectoryEndCondition<N>*>& end_conds)
   : end_conds_(end_conds)
 {
 }
 
-CompoundEndCondition::~CompoundEndCondition()
+template <size_t N>
+CompoundEndCondition<N>::~CompoundEndCondition()
 {
-  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+  for (TrajectoryEndCondition<N>* end_cond: this->end_conds_)
     delete end_cond;
 }
 
-
+template <size_t N>
 bool
-CompoundEndCondition::evaluate(const Trajectory& traj)
+CompoundEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
-  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+  for (TrajectoryEndCondition<N>* end_cond: this->end_conds_)
     if (end_cond->evaluate(traj))
       return true;
   return false;
 }
 
-CompoundEndCondition*
-CompoundEndCondition::clone_reset()
+template <size_t N>
+CompoundEndCondition<N>*
+CompoundEndCondition<N>::clone_reset()
 {
-  std::vector<TrajectoryEndCondition*> new_conds;
-  for (TrajectoryEndCondition* end_cond: this->end_conds_)
+  std::vector<TrajectoryEndCondition<N>*> new_conds;
+  for (TrajectoryEndCondition<N>* end_cond: this->end_conds_)
     new_conds.push_back(end_cond->clone_reset());
-  return new CompoundEndCondition(new_conds);
+  return new CompoundEndCondition<N>(new_conds);
 }
 
 
-TrajectoryEndConditionFactory::
-TrajectoryEndConditionFactory(TrajectoryEndCondition& template_condition)
+template <size_t N>
+TrajectoryEndConditionFactory<N>::
+TrajectoryEndConditionFactory(TrajectoryEndCondition<N>& template_condition)
   : template_condition_(template_condition)
 {
 }
 
-TrajectoryEndCondition*
-TrajectoryEndConditionFactory::get()
+template <size_t N>
+TrajectoryEndCondition<N>*
+TrajectoryEndConditionFactory<N>::get()
 {
   return this->template_condition_.clone_reset();
 }
 
-TrajectoryEndCondition&
-TrajectoryEndConditionFactory::template_condition()
+template <size_t N>
+TrajectoryEndCondition<N>&
+TrajectoryEndConditionFactory<N>::template_condition()
 {
   return this->template_condition_;
 }

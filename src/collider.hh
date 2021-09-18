@@ -3,67 +3,75 @@
 
 # include "shape.hh"
 
+template <size_t N>
 class CollisionException: public std::exception
 {
 public:
-  CollisionException (const Segment& s, std::string what);
+  CollisionException (const Segment<N>& s, std::string what);
   ~CollisionException() = default;
   virtual const char* what() const noexcept override;
 
 protected:
-  const Segment s_;
+  const Segment<N> s_;
   const std::string what_;
 };
 
+template <size_t N>
 class Collider
 {
 public:
   virtual ~Collider();
 
-  virtual bool outside(const Point& p) const = 0;
-  virtual Point collide(const Point& p1, const Point& p2) const = 0;
+  virtual bool outside(const Point<N>& p) const = 0;
+  virtual Point<N> collide(const Point<N>& p1,
+			   const Point<N>& p2) const = 0;
 };
 
-class NoneCollider: public Collider
+template <size_t N>
+class NoneCollider: public Collider<N>
 {
 public:
   virtual ~NoneCollider();
-  virtual bool outside(const Point& p) const override;
-  virtual Point collide(const Point& p1, const Point& p2) const override;
+  virtual bool outside(const Point<N>& p) const override;
+  virtual Point<N> collide(const Point<N>& p1,
+			   const Point<N>& p2) const override;
 };
 
-class BoxCollider: public Collider
+class BoxCollider: public Collider<2>
 {
 public:
   BoxCollider(const Box& box);
   virtual ~BoxCollider();
 
-  virtual bool outside(const Point& p) const override;
-  virtual Point collide(const Point& p1, const Point& p2) const override;
+  virtual bool outside(const Point<2>& p) const override;
+  virtual Point<2> collide(const Point<2>& p1,
+			   const Point<2>& p2) const override;
 protected:
   Box box_;
 };
 
-class PolygonCollider: public Collider
+class PolygonCollider: public Collider<2>
 {
 public:
   PolygonCollider(const Polygon& poly);
   virtual ~PolygonCollider();
 
-  virtual bool outside(const Point& p) const override;
-  virtual Point collide(const Point& p1, const Point& p2) const override;
+  virtual bool outside(const Point<2>& p) const override;
+  virtual Point<2> collide(const Point<2>& p1,
+			   const Point<2>& p2) const override;
 protected:
   const Polygon& poly_;
 };
 
-class MultiplePolygonCollider: public Collider
+class MultiplePolygonCollider: public Collider<2>
 {
 public:
   MultiplePolygonCollider(const MultiplePolygon& polys);
   virtual ~MultiplePolygonCollider();
 
-  virtual bool outside(const Point& p) const override;
-  virtual Point collide(const Point& p1, const Point& p2) const override;
+  virtual bool outside(const Point<2>& p) const override;
+  virtual Point<2> collide(const Point<2>& p1,
+			   const Point<2>& p2) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
 };
