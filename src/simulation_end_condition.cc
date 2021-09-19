@@ -53,3 +53,7 @@ NumberFramesSimulationEndCondition<N>::evaluate(const Simulation<N>& sim)
   ++this->cur_frame_;
   return false;
 }
+
+
+template class NumberTrajectoriesSimulationEndCondition<2>;
+template class NumberFramesSimulationEndCondition<2>;

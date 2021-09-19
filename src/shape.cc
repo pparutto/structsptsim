@@ -480,7 +480,7 @@ CompoundPolygon::intersect_with(const Segment<2>& s1) const
   //i.e toward the starting point of s1
 
   if (dot(s1.vector(), res.normal()) > 0)
-    res = res.invert();
+    res.invert();
 
   return res;
 

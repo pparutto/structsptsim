@@ -16,10 +16,9 @@ public:
   bool on_segment(const Point<N>& p) const;
   Vec<N> vector() const;
   Vec<N> normal() const;
+  void invert();
 
-  Segment<N> invert() const;
-
-  std::string plot_str(const std::string& col) const;
+  //std::string plot_str(const std::string& col) const;
 
   static bool intersect(const Segment<N>& s1, const Segment<N>& s2);
   static Point<N> intersection_point(const Segment<N>& s1,

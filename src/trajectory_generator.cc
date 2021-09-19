@@ -76,7 +76,7 @@ void
 TrajectoryGenerator<N>::generate_step()
 {
   assert(!this->traj_rec_->traj().empty());
-  Point<N> p1 = to_point(this->traj_rec_->last_simu_point());
+  Point<N> p1 = to_point<N>(this->traj_rec_->last_simu_point());
   Point<N> p2 = this->motion_model_.step_euler(p1);
 
   //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
@@ -167,3 +167,7 @@ TrajectoryGeneratorFactory<N>::traj_end_facto()
 {
   return this->traj_end_facto_;
 }
+
+
+template class TrajectoryGenerator<2>;
+template class TrajectoryGeneratorFactory<2>;

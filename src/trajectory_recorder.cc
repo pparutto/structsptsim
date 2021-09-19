@@ -100,3 +100,7 @@ TrajectoryRecorderFactory<N>::get(double t0)
 {
   return this->recorder_template_.clone_reset(t0);
 }
+
+template class FullTrajectoryRecorder<2>;
+template class SubsambleTrajectoryRecorder<2>;
+template class TrajectoryRecorderFactory<2>;

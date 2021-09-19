@@ -20,7 +20,7 @@
 #include <tiffio.h>
 #include "raw_image_simulator.hh"
 
-void generate_tif_stack(const TrajectoryEnsemble& trajs, double width,
+void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, double width,
 			double height, unsigned length, double pxsize,
 			double DT, const std::string& outfile)
 {
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 
   std::cout << "Parsing polygon" << std::endl;
 
-  Shape* poly = nullptr;
+  Shape<2>* poly = nullptr;
   if (p_opts.use_poly)
   {
     MultiplePolygon* polys =
@@ -335,11 +335,11 @@ int main(int argc, char** argv)
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
 
-  TrajectoryStartGenerator* start_gen = nullptr;
+  TrajectoryStartGenerator<2>* start_gen = nullptr;
   if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {
     std::cout << "Start point generator: Fixed" << std::endl;
-    start_gen = new FixedPointTrajectoryStartGenerator({0.0, 0.0});
+    start_gen = new FixedPointTrajectoryStartGenerator<2>({0.0, 0.0});
   }
   else if (p_opts.use_start_reg)
   {
@@ -358,85 +358,85 @@ int main(int argc, char** argv)
   }
 
 
-  Motion* motion = nullptr;
+  Motion<2>* motion = nullptr;
   CumDistribFunction* ivel_cdf = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
-    motion = new BrownianMotion(mt, p_opts.D, p_opts.dt);
+    motion = new BrownianMotion<2>(mt, p_opts.D, p_opts.dt);
   else if (p_opts.motion_type == MotionType::DISTRIB)
   {
     ivel_cdf = new CumDistribFunction(mt, p_opts.cdf_path);
     motion = new EmpiricalMotion(mt, *ivel_cdf, p_opts.DT);
   }
 
-  TrajectoryEndCondition* traj_end_cond = nullptr;
+  TrajectoryEndCondition<2>* traj_end_cond = nullptr;
   if (p_opts.tr_len_type == EXP)
   {
     std::cout << "Trajectory end condition: exponential npts (lambda="
 	      << (double) p_opts.pdist.lambda() << ")" << std::endl;
-    traj_end_cond = new NumberPointsExpEndCondition(p_opts.pdist, mt);
+    traj_end_cond = new NumberPointsExpEndCondition<2>(p_opts.pdist, mt);
   }
   else if (p_opts.tr_len_type == FIXED)
   {
     std::cout << "Trajectory end condition: npts="
 	      << p_opts.Npts << std::endl;
-    traj_end_cond = new NumberPointsEndCondition(p_opts.Npts);
+    traj_end_cond = new NumberPointsEndCondition<2>(p_opts.Npts);
   }
   else if (p_opts.tr_len_type == REG)
   {
     std::cout << "Trajectory end condition: enter region" << std::endl;
-    traj_end_cond = new EnterRegionEndCondition(p_opts.stop_reg);
+    traj_end_cond = new EnterRegionEndCondition<2>(p_opts.stop_reg);
   }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {
     std::cout << "Trajectory end condition: empirical" << std::endl;
-    traj_end_cond = new NumberPointsEndCondition(0);
+    traj_end_cond = new NumberPointsEndCondition<2>(0);
   }
   else
     assert(false);
 
   if (!p_opts.use_poly)
   {
-    std::vector<TrajectoryEndCondition*> conds;
+    std::vector<TrajectoryEndCondition<2>*> conds;
     conds.push_back(traj_end_cond);
-    conds.push_back(new EscapeEndCondition(*poly));
-    traj_end_cond = new CompoundEndCondition(conds);
+    conds.push_back(new EscapeEndCondition<2>(*poly));
+    traj_end_cond = new CompoundEndCondition<2>(conds);
   }
 
-  TrajectoryEndConditionFactory traj_end_cond_facto(*traj_end_cond);
+  TrajectoryEndConditionFactory<2> traj_end_cond_facto(*traj_end_cond);
 
-  TrajectoryRecorder* traj_rec = nullptr;
+  TrajectoryRecorder<2>* traj_rec = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
     traj_rec =
-      new SubsambleTrajectoryRecorder(0.0, p_opts.DT, p_opts.t_ratio());
+      new SubsambleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio());
   else if (p_opts.motion_type == MotionType::DISTRIB)
-    traj_rec = new FullTrajectoryRecorder(0.0, p_opts.DT);
+    traj_rec = new FullTrajectoryRecorder<2>(0.0, p_opts.DT);
 
-  TrajectoryRecorderFactory traj_rec_facto(*traj_rec);
+  TrajectoryRecorderFactory<2> traj_rec_facto(*traj_rec);
 
 
-  Collider* collider = nullptr;
+  Collider<2>* collider = nullptr;
   if (p_opts.use_poly)
     collider =
       new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly));
   else
-    collider = new NoneCollider();
+    collider = new NoneCollider<2>();
 
-  TrajectoryGeneratorFactory traj_gen_facto(*start_gen, *motion,
-					    traj_end_cond_facto, traj_rec_facto,
-					    *collider);
+  TrajectoryGeneratorFactory<2>
+    traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
+		   *collider);
 
-  SimulationEndCondition* end_sim = nullptr;
-  Simulation* sim = nullptr;
+  SimulationEndCondition<2>* end_sim = nullptr;
+  Simulation<2>* sim = nullptr;
   if (p_opts.tr_gen_type == TrajGenType::NTRAJS)
   {
-    end_sim = new NumberTrajectoriesSimulationEndCondition(p_opts.Ntrajs);
-    sim = new SimulationTrajectory(traj_gen_facto, *end_sim);
+    end_sim = new NumberTrajectoriesSimulationEndCondition<2>(p_opts.Ntrajs);
+    sim = new SimulationTrajectory<2>(traj_gen_facto, *end_sim);
   }
   else if (p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
     std::cout << "Density x fov area = " << p_opts.num_particles()
 	      << " spots per frame" << std::endl;
-    end_sim = new NumberFramesSimulationEndCondition((int) p_opts.Nframes);
+    end_sim = new NumberFramesSimulationEndCondition<2>((int) p_opts.Nframes);
     sim = new SimulationDensity(traj_gen_facto, *end_sim, p_opts.num_particles(),
 				p_opts.DT, p_opts.t_ratio());
   }
@@ -453,7 +453,7 @@ int main(int argc, char** argv)
 
 
   save_params_csv(p_opts.outdir + "/params.csv", p_opts);
-  save_trajectories_csv(p_opts.outdir + "/trajs.csv", sim->trajs());
+  save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
 
   delete traj_end_cond;
 
@@ -466,7 +466,7 @@ int main(int argc, char** argv)
       length = p_opts.Nframes;
     else
     {
-      for (const Trajectory& traj: sim->trajs())
+      for (const Trajectory<2>& traj: sim->trajs())
 	length = traj.size() > length ? traj.size() : length;
     }
     generate_tif_stack(sim->trajs(), p_opts.width, p_opts.height,

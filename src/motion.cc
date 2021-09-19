@@ -52,3 +52,5 @@ EmpiricalMotion::subsample() const
 {
   return false;
 }
+
+template class BrownianMotion<2>;

@@ -58,7 +58,7 @@ template <size_t N>
 bool
 EscapeEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
-  return !this->reg_.inside(to_point(traj.at(traj.size() - 1)));
+  return !this->reg_.inside(to_point<N>(traj.at(traj.size() - 1)));
 }
 
 template <size_t N>
@@ -78,7 +78,7 @@ template <size_t N>
 bool
 EnterRegionEndCondition<N>::evaluate(const Trajectory<N>& traj)
 {
-  return this->reg_.inside(to_point(traj.at(traj.size() - 1)));
+  return this->reg_.inside(to_point<N>(traj.at(traj.size() - 1)));
 }
 
 template <size_t N>
@@ -143,3 +143,11 @@ TrajectoryEndConditionFactory<N>::template_condition()
 {
   return this->template_condition_;
 }
+
+
+template class NumberPointsEndCondition<2>;
+template class NumberPointsExpEndCondition<2>;
+template class EscapeEndCondition<2>;
+template class EnterRegionEndCondition<2>;
+template class CompoundEndCondition<2>;
+template class TrajectoryEndConditionFactory<2>;

@@ -2,38 +2,8 @@
 
 #include <cassert>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 
 #include "utils.hh"
-
-template <size_t N>
-void
-save_trajectories_csv(const std::string& fname, const TrajectoryEnsemble<N>& trajs)
-{
-  std::ofstream f;
-  f.open(fname);
-
-  if (!f.is_open())
-  {
-    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
-    return;
-  }
-
-  int cpt = 0;
-  for (const Trajectory<N>& traj: trajs)
-  {
-    for (const TimedPoint<N>& p: traj)
-    {
-      f << cpt;
-      for (size_t i = 0; i < N + 1; ++i)
-	f << "," << traj[i];
-      f << std::endl;
-    }
-    ++cpt;
-  }
-  f.close();
-}
 
 void
 save_params_csv(const std::string& fname, const ProgramOptions opts)

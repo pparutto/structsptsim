@@ -5,6 +5,9 @@
 # include <map>
 # include <string>
 
+# include <fstream>
+# include <sstream>
+
 # include "shape.hh"
 # include "trajectory.hh"
 
@@ -71,11 +74,6 @@ struct ProgramOptions
   }
 };
 
-
-template <size_t N>
-void save_trajectories_csv(const std::string& fname,
-			   const TrajectoryEnsemble<N>& trajs);
-
 void save_params_csv(const std::string& fname,
 		     const ProgramOptions opts);
 
@@ -96,5 +94,34 @@ void save_poly_txt(const CompoundPolygon& poly, const std::string& fname);
 TrajectoryCharacsMap load_characs(const std::string& fname);
 
 Box parse_box(const std::string& box_line);
+
+template <size_t N>
+void save_trajectories_csv(const std::string& fname,
+			   const TrajectoryEnsemble<N>& trajs)
+{
+  std::ofstream f;
+  f.open(fname);
+
+  if (!f.is_open())
+  {
+    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
+    return;
+  }
+
+  int cpt = 0;
+  for (const Trajectory<N>& traj: trajs)
+  {
+    for (const TimedPoint<N>& p: traj)
+    {
+      f << cpt;
+      for (size_t i = 0; i < N + 1; ++i)
+	f << "," << p[i];
+      f << std::endl;
+    }
+    ++cpt;
+  }
+  f.close();
+}
+
 
 #endif /// !IO_HH

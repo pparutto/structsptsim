@@ -180,3 +180,7 @@ MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 
   throw CollisionException(Segment<2>(p1, p2), "did not collide");
 }
+
+
+template class CollisionException<2>;
+template class NoneCollider<2>;

@@ -14,22 +14,23 @@ int main(int argc, char** argv)
   std::random_device rd;
   std::mt19937_64 mt(rd());
 
-  FixedPointTrajectoryStartGenerator start_gen({10, 10});
+  FixedPointTrajectoryStartGenerator<2> start_gen({10, 10});
 
-  NumberPointsEndCondition end_cond(5);
-  TrajectoryEndConditionFactory traj_end_cond_facto(end_cond);
+  NumberPointsEndCondition<2> end_cond(5);
+  TrajectoryEndConditionFactory<2> traj_end_cond_facto(end_cond);
 
-  BrownianMotion bm(mt, D, dt);
+  BrownianMotion<2> bm(mt, D, dt);
 
-  FullTrajectoryRecorder traj_rec(0.0, dt);
-  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
+  FullTrajectoryRecorder<2> traj_rec(0.0, dt);
+  TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
-  NoneCollider collider;
+  NoneCollider<2> collider;
 
-  TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
-					    traj_rec_facto, collider);
+  TrajectoryGeneratorFactory<2>
+    traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
+		   collider);
 
-  TrajectoryGenerator* traj_gen = traj_gen_facto.get(0.0);
+  TrajectoryGenerator<2>* traj_gen = traj_gen_facto.get(0.0);
 
   traj_gen->init();
   std::cout << traj_gen->get()[0] << std::endl;

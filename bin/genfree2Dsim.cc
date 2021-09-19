@@ -128,36 +128,37 @@ int main(int argc, char** argv)
 
   RandomBoxTrajectoryStartGenerator start_gen(mt, simulation_region);
 
-  std::vector<TrajectoryEndCondition*> end_conds;
+  std::vector<TrajectoryEndCondition<2>*> end_conds;
   if (fixed_size)
-      end_conds.push_back(new NumberPointsEndCondition(exp_lambda));
+    end_conds.push_back(new NumberPointsEndCondition<2>(exp_lambda));
   else
-    end_conds.push_back(new NumberPointsExpEndCondition(pdist, mt));
+    end_conds.push_back(new NumberPointsExpEndCondition<2>(pdist, mt));
 
-  end_conds.push_back(new EscapeEndCondition(simulation_region));
-  CompoundEndCondition traj_end_cond(end_conds);
-  TrajectoryEndConditionFactory traj_end_cond_facto(traj_end_cond);
+  end_conds.push_back(new EscapeEndCondition<2>(simulation_region));
+  CompoundEndCondition<2> traj_end_cond(end_conds);
+  TrajectoryEndConditionFactory<2> traj_end_cond_facto(traj_end_cond);
 
-  BrownianMotion bm(mt, D, dt);
+  BrownianMotion<2> bm(mt, D, dt);
 
   unsigned t_ratio = (unsigned) (DT / dt);
-  SubsambleTrajectoryRecorder traj_rec(0.0, DT, t_ratio);
-  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
+  SubsambleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
+  TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
-  NumberFramesSimulationEndCondition end_sim((int) length);
+  NumberFramesSimulationEndCondition<2> end_sim((int) length);
 
-  NoneCollider collider;
+  NoneCollider<2> collider;
 
-  TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
-					    traj_rec_facto, collider);
+  TrajectoryGeneratorFactory<2>
+    traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
+		   collider);
 
   unsigned n_particles = (unsigned) width * height * density;
   std::cout << "Particles per frame: " << n_particles << std::endl;
-  SimulationDensity sim(traj_gen_facto, end_sim, n_particles, DT, t_ratio);
+  SimulationDensity<2> sim(traj_gen_facto, end_sim, n_particles, DT, t_ratio);
 
   sim.run();
 
-  save_trajectories_csv(outdir + "/trajs.csv", sim.trajs());
+  save_trajectories_csv<2>(outdir + "/trajs.csv", sim.trajs());
 
   std::ofstream f;
   f.open(outdir + "/parameters.csv");

@@ -199,3 +199,7 @@ SimulationEmpirical::run()
     }
   }
 }
+
+
+template class SimulationTrajectory<2>;
+template class SimulationDensity<2>;

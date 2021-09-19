@@ -143,3 +143,5 @@ MultiplePolysRandomTrajectoryStartGenerator::generate()
       return this->poly_gens_[i].generate();
   return {};
 }
+
+template class FixedPointTrajectoryStartGenerator<2>;

@@ -72,20 +72,10 @@ Segment<N>::on_segment(const Point<N>& p) const
 }
 
 template <size_t N>
-Point<N> minus(const Point<N>& p1, const Point<N>& p2)
-{
-  Point<N> res = p1;
-  for (size_t i = 0; i < N; ++i)
-    res[i] -= p2[i];
-  return res;
-}
-
-template <size_t N>
 Vec<N>
 Segment<N>::vector() const
 {
-  Point<N> res = minus(this->p2_, this->p1_); //this->p2_ - this->p1_;
-  return (Vec<N>) res;//this->p2_ - this->p1_;
+  return this->p2_ - this->p1_;
 }
 
 template <>
@@ -105,19 +95,21 @@ Segment<N>::normal() const
 }
 
 template <size_t N>
-Segment<N>
-Segment<N>::invert() const
+void
+Segment<N>::invert()
 {
-  return Segment<N>(this->p2_, this->p1_);
+  Point<N> tmp = this->p1_;
+  this->p1_= this->p2_;
+  this->p2_ = tmp;
 }
 
-template <size_t N>
-std::string
-Segment<N>::plot_str(const std::string& col) const
-{
-  return "plot([" + this->p1_ + "], [" +
-    this->p2_ + "], 'LineWidth', 2, 'Color', '" + col + "');";
-}
+// template <size_t N>
+// std::string
+// Segment<N>::plot_str(const std::string& col) const
+// {
+//   return "plot([" + this->p1_ + "], [" +
+//     this->p2_ + "], 'LineWidth', 2, 'Color', '" + col + "');";
+// }
 
 template <>
 bool
@@ -240,3 +232,5 @@ operator<< (std::ostream& os, const Segment<N>& seg)
   os << seg.p1() << "; " << seg.p2();
   return os;
 }
+
+template class Segment<2>;

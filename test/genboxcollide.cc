@@ -21,24 +21,25 @@ int main(int argc, char** argv)
   int max_npts = 2000;
   int max_ntrajs = 1;
 
-  FixedPointTrajectoryStartGenerator start_gen =
-    FixedPointTrajectoryStartGenerator({10.0, 10.0});
-  BrownianMotion bm(mt, D, dt);
-  NumberPointsEndCondition traj_end_cond(max_npts);
-  TrajectoryEndConditionFactory traj_end_cond_facto(traj_end_cond);
-  FullTrajectoryRecorder traj_rec(0.0, DT);
-  TrajectoryRecorderFactory traj_rec_facto(traj_rec);
-  NumberTrajectoriesSimulationEndCondition end_sim(max_ntrajs);
+  FixedPointTrajectoryStartGenerator<2> start_gen =
+    FixedPointTrajectoryStartGenerator<2>({10.0, 10.0});
+  BrownianMotion<2> bm(mt, D, dt);
+  NumberPointsEndCondition<2> traj_end_cond(max_npts);
+  TrajectoryEndConditionFactory<2> traj_end_cond_facto(traj_end_cond);
+  FullTrajectoryRecorder<2> traj_rec(0.0, DT);
+  TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
+  NumberTrajectoriesSimulationEndCondition<2> end_sim(max_ntrajs);
   BoxCollider bcollider(sim_box);
 
-  TrajectoryGeneratorFactory traj_gen_facto(start_gen, bm, traj_end_cond_facto,
-					    traj_rec_facto, bcollider);
+  TrajectoryGeneratorFactory<2>
+    traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
+		   bcollider);
 
-  SimulationTrajectory sim(traj_gen_facto, end_sim);
+  SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
 
   sim.run();
 
-  save_trajectories_csv("/tmp/trajs.csv", sim.trajs());
+  save_trajectories_csv<2>("/tmp/trajs.csv", sim.trajs());
 
   std::cout << "DONE" << std::endl;
 }

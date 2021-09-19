@@ -15,5 +15,4 @@ add_library(libsim
   trajectory_generator.cc
   trajectory_recorder.cc
   trajectory_start_generator.cc
-  utils.cc
   raw_image_simulator.cc)
