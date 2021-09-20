@@ -4,6 +4,7 @@
 # include "point.hh"
 # include "segment.hh"
 
+template <size_t N>
 class Box;
 
 template <size_t N>
@@ -12,34 +13,52 @@ class Shape
 public:
   virtual ~Shape();
   virtual bool inside(const Point<N>& p) const = 0;
-  virtual PointEnsemble<N> boundary() const = 0;
 
   //to update to N dim box
-  virtual Box bounding_box() const = 0;
+  virtual Box<N> bounding_box() const = 0;
 };
 
-class Box: public Shape<2>
+template <size_t N>
+class Box: public Shape<N>
 {
 public:
   Box();
-  Box(const Point<2>& lower_left, const Point<2>& upper_right);
+  Box(const Point<N>& min, const Point<N>& max);
   Box(const Box& b) = default;
 
   virtual ~Box();
 
-  virtual bool inside(const Point<2>& p) const override;
-  virtual PointEnsemble<2> boundary() const override;
+  virtual bool inside(const Point<N>& p) const override;
   virtual Box bounding_box() const override;
 
-  const Point<2>& lower_left() const { return this->lower_left_; }
-  const Point<2>& upper_right() const { return this->upper_right_; }
-  double width() const { return this->width_; }
-  double height() const { return this->height_; }
+  const Point<N>& min() const { return this->min_; }
+  const Point<N>& max() const { return this->max_; }
+  const Vec<N>& dims() const { return this->dims_; }
+
 protected:
-  Point<2> lower_left_;
-  Point<2> upper_right_;
-  double width_;
-  double height_;
+  Point<N> min_;
+  Point<N> max_;
+  Vec<N> dims_;
+};
+
+class Triangle3D: public Shape<3>
+{
+public:
+  Triangle3D(const Point<3>& p1, const Point<3>& p2, const Point<3>& p3);
+  Triangle3D() = default;
+
+  //it is not a concave shape
+  virtual bool inside(const Point<3>& p) const { (void) p; return false; };
+  virtual Box<3> bounding_box() const;
+
+  bool intersect(const Segment<3>& s, Point<3>& inter_p) const;
+
+  const Vec<3>& normal() const { return this->normal_; }
+protected:
+  Point<3> p1_;
+  Point<3> p2_;
+  Point<3> p3_;
+  Vec<3> normal_;
 };
 
 class Polygon: public Shape<2>
@@ -53,11 +72,11 @@ public:
   virtual bool inside(const Point<2>& p) const override;
   bool inside(const Polygon& poly) const;
 
-  virtual PointEnsemble<2> boundary() const override;
-  virtual Box bounding_box() const override;
+  virtual Box<2> bounding_box() const override;
 
   virtual void apply_pxsize(double pxsize);
-  virtual Segment<2> intersect_with(const Segment<2>& s1) const;
+  virtual bool intersect(const Segment<2>& s1, Point<2>& inter_p,
+			 Segment<2>& inter_seg) const;
 
   virtual double signed_area() const;
 
@@ -66,10 +85,34 @@ public:
   void round_poly_pts();
 
   bool my_inside(const Point<2>& p, bool border_is_inside) const;
-  bool my_inside2(const Point<2>& p, bool border_is_inside) const;
 private:
   PointEnsemble<2> pts_;
 };
+
+class Polygon3D: public Shape<3>
+{
+public:
+  Polygon3D(const std::vector<Triangle3D>& triangles);
+  Polygon3D() = default;
+
+  virtual ~Polygon3D();
+
+  virtual bool inside(const Point<3>& p) const override;
+
+  virtual Box<3> bounding_box() const override;
+
+  virtual bool intersect(const Segment<3>& seg,
+			 Point<3>& inter_p, Triangle3D& inter_t) const;
+
+  virtual const std::vector<Triangle3D>& triangles() const
+  {
+    return this->triangles_;
+  };
+
+private:
+  std::vector<Triangle3D> triangles_;
+};
+
 
 class CompoundPolygon: public Polygon
 {
@@ -79,11 +122,11 @@ public:
   virtual ~CompoundPolygon();
 
   virtual bool inside(const Point<2>& p) const override;
-  virtual PointEnsemble<2> boundary() const override;
-  virtual Box bounding_box() const override;
+  virtual Box<2> bounding_box() const override;
 
   virtual void apply_pxsize(double pxsize) override;
-  virtual Segment<2> intersect_with(const Segment<2>& s1) const override;
+  virtual bool intersect(const Segment<2>& s,
+			 Point<2>& inter_p, Segment<2>& inter_s) const override;
 
   virtual double signed_area() const override;
 
@@ -107,15 +150,16 @@ public:
   const std::vector<CompoundPolygon>& polys() const;
 
   virtual bool inside(const Point<2>& p) const;
-  virtual PointEnsemble<2> boundary() const;
-  virtual Box bounding_box() const;
+  virtual Box<2> bounding_box() const;
 
   bool empty() const;
 protected:
   std::vector<CompoundPolygon> polys_;
 };
 
-std::ostream& operator<< (std::ostream& os, const Box& box);
+template <size_t N>
+std::ostream& operator<< (std::ostream& os, const Box<N>& box);
+
 std::ostream& operator<< (std::ostream& os, const Polygon& poly);
 
 #endif /// !SHAPE_HH

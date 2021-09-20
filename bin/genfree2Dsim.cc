@@ -11,8 +11,6 @@
 #include "simulation.hh"
 #include "io.hh"
 
-#include "utils.hh"
-
 #include "raw_image_simulator.hh"
 
 
@@ -121,12 +119,12 @@ int main(int argc, char** argv)
   std::mt19937_64 mt(rd());
 
   double region_scale = 0.04;
-  Box simulation_region({region_scale * width * pxsize,
-			 region_scale * width * pxsize},
+  Box<2> simulation_region({region_scale * width * pxsize,
+			    region_scale * width * pxsize},
     {(1 - region_scale) * width * pxsize,
      (1 - region_scale) * height * pxsize});
 
-  RandomBoxTrajectoryStartGenerator start_gen(mt, simulation_region);
+  RandomBoxTrajectoryStartGenerator<2> start_gen(mt, simulation_region);
 
   std::vector<TrajectoryEndCondition<2>*> end_conds;
   if (fixed_size)

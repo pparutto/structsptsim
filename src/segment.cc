@@ -11,20 +11,6 @@ Segment<N>::Segment(const Point<N>& p1, const Point<N>& p2)
 {
 }
 
-template <size_t N>
-const Point<N>&
-Segment<N>::p1() const
-{
-  return this->p1_;
-}
-
-template <size_t N>
-const Point<N>&
-Segment<N>::p2() const
-{
-  return this->p2_;
-}
-
 template <>
 double
 Segment<2>::distance(const Point<2>& p) const
@@ -103,85 +89,43 @@ Segment<N>::invert()
   this->p2_ = tmp;
 }
 
-// template <size_t N>
-// std::string
-// Segment<N>::plot_str(const std::string& col) const
-// {
-//   return "plot([" + this->p1_ + "], [" +
-//     this->p2_ + "], 'LineWidth', 2, 'Color', '" + col + "');";
-// }
-
-template <>
+template <size_t N>
 bool
-Segment<2>::intersect(const Segment<2>& s1, const Segment<2>& s2)
+Segment<N>::operator== (const Segment<N>& s2) const
 {
-  Orientation os[] = {orientation(s1.p1(), s1.p2(), s2.p1()),
-		      orientation(s1.p1(), s1.p2(), s2.p2()),
-		      orientation(s2.p1(), s2.p2(), s1.p1()),
-		      orientation(s2.p1(), s2.p2(), s1.p2())};
-
-  if (os[0] != os[1] && os[2] != os[3])
-    return true;
-
-  //Special cases
-  if ((os[0] == COLINEAR && s1.on_segment(s2.p1())) ||
-      (os[1] == COLINEAR && s1.on_segment(s2.p2())) ||
-      (os[2] == COLINEAR && s2.on_segment(s1.p1())) ||
-      (os[3] == COLINEAR && s2.on_segment(s1.p2())))
-    return true;
-
-  return false;
+  return this->p1_ == s2.p1() && this->p2_ == s2.p2();
 }
 
 template <size_t N>
 bool
-Segment<N>::intersect(const Segment<N>& s1, const Segment<N>& s2)
+Segment<N>::intersect(const Segment<N>& s, Point<N>& inter_p) const
 {
-  (void) s1;
-  (void) s2;
+  (void) s;
+  (void) inter_p;
+  assert(false);
   return false;
 }
 
-
-Point<2> project_on_line(const Point<2>& p, const Segment<2>& s)
-{
-  // get dot product of e1, e2
-  Vec<2> e1 = s.vector();
-  Vec<2> e2 = Segment<2>(p, s.p1()).vector();
-  double valDp = dot<2>(e1, e2);
-
-  double l = norm<2>(e1);
-  return {s.p1()[0] + (valDp * e1[0]) / l,
-	  s.p1()[1] + (valDp * e1[1]) / l};
-}
-
-template <size_t N>
-Point<N>
-Segment<N>::intersection_point(const Segment<N>& s1, const Segment<N>& s2)
-{
-  (void) s1;
-  (void) s2;
-  return Point<N> ();
-}
-
-//the two segments must already be intersecting
-//check this with Segment::intersect
+// https://stackoverflow.com/a/1968345
 template <>
-Point<2>
-Segment<2>::intersection_point(const Segment<2>& s1, const Segment<2>& s2)
+bool
+Segment<2>::intersect(const Segment<2>& seg, Point<2>& inter_p) const
 {
-  Vec<2> e = s1.vector();
-  Vec<2> f = s2.vector();
-  Vec<2> p = {-e[1], e[0]};
+  Vec<2> v1 = this->vector();
+  Vec<2> v2 = seg.vector();
 
-  double inter = f[0] * p[0] + f[1] * p[1];
+  double s = (-v1[1] * (this->p1_[0] - seg.p1()[0]) + v1[0] *
+	      (this->p1_[1] - seg.p1()[1])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
+  double t = (v2[0] * (this->p1_[1] - seg.p1()[1]) - v2[1] *
+	      (this->p1_[0] - seg.p1()[0])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
 
-  double h1 = ((s1.p1()[0] - s2.p1()[0]) * p[0] +
-	       (s1.p1()[1] - s2.p1()[1]) * p[1]) / inter;
+  if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+  {
+    inter_p = this->p1_ + v1 * t;
+    return true;
+  }
 
-  Point<2> res = {s2.p1()[0] + f[0] * h1, s2.p1()[1] + f[1] * h1};
-
-  return res;
+  return false;
 }
 
 // Point
@@ -201,29 +145,31 @@ Segment<2>::intersection_point(const Segment<2>& s1, const Segment<2>& s2)
 //   return {s1.p1()[0] + t * n1[0], s1.p1()[1] + t * n1[1]};
 // }
 
-template <>
-Point<2>
-Segment<2>::reflect(const Segment<2>& s1, const Segment<2>& s2)
+template <size_t N>
+Point<N>
+Segment<N>::reflect(const Segment<N>& s1, const Segment<N>& s2,
+		    const Point<N>& inter_p)
 {
-  //reflect s1 on s2
-  Point<2> inter_p = Segment<2>::intersection_point(s1, s2);
+  (void) s1;
+  (void) s2;
+  (void) inter_p;
+  assert(false);
+  return Point<N> ();
+}
+
+template<>
+Point<2>
+Segment<2>::reflect(const Segment<2>& s1, const Segment<2>& s2,
+		    const Point<2>& inter_p)
+{
   Vec<2> N = s2.normal();
 
   double s = (N[0] * (s1.p2()[0] - inter_p[0]) +
 	      N[1] * (s1.p2()[1] - inter_p[1]));
 
-
-  return {s1.p2()[0] - 2 * s * N[0], s1.p2()[1] - 2 * s * N[1]};
+  return s1.p2() - N * (2 * s);
 }
 
-template <size_t N>
-Point<N>
-Segment<N>::reflect(const Segment<N>& s1, const Segment<N>& s2)
-{
-  (void) s1;
-  (void) s2;
-  return Point<N> ();
-}
 
 template <size_t N>
 std::ostream&
@@ -234,3 +180,4 @@ operator<< (std::ostream& os, const Segment<N>& seg)
 }
 
 template class Segment<2>;
+template class Segment<3>;

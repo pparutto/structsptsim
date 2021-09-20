@@ -15,8 +15,6 @@
 
 #include "cum_distrib_function.hh"
 
-#include "utils.hh"
-
 #include <tiffio.h>
 #include "raw_image_simulator.hh"
 
@@ -327,8 +325,8 @@ int main(int argc, char** argv)
   else
   {
     double region_scale = 0.04;
-    poly = new Box({region_scale * p_opts.width * p_opts.pxsize,
-		    region_scale * p_opts.width * p_opts.pxsize},
+    poly = new Box<2>({region_scale * p_opts.width * p_opts.pxsize,
+		       region_scale * p_opts.width * p_opts.pxsize},
       {(1 - region_scale) * p_opts.width * p_opts.pxsize,
        (1 - region_scale) * p_opts.height * p_opts.pxsize});
   }
@@ -354,7 +352,7 @@ int main(int argc, char** argv)
   else
   {
     std::cout << "Start point generator: Poly bounding box" << std::endl;
-    start_gen = new RandomBoxTrajectoryStartGenerator(mt, *dynamic_cast<Box*>(poly));
+    start_gen = new RandomBoxTrajectoryStartGenerator(mt, *dynamic_cast<Box<2>*>(poly));
   }
 
 

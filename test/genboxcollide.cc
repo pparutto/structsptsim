@@ -14,7 +14,7 @@ int main(int argc, char** argv)
   std::random_device rd;
   std::mt19937_64 mt(rd());
 
-  Box sim_box({9.9, 9.9}, {10.1, 10.1});
+  Box<2> sim_box({9.9, 9.9}, {10.1, 10.1});
   double dt = 0.0001;
   double DT = 0.02;
   double D = 0.1;
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
   FullTrajectoryRecorder<2> traj_rec(0.0, DT);
   TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
   NumberTrajectoriesSimulationEndCondition<2> end_sim(max_ntrajs);
-  BoxCollider bcollider(sim_box);
+  BoxCollider<2> bcollider(sim_box);
 
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,

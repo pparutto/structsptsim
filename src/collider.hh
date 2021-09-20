@@ -37,17 +37,18 @@ public:
 			   const Point<N>& p2) const override;
 };
 
-class BoxCollider: public Collider<2>
+template <size_t N>
+class BoxCollider: public Collider<N>
 {
 public:
-  BoxCollider(const Box& box);
+  BoxCollider(const Box<N>& box);
   virtual ~BoxCollider();
 
-  virtual bool outside(const Point<2>& p) const override;
-  virtual Point<2> collide(const Point<2>& p1,
-			   const Point<2>& p2) const override;
+  virtual bool outside(const Point<N>& p) const override;
+  virtual Point<N> collide(const Point<N>& p1,
+			   const Point<N>& p2) const override;
 protected:
-  Box box_;
+  Box<N> box_;
 };
 
 class PolygonCollider: public Collider<2>
@@ -61,6 +62,19 @@ public:
 			   const Point<2>& p2) const override;
 protected:
   const Polygon& poly_;
+};
+
+class PolygonCollider3D: public Collider<3>
+{
+public:
+  PolygonCollider3D(const Polygon3D& poly);
+  virtual ~PolygonCollider3D();
+
+  virtual bool outside(const Point<3>& p) const override;
+  virtual Point<3> collide(const Point<3>& p1,
+			   const Point<3>& p2) const override;
+protected:
+  const Polygon3D& poly_;
 };
 
 class MultiplePolygonCollider: public Collider<2>

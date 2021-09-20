@@ -4,7 +4,6 @@
 #include <cfloat>
 #include <iostream>
 
-#include "utils.hh"
 #include "segment.hh"
 
 bool
@@ -26,6 +25,15 @@ orientation(const Point<2>& p1, const Point<2>& p2, const Point<2>& p3)
     return CLOCKWISE;
   return COUNTERCLOCKWISE;
 }
+
+Vec<3>
+cross(const Vec<3>& v1, const Vec<3>& v2)
+{
+  return Vec<3> ({v1[1] * v2[2] - v1[2] * v2[1],
+		  v1[2] * v2[0] - v1[0] * v2[2],
+		  v1[0] * v2[1] - v1[1] * v2[0]});
+}
+
 
 double
 round_to_precision(double v)

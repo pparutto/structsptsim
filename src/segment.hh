@@ -8,9 +8,7 @@ class Segment
 {
 public:
   Segment(const Point<N>& p1, const Point<N>& p2);
-
-  const Point<N>& p1() const;
-  const Point<N>& p2() const;
+  Segment() = default;
 
   double distance(const Point<N>& p) const;
   bool on_segment(const Point<N>& p) const;
@@ -20,10 +18,14 @@ public:
 
   //std::string plot_str(const std::string& col) const;
 
-  static bool intersect(const Segment<N>& s1, const Segment<N>& s2);
-  static Point<N> intersection_point(const Segment<N>& s1,
-				     const Segment<N>& s2);
-  static Point<N> reflect(const Segment<N>& s1, const Segment<N>& s2);
+  bool operator== (const Segment<N>& s2) const;
+
+  bool intersect(const Segment<N>& s, Point<N>& inter_p) const;
+  static Point<N> reflect(const Segment<N>& s1, const Segment<N>& s2,
+			  const Point<N>& inter_p);
+
+  const Point<N>& p1() const { return this->p1_; };
+  const Point<N>& p2() const { return this->p2_; };
 protected:
   Point<N> p1_;
   Point<N> p2_;

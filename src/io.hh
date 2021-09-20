@@ -58,8 +58,8 @@ struct ProgramOptions
   std::string cdf_path;
 
   bool use_start_reg;
-  Box start_reg;
-  Box stop_reg;
+  Box<2> start_reg;
+  Box<2> stop_reg;
 
   std::string outdir;
 
@@ -81,7 +81,7 @@ void save_params_csv(const std::string& fname,
 Polygon poly_from_csv_path(const std::string& fname);
 MultiplePolygon* polys_from_inkscape_path(const std::string& fname);
 
-void save_box_matlab(const Box& poly, const std::string& fname,
+void save_box_matlab(const Box<2>& poly, const std::string& fname,
 		     const std::string& fun_name);
 
 void save_poly_matlab(const CompoundPolygon& poly, const std::string& fname);
@@ -93,7 +93,7 @@ void save_poly_txt(const CompoundPolygon& poly, const std::string& fname);
 
 TrajectoryCharacsMap load_characs(const std::string& fname);
 
-Box parse_box(const std::string& box_line);
+Box<2> parse_box(const std::string& box_line);
 
 template <size_t N>
 void save_trajectories_csv(const std::string& fname,

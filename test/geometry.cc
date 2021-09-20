@@ -9,7 +9,6 @@
 #include "segment.hh"
 #include "collider.hh"
 #include "io.hh"
-#include "utils.hh"
 
 bool pts_eq(const Point<2>& p1, const Point<2>& p2, double prec)
 {
@@ -66,6 +65,8 @@ int main(int argc, char** argv)
   {
     Segment<2> s1({1, 1}, {10, 1});
     Segment<2> s2({1, 2}, {10, 2});
+    Point<2> inter_p;
+    Point<2> res;
 
     std::cout << " [Test 1]";
     assert(!s1.on_segment(s2.p1()));
@@ -76,25 +77,25 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 3]";
-    assert(!Segment<2>::intersect(s1, s2));
+    assert(!s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 4]";
     s1 = Segment<2>({10, 0}, {0, 10});
     s2 = Segment<2>({0, 0}, {10, 10});
-    assert(Segment<2>::intersect(s1, s2));
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 5]";
     s1 = Segment<2>({-5, 5}, {0, 0});
     s2 = Segment<2>({1, 1}, {10, 10});
-    assert(!Segment<2>::intersect(s1, s2));
+    assert(!s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 6]";
     s1 = Segment<2>({0, 0}, {5, 5});
     s2 = Segment<2>({2, 1}, {10000.0, 1});
-    assert(!Segment<2>::intersect(s1, s2));
+    assert(!s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 7]";
@@ -105,7 +106,7 @@ int main(int argc, char** argv)
     std::cout << " [Test 8]";
     s1 = Segment<2>({0, 0}, {5, 5});
     s2 = Segment<2>({3, 3}, {10000.0, 3});
-    assert(Segment<2>::intersect(s1, s2));
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 9]";
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 10]";
     s1 = Segment<2>({10, 10}, {10, 0});
-    assert(Segment<2>::intersect(s1, Segment<2>({5, 5}, {15, 5})));
+    assert(s1.intersect(Segment<2>({5, 5}, {15, 5}), inter_p));
     std::cout << " OK" << std::endl;
 
     Point<2> p = {20, 20};
@@ -125,9 +126,8 @@ int main(int argc, char** argv)
     std::cout << " [Test 11]";
     s1 = Segment<2>({5, 5}, {5, -5});
     s2 = Segment<2>({0, 0}, {10, 0});
-    Point<2> res = Segment<2>::intersection_point(s1, s2);
-    Point<2> ref = {5.0, 0.0};
-    assert(res == ref);
+    s1.intersect(s2, inter_p);
+    assert((inter_p == (Point<2>) {5.0, 0.0}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 12]";
@@ -139,89 +139,94 @@ int main(int argc, char** argv)
     std::cout << " [Test 13]";
     s1 = Segment<2>({2, 2}, {6, 6});
     s2 = Segment<2>({5, 0}, {5, 10});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert((res == (Point<2>) {4, 6}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 14]";
     s1 = Segment<2>({2, 2}, {8, 2});
     s2 = Segment<2>({5, 0}, {5, 10});
-    res = Segment<2>::intersection_point(s1, s2);
-    assert((res == (Point<2>) {5, 2}));
+    s1.intersect(s2, inter_p);
+    assert((inter_p == (Point<2>) {5, 2}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 15]";
     s1 = Segment<2>({2, 2}, {8, 2});
     s2 = Segment<2>({5, 0}, {5, 10});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert((res == (Point<2>) {2, 2}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 16]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
     s2 = Segment<2>({50.6049, 129.478}, {50.4045, 120.423});
-    assert(Segment<2>::intersect(s1, s2));
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 17]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
     s2 = Segment<2>({50.6049, 129.478}, {50.4045, 120.423});
-    res = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(res, {50.6012629, 129.31366}, PRECISION));
+    s1.intersect(s2, inter_p);
+    assert(pts_eq(inter_p, {50.6012629, 129.31366}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 18]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
     s2 = Segment<2>({50.6049, 129.478}, {50.4045, 120.423});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(res, {51.8634543, 130.054885}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 19]";
     s1 = Segment<2>({50.6012629, 129.31366}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    assert(Segment<2>::intersect(s1, s2));
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 20]";
     s1 = Segment<2>({50.6012629, 129.31366}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    res = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(res, {50.8835804, 129.479452}, PRECISION));
+    s1.intersect(s2, inter_p);
+    assert(pts_eq(inter_p, {50.8835804, 129.479452}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 21]";
     s1 = Segment<2>({50.6012629, 129.31366}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(res, {51.8693959, 128.914258}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 22]";
     s1 = Segment<2>({14.1584, 10.0646}, {14.1983, 10.0911});
     s2 = Segment<2>({14.0766, 10.1441}, {14.2188, 10.0059});
-    res = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(res, {14.1584006, 10.0646004}, PRECISION));
+    s1.intersect(s2, inter_p);
+    assert(pts_eq(inter_p, {14.1584006, 10.0646004}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 23]";
     s1 = Segment<2>({14.1584, 10.0646}, {14.1983, 10.0911});
     s2 = Segment<2>({14.0766, 10.1441}, {14.2188, 10.0059});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(res, {14.1330499, 10.0239613}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 24]";
     s1 = Segment<2>({8.76194, 0.975147}, {8.72982, 0.965453});
     s2 = Segment<2>({8.69375, 0.954687}, {8.775, 0.979062});
-    assert(Segment<2>::intersect(s1, s2));
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 25]";
     s1 = Segment<2>({8.76194, 0.975147}, {8.72982, 0.965453});
     s2 = Segment<2>({8.69375, 0.954687}, {8.775, 0.979062});
-    res = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(res, {8.76027862, 0.974645586}, PRECISION));
+    s1.intersect(s2, inter_p);
+    assert(pts_eq(inter_p, {8.76027862, 0.974645586}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 26]";
@@ -233,7 +238,8 @@ int main(int argc, char** argv)
     std::cout << " [Test 27]";
     s1 = Segment<2>({8.76194, 0.975147}, {8.72982, 0.965453});
     s2 = Segment<2>({8.69375, 0.954687}, {8.775, 0.979062});
-    res = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    res = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(res, {8.72978972, 0.965553917}, PRECISION));
     std::cout << " OK" << std::endl;
   }
@@ -241,6 +247,9 @@ int main(int argc, char** argv)
   std::cout << "Polygons:" << std::endl;
   {
     std::cout << " [Test 1]";
+    Point<2> inter_p;
+    Segment<2> inter_s;
+
     PointEnsemble<2> pe;
     pe.push_back({0, 0});
     pe.push_back({10, 0});
@@ -264,27 +273,27 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 4]";
-    Segment<2> res = poly.intersect_with(Segment<2>({5, 5}, {15, 5}));
-    assert((res.p1() == (Point<2>) {10, 0}));
-    assert((res.p2() == (Point<2>) {10, 10}));
+    poly.intersect(Segment<2>({5, 5}, {15, 5}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {10, 0}));
+    assert((inter_s.p2() == (Point<2>) {10, 10}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 5]";
-    res = poly.intersect_with(Segment<2>({5, 5}, {5, 15}));
-    assert((res.p1() == (Point<2>) {10, 10}));
-    assert((res.p2() == (Point<2>) {0, 10}));
+    poly.intersect(Segment<2>({5, 5}, {5, 15}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {10, 10}));
+    assert((inter_s.p2() == (Point<2>) {0, 10}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 6]";
-    res = poly.intersect_with(Segment<2>({-5, 5}, {5, 5}));
-    assert((res.p1() == (Point<2>) {0, 10}));
-    assert((res.p2() == (Point<2>) {0, 0}));
+    poly.intersect(Segment<2>({-5, 5}, {5, 5}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {0, 10}));
+    assert((inter_s.p2() == (Point<2>) {0, 0}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 7]";
-    res = poly.intersect_with(Segment<2>({5, -5}, {5, 5}));
-    assert((res.p1() == (Point<2>) {0, 0}));
-    assert((res.p2() == (Point<2>) {10, 0}));
+    poly.intersect(Segment<2>({5, -5}, {5, 5}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {0, 0}));
+    assert((inter_s.p2() == (Point<2>) {10, 0}));
     std::cout << " OK" << std::endl;
 
     pe.clear();
@@ -323,6 +332,9 @@ int main(int argc, char** argv)
   }
 
   {
+    Point<2> inter_p;
+    Segment<2> inter_s;
+
     PointEnsemble<2> pe;
     pe.push_back({0, 0});
     pe.push_back({5, 5});
@@ -345,14 +357,18 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 14]";
-    Segment<2> res = poly.intersect_with(Segment<2>({3.1, 3}, {-2, 8}));
-    assert((res.p1() == (Point<2>) {0, 0}));
-    assert((res.p2() == (Point<2>) {5, 5}));
+    poly.intersect(Segment<2>({3.1, 3}, {-2, 8}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {0, 0}));
+    assert((inter_s.p2() == (Point<2>) {5, 5}));
     std::cout << " OK" << std::endl;
   }
 
   std::cout << "U polygon" << std::endl;
   {
+    Point<2> inter_p;
+    Segment<2> inter_s;
+    Segment<2> s2;
+
     PointEnsemble<2> pe;
     pe.push_back({116.984, 93.7433});
     pe.push_back({115.518, 117.399});
@@ -376,22 +392,22 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 2]";
-    Segment<2> s1 = Segment<2>({108.0070, 110.005}, {107.65, 109.7});
-    Segment<2> s2 = u_poly.intersect_with(s1);
-    assert(pts_eq(s2.p1(), {107.592, 112.292}, PRECISION) &&
-  	   pts_eq(s2.p2(), {108.323, 96.5429}, PRECISION));
+    Segment<2> s1({108.0070, 110.005}, {107.65, 109.7});
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(pts_eq(inter_s.p1(), {107.592, 112.292}, PRECISION) &&
+  	   pts_eq(inter_s.p2(), {108.323, 96.5429}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 3]";
     s1 = Segment<2>({108.0070, 110.005}, {107.65, 109.7});
-    s2 = u_poly.intersect_with(s1);
-    p = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(p, {107.709932, 109.751202}, PRECISION));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(pts_eq(inter_p, {107.709932, 109.751202}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 4]";
     s1 = Segment<2>({108.0070, 110.005}, {107.65, 109.7});
     p = poly_collider.collide(s1.p1(), s1.p2());
+    std::cout << p << std::endl;
     assert(pts_eq(p, {107.774349, 109.705772}, PRECISION));
     std::cout << " OK" << std::endl;
 
@@ -399,7 +415,8 @@ int main(int argc, char** argv)
     s1 = Segment<2>({108.0070, 110.005}, {107.65, 109.7});
     s2 = Segment<2>({107.592, 112.292}, {108.323, 96.5429});
     Point<2> p1 = poly_collider.collide(s1.p1(), s1.p2());
-    Point<2> p2 = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    Point<2> p2 = Segment<2>::reflect(s1, s2, inter_p);
     assert((p1 == p2));
     std::cout << " OK" << std::endl;
 
@@ -410,37 +427,34 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 7]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
-    s2 = u_poly.intersect_with(s1);
-    assert(pts_eq(s2.p1(), {50.6049, 129.478}, PRECISION) &&
-  	   pts_eq(s2.p2(), {50.4045, 120.423}, PRECISION));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(pts_eq(inter_s.p1(), {50.6049, 129.478}, PRECISION) &&
+  	   pts_eq(inter_s.p2(), {50.4045, 120.423}, PRECISION));
     std::cout << " OK" << std::endl;
 
 
     std::cout << " [Test 8]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
-    s2 = u_poly.intersect_with(s1);
-    p1 = Segment<2>::intersection_point(s1, s2);
-    assert(s2.on_segment(p1));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(s1.on_segment(inter_p)); //not sure?
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 9]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
-    s2 = u_poly.intersect_with(s1);
-    p1 = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(p1, {50.6012629, 129.31366}, PRECISION));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(pts_eq(inter_p, {50.6012629, 129.31366}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 10]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
-    s2 = u_poly.intersect_with(s1);
-    p1 = Segment<2>::intersection_point(s1, s2);
-    assert(u_poly.inside(p1));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(u_poly.inside(inter_p));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 11]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
-    s2 = u_poly.intersect_with(s1);
-    p1 = Segment<2>::reflect(s1, s2);
+    u_poly.intersect(s1, inter_p, inter_s);
+    p1 = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(p1, {51.8634543, 130.054885}, PRECISION));
     std::cout << " OK" << std::endl;
 
@@ -450,29 +464,31 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 13]";
     s1 = Segment<2>({50.738, 129.225}, {51.8634543, 130.054885});
-    s2 = u_poly.intersect_with(s1);
-    assert(pts_eq(s2.p1(), {102.054, 129.746}, PRECISION) &&
-  	   pts_eq(s2.p2(), {50.6049, 129.478}, PRECISION));
+    u_poly.intersect(s1, inter_p, inter_s);
+    assert(pts_eq(inter_s.p1(), {102.054, 129.746}, PRECISION) &&
+  	   pts_eq(inter_s.p2(), {50.6049, 129.478}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 14]";
     s1 = Segment<2>({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    p1 = Segment<2>::intersection_point(s1, s2);
-    assert(pts_eq(p1, {51.0844957, 129.480498}, PRECISION));
+    s1.intersect(s2, inter_p);
+    assert(pts_eq(inter_p, {51.0844957, 129.480498}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 15]";
     s1 = Segment<2>({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    p1 = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    p1 = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(p1, {51.8693959, 128.914258}, PRECISION));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 16]";
     s1 = Segment<2>({50.738, 129.225}, {51.8634543, 130.054885});
     s2 = Segment<2>({102.054, 129.746}, {50.6049, 129.478});
-    p1 = Segment<2>::reflect(s1, s2);
+    s1.intersect(s2, inter_p);
+    p1 = Segment<2>::reflect(s1, s2, inter_p);
     assert(u_poly.inside(p1));
     std::cout << " OK" << std::endl;
 
@@ -491,6 +507,9 @@ int main(int argc, char** argv)
 
   std::cout << "Compound polygon" << std::endl;
   {
+    Point<2> inter_p;
+    Segment<2> inter_s;
+
     PointEnsemble<2> pe;
     pe.push_back({5, 5});
     pe.push_back({10, 5});
@@ -527,18 +546,20 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 5]";
-    Segment<2> res = poly.intersect_with(Segment<2>({9.5, 5.5}, {12, 5.5}));
-    assert((res.p1() == (Point<2>) {10, 5}) && (res.p2() == (Point<2>) {10, 10}));
+    poly.intersect(Segment<2>({9.5, 5.5}, {12, 5.5}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {10, 5}) && (inter_s.p2() == (Point<2>) {10, 10}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 6]";
-    res = poly.intersect_with(Segment<2>({5.8, 7.1}, {6.1, 7.1}));
-    assert((res.p1() == (Point<2>) {6, 6}) && (res.p2() == (Point<2>) {6, 9}));
+    poly.intersect(Segment<2>({5.8, 7.1}, {6.1, 7.1}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {6, 9}) && (inter_s.p2() == (Point<2>) {6, 6}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 7]";
-    Point<2> p = Segment<2>::reflect(Segment<2>({5.8, 7.1}, {6.1, 7.1}),
-				     Segment<2>({6, 6}, {6, 9}));
+    Segment<2> s1 = Segment<2>({5.8, 7.1}, {6.1, 7.1});
+    Segment<2> s2 = Segment<2>({6, 6}, {6, 9});
+    s1.intersect(s2, inter_p);
+    Point<2> p = Segment<2>::reflect(s1, s2, inter_p);
     assert(poly.inside(p));
     assert((p == (Point<2>) {5.9, 7.1}));
     std::cout << " OK" << std::endl;
@@ -552,6 +573,9 @@ int main(int argc, char** argv)
 
   std::cout << "Compound polygon 2" << std::endl;
   {
+    Point<2> inter_p;
+    Segment<2> inter_s;
+
     PointEnsemble<2> pe;
     pe.push_back({5, 5});
     pe.push_back({10, 5});
@@ -588,18 +612,20 @@ int main(int argc, char** argv)
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 5]";
-    Segment<2> res = poly.intersect_with(Segment<2>({9.5, 5.5}, {12, 5.5}));
-    assert((res.p1() == (Point<2>) {10, 5}) && (res.p2() == (Point<2>) {10, 10}));
+    poly.intersect(Segment<2>({9.5, 5.5}, {12, 5.5}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {10, 5}) && (inter_s.p2() == (Point<2>) {10, 10}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 6]";
-    res = poly.intersect_with(Segment<2>({5.8, 7.1}, {6.1, 7.1}));
-    assert((res.p1() == (Point<2>) {6, 6}) && (res.p2() == (Point<2>) {6, 9}));
+    poly.intersect(Segment<2>({5.8, 7.1}, {6.1, 7.1}), inter_p, inter_s);
+    assert((inter_s.p1() == (Point<2>) {6, 9}) && (inter_s.p2() == (Point<2>) {6, 6}));
     std::cout << " OK" << std::endl;
 
     std::cout << " [Test 7]";
-    Point<2> p = Segment<2>::reflect(Segment<2>({5.8, 7.1}, {6.1, 7.1}),
-				     Segment<2>({6, 6}, {6, 9}));
+    Segment<2> s1({5.8, 7.1}, {6.1, 7.1});
+    Segment<2> s2({6, 6}, {6, 9});
+    s1.intersect(s2, inter_p);
+    Point<2> p = Segment<2>::reflect(s1, s2, inter_p);
     assert(poly.inside(p));
     assert((p == (Point<2>) {5.9, 7.1}));
     std::cout << " OK" << std::endl;
@@ -684,11 +710,10 @@ int main(int argc, char** argv)
 		      {12.4075000000000, 9.87177000000000});
     Segment<2> traj({12.4030, 9.8718}, {12.4108, 9.8685});
 
-    Point<2> pp = Segment<2>::intersection_point(border, traj);
-    std::cout << pp[0] << " " << pp[1] << std::endl;
-
-    Point<2> p = Segment<2>::reflect(traj, border);
-    std::cout << p << std::endl;
+    Point<2> inter_p;
+    border.intersect(traj, inter_p);
+    Point<2> p = Segment<2>::reflect(traj, border, inter_p);
+    (void) p; //NEED assert here
   }
 
   std::cout << "Poly L" << std::endl;

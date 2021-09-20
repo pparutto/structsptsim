@@ -28,8 +28,55 @@ bool colinear(const Point<2>& p1, const Point<2>& p2,
 Orientation orientation(const Point<2>& p1, const Point<2>& p2,
 			const Point<2>& p3);
 
+Vec<3> cross(const Vec<3>& v1, const Vec<3>& v2);
+
 double round_to_precision(double v);
 
+
+template <size_t N>
+Point<N> zero();
+
+template <size_t N>
+Point<N> to_point(const TimedPoint<N>& tp);
+
+template<size_t N>
+bool operator== (const std::array<double, N>& v1,
+		 const std::array<double, N>& v2);
+
+template<size_t N>
+std::array<double, N> operator- (const std::array<double, N>& v1,
+				 const std::array<double, N>& v2);
+
+template<size_t N>
+std::array<double, N> operator+ (const std::array<double, N>& v1,
+				 const std::array<double, N>& v2);
+
+template<size_t N>
+std::array<double, N> operator* (const std::array<double, N>& v,
+				 double val);
+
+template<size_t N>
+std::array<double, N> operator/ (const std::array<double, N>& v,
+				 double val);
+
+template<size_t N>
+double dot(const std::array<double, N>& v1, const std::array<double, N>& v2);
+
+template<size_t N>
+double norm(const Vec<N>& v);
+
+template<size_t N>
+double dist(const Point<N>& p1, const Point<N>& p2);
+
+
+template<size_t N>
+std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt);
+
+template <int N>
+void round_to_precision(Point<N>& v);
+
+
+/////////// implementation
 
 template <size_t N>
 Point<N> zero()
@@ -50,34 +97,57 @@ Point<N> to_point(const TimedPoint<N>& tp)
 }
 
 template<size_t N>
-bool operator== (const Point<N>& p1, const Point<N>& p2)
+bool operator== (const std::array<double, N>& v1,
+		 const std::array<double, N>& v2)
 {
   for (size_t i = 0; i < N; ++i)
-    if (std::abs(p1[i] - p2[i]) > EPSILON)
+    if (std::abs(v1[i] - v2[i]) > EPSILON)
       return false;
   return true;
 }
 
 template<size_t N>
-Point<N> operator- (const Point<N>& p1, const Point<N>& p2)
+std::array<double, N> operator- (const std::array<double, N>& v1,
+				 const std::array<double, N>& v2)
 {
-  Point<N> res;
+  std::array<double, N> res = v1;
   for (size_t i = 0; i < N; ++i)
-    res[i] = p1[i] - p2[i];
+    res[i] -= v2[i];
   return res;
 }
 
 template<size_t N>
-Point<N> operator+ (const Point<N>& p1, const Point<N>& p2)
+std::array<double, N> operator+ (const std::array<double, N>& v1,
+				 const std::array<double, N>& v2)
 {
-  Point<N> res = p1;
+  std::array<double, N> res = v1;
   for (size_t i = 0; i < N; ++i)
-    res[i] += p2[i];
+    res[i] += v2[i];
   return res;
 }
 
 template<size_t N>
-double dot(const Point<N>& v1, const Point<N>& v2)
+std::array<double, N> operator* (const std::array<double, N>& v,
+				 double val)
+{
+  std::array<double, N> res = v;
+  for (size_t i = 0; i < N; ++i)
+    res[i] *= val;
+  return res;
+}
+
+template<size_t N>
+std::array<double, N> operator/ (const std::array<double, N>& v,
+				 double val)
+{
+  std::array<double, N> res = v;
+  for (size_t i = 0; i < N; ++i)
+    res[i] /= val;
+  return res;
+}
+
+template<size_t N>
+double dot(const std::array<double, N>& v1, const std::array<double, N>& v2)
 {
   double res = 0;
   for (size_t i = 0; i < N; ++i)

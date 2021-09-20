@@ -3,7 +3,6 @@
 #include <cassert>
 #include <iostream>
 
-#include "utils.hh"
 
 template <size_t N>
 TrajectoryGenerator<N>::

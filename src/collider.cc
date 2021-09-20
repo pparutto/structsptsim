@@ -1,7 +1,6 @@
 #include "collider.hh"
 
 #include "segment.hh"
-#include "utils.hh"
 
 #include <iostream>
 #include <sstream>
@@ -51,43 +50,43 @@ NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
   return p2;
 }
 
-BoxCollider::BoxCollider(const Box& box)
+template <size_t N>
+BoxCollider<N>::BoxCollider(const Box<N>& box)
   : box_(box)
 {
 }
 
-BoxCollider::~BoxCollider()
+template <size_t N>
+BoxCollider<N>::~BoxCollider()
 {
 }
 
+template <size_t N>
 bool
-BoxCollider::outside(const Point<2>& p) const
+BoxCollider<N>::outside(const Point<N>& p) const
 {
   return !this->box_.inside(p);
 }
 
-Point<2>
-BoxCollider::collide(const Point<2>& p1, const Point<2>& p2) const
+template <size_t N>
+Point<N>
+BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
 {
   (void) p1;
 
-  Point<2> res = p2;
+  Point<N> res = p2;
 
+  Point<N> min = this->box_.min();
+  Point<N> max = this->box_.max();
   while (this->outside(res))
   {
-    if (p2[0] > this->box_.upper_right()[0])
-      res[0] = this->box_.upper_right()[0] -
-	(p2[0] - this->box_.upper_right()[0]);
-    else if (p2[0] < this->box_.lower_left()[0])
-      res[0] = this->box_.lower_left()[0] +
-	(this->box_.lower_left()[0] - p2[0]);
-
-    if (p2[1] > this->box_.upper_right()[1])
-      res[1] = this->box_.upper_right()[1] -
-	(p2[1] - this->box_.upper_right()[1]);
-    else if (p2[1] < this->box_.lower_left()[1])
-      res[1] = this->box_.lower_left()[1] +
-	(this->box_.lower_left()[1] - p2[1]);
+    for (size_t i = 0; i < N; ++i)
+    {
+      if (p2[i] > max[i])
+	res[i] = max[i] - (p2[i] - max[i]);
+      else if (p2[i] < min[i])
+	res[i] = min[i] + (min[i] - p2[i]);
+    }
   }
 
   return res;
@@ -128,24 +127,22 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 
   Point<2> p = p1;
   Point<2> pp = p2;
-  do
+
+  Point<2> inter_p;
+  Segment<2> inter_s;
+  Segment<2> prev_s;
+  //segment cannot collide with the previously collided polygon segment
+  while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
-    //std::cout << p << " " << pp << ";" <<  std::endl;
-    Segment<2> s2 = this->poly_.intersect_with(s1);
+    prev_s = inter_s;
+    p = pp;
+    pp = Segment<2>::reflect(s1, inter_s, inter_p);
 
-    pp = Segment<2>::reflect(s1, s2);
-    p = Segment<2>::intersection_point(s1, s2);
-
-    //Vec norm = s2.normal();
-    //p = {p[0] + DELTA_REPL * norm[0], p[1] + DELTA_REPL * norm[1]};
     s1 = Segment<2>(p, pp);
-
     ++cnt;
     if (cnt > 20)
       assert(false);
   }
-  while (this->outside(pp));
-  //std::cout << "===============" << std::endl;
 
   return pp;
 }
@@ -184,3 +181,4 @@ MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
 
 template class CollisionException<2>;
 template class NoneCollider<2>;
+template class BoxCollider<2>;

@@ -35,43 +35,52 @@ FixedPointTrajectoryStartGenerator<N>::generate()
   return this->pt_;
 }
 
-RandomBoxTrajectoryStartGenerator::
-RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box& box)
+template <size_t N>
+RandomBoxTrajectoryStartGenerator<N>::
+RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box<N>& box)
   : ng_(ng)
   , box_(box)
   , randu_(0.0, 1.0)
 {
 }
 
-RandomBoxTrajectoryStartGenerator::
+template <size_t N>
+RandomBoxTrajectoryStartGenerator<N>::
 ~RandomBoxTrajectoryStartGenerator()
 {
 }
 
-Point<2>
-RandomBoxTrajectoryStartGenerator::generate()
+template <size_t N>
+Point<N>
+RandomBoxTrajectoryStartGenerator<N>::generate()
 {
-  return {this->box_.lower_left()[0] + this->randu_(this->ng_) * this->box_.width(),
-	  this->box_.lower_left()[1] + this->randu_(this->ng_) * this->box_.height()};
+  Point<N> res;
+  for (size_t i = 0; i < N; ++i)
+    res[i] = this->box_.min()[i] +
+      this->randu_(this->ng_) * this->box_.dims()[i];
+  return res;
 }
 
-RandomTrajectoryStartGenerator::
-RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape<2>& shape)
+template <size_t N>
+RandomTrajectoryStartGenerator<N>::
+RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape<N>& shape)
   : ng_(ng)
   , shape_(shape)
   , rnd_box_(RandomBoxTrajectoryStartGenerator(ng, shape.bounding_box()))
 {
 }
 
-RandomTrajectoryStartGenerator::
+template <size_t N>
+RandomTrajectoryStartGenerator<N>::
 ~RandomTrajectoryStartGenerator()
 {
 }
 
-Point<2>
-RandomTrajectoryStartGenerator::generate()
+template <size_t N>
+Point<N>
+RandomTrajectoryStartGenerator<N>::generate()
 {
-  Point<2> p = this->rnd_box_.generate();
+  Point<N> p = this->rnd_box_.generate();
   while (!this->shape_.inside(p))
     p = this->rnd_box_.generate();
 
@@ -81,7 +90,7 @@ RandomTrajectoryStartGenerator::generate()
 RandomBoxInPolyTrajectoryStartGenerator::
 RandomBoxInPolyTrajectoryStartGenerator(std::mt19937_64& ng,
 					const Shape<2>& poly,
-					const Box& box)
+					const Box<2>& box)
   : ng_(ng)
   , poly_(poly)
   , rnd_box_(RandomBoxTrajectoryStartGenerator(ng, box))
@@ -144,4 +153,6 @@ MultiplePolysRandomTrajectoryStartGenerator::generate()
   return {};
 }
 
+template class RandomBoxTrajectoryStartGenerator<2>;
 template class FixedPointTrajectoryStartGenerator<2>;
+template class RandomTrajectoryStartGenerator<2>;

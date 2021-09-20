@@ -28,30 +28,32 @@ protected:
   Point<N> pt_;
 };
 
-class RandomBoxTrajectoryStartGenerator: public TrajectoryStartGenerator<2>
+template <size_t N>
+class RandomBoxTrajectoryStartGenerator: public TrajectoryStartGenerator<N>
 {
 public:
-  RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box& box);
+  RandomBoxTrajectoryStartGenerator(std::mt19937_64& ng, const Box<N>& box);
   virtual ~RandomBoxTrajectoryStartGenerator();
 
-  virtual Point<2> generate() override;
+  virtual Point<N> generate() override;
 protected:
   std::mt19937_64& ng_;
-  Box box_;
+  Box<N> box_;
   std::uniform_real_distribution<double> randu_;
 };
 
+template <size_t N>
 class RandomTrajectoryStartGenerator: public TrajectoryStartGenerator<2>
 {
 public:
-  RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape<2>& shape);
+  RandomTrajectoryStartGenerator(std::mt19937_64& ng, const Shape<N>& shape);
   virtual ~RandomTrajectoryStartGenerator();
 
-  virtual Point<2> generate() override;
+  virtual Point<N> generate() override;
 protected:
   std::mt19937_64& ng_;
-  const Shape<2>& shape_;
-  RandomBoxTrajectoryStartGenerator rnd_box_;
+  const Shape<N>& shape_;
+  RandomBoxTrajectoryStartGenerator<N> rnd_box_;
 };
 
 class RandomBoxInPolyTrajectoryStartGenerator:
@@ -60,14 +62,14 @@ class RandomBoxInPolyTrajectoryStartGenerator:
 public:
   RandomBoxInPolyTrajectoryStartGenerator(std::mt19937_64& ng,
 					  const Shape<2>& poly,
-					  const Box& box);
+					  const Box<2>& box);
   virtual ~RandomBoxInPolyTrajectoryStartGenerator();
 
   virtual Point<2> generate() override;
 protected:
   std::mt19937_64& ng_;
   const Shape<2>& poly_;
-  RandomBoxTrajectoryStartGenerator rnd_box_;
+  RandomBoxTrajectoryStartGenerator<2> rnd_box_;
 };
 
 
@@ -84,7 +86,7 @@ protected:
   std::mt19937_64& ng_;
   std::vector<double> norm_cum_areas_;
   std::uniform_real_distribution<double> randu_;
-  std::vector<RandomTrajectoryStartGenerator> poly_gens_;
+  std::vector<RandomTrajectoryStartGenerator<2> > poly_gens_;
 };
 
 

@@ -3,8 +3,6 @@
 #include <cassert>
 #include <iostream>
 
-#include "utils.hh"
-
 void
 save_params_csv(const std::string& fname, const ProgramOptions opts)
 {
@@ -295,7 +293,7 @@ polys_from_inkscape_path(const std::string& fname)
   return new MultiplePolygon(res);
 }
 
-void save_box_matlab(const Box& box, const std::string& fname,
+void save_box_matlab(const Box<2>& box, const std::string& fname,
 		     const std::string& fun_name)
 {
   std::ofstream f;
@@ -308,8 +306,8 @@ void save_box_matlab(const Box& box, const std::string& fname,
   }
 
   f << "function box = " << fun_name << "()" << std::endl;
-  f << "  box = [" << box.lower_left()[0] << " " << box.lower_left()[1]
-    << "; " << box.upper_right()[0] << " " << box.upper_right()[1] << "];"
+  f << "  box = [" << box.min()[0] << " " << box.min()[1]
+    << "; " << box.max()[0] << " " << box.max()[1] << "];"
     << std::endl;
   f << "end" << std::endl;
   f.close();
@@ -449,7 +447,7 @@ load_characs(const std::string& fname)
   return res;
 }
 
-Box
+Box<2>
 parse_box(const std::string& box_line)
 {
   std::string tmp;
@@ -464,5 +462,5 @@ parse_box(const std::string& box_line)
   std::getline(ss, tmp);
   double tr_y = std::stod(tmp);
 
-  return Box({ll_x, ll_y}, {tr_x, tr_y});
+  return Box<2>({ll_x, ll_y}, {tr_x, tr_y});
 }
