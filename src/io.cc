@@ -290,6 +290,25 @@ polys_from_inkscape_path(const std::string& fname)
   for (unsigned i = 0; i < polys.size(); ++i)
     res.push_back(CompoundPolygon(polys[i], {}));
 
+  for (CompoundPolygon& cp: res)
+  {
+    if (!Polygon::check_normals(cp.base(), true))
+    {
+      std::cout << "Corrected poly normals" << std::endl;
+      cp.base() = Polygon::reverse(cp.base());
+    }
+    assert(Polygon::check_normals(cp.base(), true));
+    for (Polygon& diff_poly: cp.diffs())
+    {
+      if (!Polygon::check_normals(diff_poly, false))
+      {
+  	std::cout << "Corrected poly normals" << std::endl;
+  	diff_poly = Polygon::reverse(diff_poly);
+  	assert(Polygon::check_normals(diff_poly, false));
+      }
+    }
+  }
+
   return new MultiplePolygon(res);
 }
 

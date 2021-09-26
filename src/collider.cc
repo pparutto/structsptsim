@@ -43,11 +43,13 @@ NoneCollider<N>::outside(const Point<N>& p) const
 }
 
 template <size_t N>
-Point<N>
-NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
+bool
+NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
+			 Point<N>& res) const
 {
   (void) p1;
-  return p2;
+  res = p2;
+  return false;
 }
 
 template <size_t N>
@@ -69,17 +71,19 @@ BoxCollider<N>::outside(const Point<N>& p) const
 }
 
 template <size_t N>
-Point<N>
-BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
+bool
+BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
+			Point<N>& res) const
 {
   (void) p1;
-
-  Point<N> res = p2;
+  res = p2;
 
   Point<N> min = this->box_.min();
   Point<N> max = this->box_.max();
+  bool collided = false;
   while (this->outside(res))
   {
+    collided = true;
     for (size_t i = 0; i < N; ++i)
     {
       if (p2[i] > max[i])
@@ -89,7 +93,7 @@ BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2) const
     }
   }
 
-  return res;
+  return collided;
 }
 
 
@@ -118,33 +122,41 @@ PolygonCollider::outside(const Point<2>& p) const
 
 //In this case, we would need to change the function to consider it
 //only the first time
-Point<2>
-PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
+bool
+PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
+			 Point<2>& res) const
 {
-  Segment<2> s1(p1, p2);
-
-  int cnt = 0;
-
+  assert(this->poly_.inside(p1));
   Point<2> p = p1;
-  Point<2> pp = p2;
+  res = p2;
+  Segment<2> s1(p1, res);
 
-  Point<2> inter_p;
-  Segment<2> inter_s;
-  Segment<2> prev_s;
+  Point<2> tmp = null_point<2>();
+  Point<2> inter_p = null_point<2>();
+  Segment<2> inter_s = Segment<2>::null();
+  Segment<2> prev_s = Segment<2>::null();
+  bool collided = false;
+  int cnt = 0;
   //segment cannot collide with the previously collided polygon segment
   while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
+    collided = true;
     prev_s = inter_s;
-    p = pp;
-    pp = Segment<2>::reflect(s1, inter_s, inter_p);
+    p = inter_p;
+    tmp = p;
+    res = Segment<2>::reflect(s1, inter_s, inter_p);
+    res = round_to_precision<2>(res);
 
-    s1 = Segment<2>(p, pp);
+    s1 = Segment<2>(p, res);
     ++cnt;
     if (cnt > 20)
       assert(false);
   }
 
-  return pp;
+  if (!this->poly_.inside(res))
+    std::cout << tmp << " " << p << " " << res << " ; " << inter_s.p1() << " " << inter_s.p2() << " " << cnt << std::endl;
+
+  return collided;
 }
 
 MultiplePolygonCollider::
@@ -168,14 +180,16 @@ MultiplePolygonCollider::outside(const Point<2>& p) const
   return true;
 }
 
-Point<2>
-MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2) const
+bool
+MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
+				 Point<2>& res) const
 {
+  res = p2;
   for (const PolygonCollider& coll: this->colliders_)
-    if (!coll.outside(p1) && coll.outside(p2))
-      return coll.collide(p1, p2);
+    if (coll.collide(p1, p2, res))
+      return true;
 
-  throw CollisionException(Segment<2>(p1, p2), "did not collide");
+  return false;
 }
 
 

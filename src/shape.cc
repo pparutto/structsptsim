@@ -167,63 +167,240 @@ bool feq(double a, double b, double tol)
 }
 
 bool
+Polygon::check_normals(const Polygon& poly, bool inner_normals)
+{
+  double DELTA_DISP = 0.005;
+  for (size_t i = 0; i < poly.pts().size(); ++i)
+  {
+    int next = (i + 1) % poly.pts().size();
+
+    Segment<2> seg(poly.pts()[i], poly.pts()[next]);
+    Vec<2> norm = seg.normal();
+
+    Point<2> p = seg.p1() + seg.vector() / 2 + norm * DELTA_DISP;
+    round_to_precision<2>(p);
+    if (poly.inside(p) != inner_normals)
+      return false;
+  }
+  return true;
+}
+
+Polygon Polygon::reverse(const Polygon& poly)
+{
+  PointEnsemble<2> pe;
+  for (int i = poly.pts().size() - 1; i >= 0; --i)
+    pe.push_back(poly.pts()[i]);
+  return Polygon(pe);
+}
+
+// bool
+// Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
+// {
+//   size_t n = this->pts_.size();
+//   Segment seg_inf(p, {p[0], p[1] + 99999});
+//   Segment<2> seg;
+//   Point<2> inter_p;
+//   int cnt = 0;
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     int next = (i + 1) % n;
+//     seg = Segment<2> (this->pts_[i], this->pts_[next]);
+
+//     if (seg.distance(p) < EPSILON)
+//       return border_is_inside;
+
+//     if (colinear(seg.p1(), seg.p2(), p))
+//     {
+//       std::cout << "COLINEAR " << seg.p1() << " " << seg.p2() << " " << p << " " << triangle_area(seg.p1(), seg.p2(), p) <<  std::endl;
+//       continue;
+//     }
+
+//     if (seg.intersect(seg_inf, inter_p))
+//     {
+//       if (dist(inter_p, this->pts_[i+1]) > EPSILON)
+//       {
+// 	std::cout << "[" << seg.p1()[0] << " " << seg.p2()[0] << "],[" << seg.p1()[1] << " " << seg.p2()[1] << "])" << std::endl;
+// 	++cnt;
+//       }
+//     }
+//   }
+
+//   if ((cnt % 2) == 0)
+//     std::cout << p << "  " << cnt << std::endl;
+//   //std::cout << cnt << std::endl;
+//   return (cnt % 2) == 1;
+
+bool flt(double a, double b)
+{
+  return a - b < -EPSILON;
+}
+
+bool fle(double a, double b)
+{
+  return a - b < EPSILON;
+}
+
+bool fgt(double a, double b)
+{
+  return a - b > EPSILON;
+}
+
+bool fge(double a, double b)
+{
+  return a - b > -EPSILON;
+}
+
+
+bool
 Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 {
-  int n = this->pts_.size();
-  double ax = 0.0;
-  double ay = this->pts_[n-2][0];
-  double bx = this->pts_[n-1][0] - p[0];
-  double by = this->pts_[n-1][1] - p[1];
-
-  bool lup = by > ay;
-  for (int i = 0; i < n; ++i)
+  size_t n = this->pts_.size();
+  int crossings = 0;
+  bool prev_left;
+  for (size_t i = 1; i <= n; ++i)
   {
-    ax = bx;
-    ay = by;
-    bx = this->pts_[i][0] - p[0];
-    by = this->pts_[i][1] - p[1];
-
-    if (feq(ay, by, EPSILON))
-      continue;
-    lup = by > ay;
+    if (flt(this->pts_[n-i][0], p[0]) || fgt(this->pts_[n-i][0], p[0]))
+    {
+      prev_left = flt(this->pts_[n-i][0], p[0]);
+      break;
+    }
   }
 
-  int depth = 0;
-  for (int i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; i++)
   {
-    ax = bx;
-    ay = by;
-    bx = this->pts_[i][0] - p[0];
-    by = this->pts_[i][1] - p[1];
+    Point<2> p1 = this->pts_[i];
+    Point<2> p2 = this->pts_[(i + 1) % n];
+    //plain crossing
+    //    if ((fgt(p[0], p1[0]) && flt(p[0], p2[0])) ||
+      //(flt(p[0], p1[0]) && fgt(p[0], p2[0])))
+    if ((fgt(p[0], p1[0]) && flt(p[0], p2[0])) ||
+	(flt(p[0], p1[0]) && fgt(p[0], p2[0])))
+    {
+      double t = (p[0] - p2[0]) / (p1[0] - p2[0]);
+      double cy = t * p1[1] + (1-t) * p2[1];
+      if (feq(p[1], cy, EPSILON))
+	return border_is_inside;
+      else if (fgt(p[1], cy))
+      {
+	//std::cout << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'c', 'LineWidth', 2) " << (std::abs(p[0] - p2[0]) < -EPSILON) << std::endl;
+	++crossings;
+      }
+    }
+    else if (feq(p1[0], p[0], EPSILON) && (fge(p[1], p1[1]) || fgt(p[1], p2[1]))) // && p1[1] <= p[1] // || p2[1] <= p[1]))
+    {
+      if (feq(p1[1], p[1], EPSILON)) // p is p1
+	return border_is_inside;
+      if (feq(p2[0], p[0], EPSILON)) // p is colinear to p1,p2
+      {
+	if ((fle(p[1], p1[1]) && fge(p[1], p2[1])) ||
+	    (fge(p[1], p1[1]) && fle(p[1], p2[1]))) //p is inside p1,p2
+	  return border_is_inside;
+      }
 
-    if ((ay < 0 && by < 0) ||
-	(ay > 0 && by > 0) ||
-	(ax < 0 && bx < 0))
-      continue;
+      if (fle(p1[1], p[1]) && ((prev_left && fgt(p2[0], p[0]))
+			       || (!prev_left && flt(p2[0], p[0]))))
+      {
+	//std::cout << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'm', 'LineWidth', 2)" << std::endl;
+	++crossings;
+      }
 
-    if (feq(ay, by, EPSILON) && std::min(ax, bx) <= 0)
-      return true;
+      // if (prev_left && p1[0] > p[0])
+      // {
+      // 	std::cout << "2 " << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'm', 'LineWidth', 2)" << std::endl;
+      // 	++crossings;
+      // }
+      // else if (p0[0] > p[0])
+      // {
+      // 	std::cout << "3 " << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'c', 'LineWidth', 2)" << std::endl;
+      // 	++crossings;
+      // }
+    }
 
-    if (feq(ay, by, EPSILON))
-      continue;
-
-    double lx = ax + (bx - ax) * (-ay) / (by - ay);
-    if (feq(lx, 0, EPSILON))
-      return border_is_inside;
-
-    if (lx > 0)
-      ++depth;
-    if (feq(ay, 0, EPSILON) && lup && by > ay)
-      --depth;
-    if (feq(ay, 0, EPSILON) && !lup && by < ay)
-      --depth;
-
-    lup = by > ay;
+    if (!feq(p2[0], p[0], EPSILON))
+      prev_left = flt(p2[0], p[0]);
   }
 
-
-  return depth % 2 == 1;
+  //std::cout << crossings << std::endl;
+  return (crossings % 2) == 1;
 }
+
+// bool
+// Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
+// {
+//   size_t n = this->pts_.size();
+//   double ax = 0.0;
+//   double ay = this->pts_[n-2][0];
+//   double bx = this->pts_[n-1][0] - p[0];
+//   double by = this->pts_[n-1][1] - p[1];
+
+//   bool lup = by > ay;
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     ax = bx;
+//     ay = by;
+//     bx = this->pts_[i][0] - p[0];
+//     by = this->pts_[i][1] - p[1];
+
+//     if (feq(ay, by, EPSILON))
+//       continue;
+//     lup = by > ay;
+//   }
+
+//   int depth = 0;
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     ax = bx;
+//     ay = by;
+//     bx = this->pts_[i][0] - p[0];
+//     by = this->pts_[i][1] - p[1];
+
+//     std::cout << this->pts_[i] << std::endl;
+
+//     std::cout << "ax = " << ax << " ay = " << ay << " bx = " << bx << " by = " << by << std::endl;
+//     if ((ay < -EPSILON && by < -EPSILON) ||
+//   	(ay > EPSILON  && by > EPSILON) ||
+//   	(ax < -EPSILON && bx < -EPSILON))
+//     {
+//       std::cout << "CONT 1" << std::endl;
+//       continue;
+//     }
+
+//     if (feq(ay, by, EPSILON) && std::min(ax, bx) <= 0)
+//     {
+//       std::cout << "?????????" << std::endl;
+//       return true;
+//     }
+
+//     if (feq(ay, by, EPSILON))
+//       continue;
+
+//     double lx = ax + (bx - ax) * (-ay) / (by - ay);
+//     std::cout << "lx = " << lx << std::endl;
+//     if (feq(lx, 0, EPSILON))
+//     {
+//       std::cout << "BORDER" << std::endl;
+//       return border_is_inside;
+//     }
+
+//     if (lx > 0)
+//     {
+//       std::cout << "PLUS " << std::endl;
+//       ++depth;
+//     }
+//     if (feq(ay, 0, EPSILON) && lup && by > ay)
+//       --depth;
+//     if (feq(ay, 0, EPSILON) && !lup && by < ay)
+//     {
+//       std::cout << "MINUS " << ay << " " << by << std::endl;
+//       --depth;
+//     }
+
+//     lup = (by - ay) > EPSILON;
+//   }
+//   std::cout << "depth = " << depth << std::endl;
+
+//   return depth % 2 == 1;
+// }
 
 
 bool
@@ -281,12 +458,10 @@ Polygon::intersect(const Segment<2>& s1,
 {
   Point<2> tmp_inter_p;
   bool already = false;
-  int i = 0;
-  do
-  {
-    int next = (i + 1) % this->pts_.size();
 
-    Segment<2> s2(this->pts_[i], this->pts_[next]);
+  for (size_t i = 0; i < this->pts_.size(); ++i)
+  {
+    Segment<2> s2(this->pts_[i], this->pts_[(i + 1) % this->pts_.size()]);
 
     if (!s2.on_segment(s1.p1()) && s1.intersect(s2, tmp_inter_p))
     {
@@ -307,21 +482,15 @@ Polygon::intersect(const Segment<2>& s1,
 	inter_s = s2;
       }
     }
-
-    i = next;
   }
-  while (i != 0);
 
   return already;
 }
 
 void Polygon::round_poly_pts()
 {
-  for (unsigned i = 0; i < this->pts_.size(); ++i)
-  {
-    this->pts_[i][0] = round_to_precision(this->pts_[i][0]);
-    this->pts_[i][1] = round_to_precision(this->pts_[i][1]);
-  }
+  for (Point<2>& p: this->pts_)
+    round_to_precision<2>(p);
 }
 
 double
@@ -450,6 +619,14 @@ CompoundPolygon::apply_pxsize(double pxsize)
     this->diffs_[i].apply_pxsize(pxsize);
 }
 
+void
+CompoundPolygon::round_poly_pts()
+{
+  this->base_.round_poly_pts();
+  for (Polygon& diff: this->diffs_)
+    diff.round_poly_pts();
+}
+
 bool
 CompoundPolygon::intersect(const Segment<2>& seg,
 			   Point<2>& inter_p, Segment<2>& inter_s) const
@@ -462,13 +639,6 @@ CompoundPolygon::intersect(const Segment<2>& seg,
 	return true;
 
   return false;
-
-  // WARNINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGg
-  // /!\ need to make sure the normals are correct when loading polygons
-  //we always want the normal to point inward
-  //i.e toward the starting point of s1
-  //if (dot(s1.vector(), res.normal()) > 0)
-  //  res.invert();
 }
 
 double
@@ -515,11 +685,13 @@ MultiplePolygon::inside(const Point<2>& p) const
   return false;
 }
 
-// PointEnsemble<2>
-// MultiplePolygon::boundary() const
-// {
-//   return {};
-// }
+
+void
+MultiplePolygon::round_poly_pts()
+{
+  for (CompoundPolygon& poly: this->polys_)
+    poly.round_poly_pts();
+}
 
 Box<2>
 MultiplePolygon::bounding_box() const

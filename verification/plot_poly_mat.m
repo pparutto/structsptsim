@@ -1,4 +1,4 @@
-addpath('/tmp/a')
+addpath('/tmp')
 
 
 p = [1187.5 219];
@@ -30,14 +30,22 @@ for i=1:length(dp)
     end
 end
 
-plot(p(1) * [1 5], p(2) * [1 1])
-plot([1304.1,1306], [220.9,219], 'm', 'LineWidth', 5)
-plot([1306,1306], [219,217.4], 'm', 'LineWidth', 5)
 
+% plot([203 203], [128, 0], 'r')
+% 
+% plot([202.9,203.5],[5.3,2.7], 'b', 'LineWidth', 2)
+% plot([208.1,202.9],[52,56.2], 'b', 'LineWidth', 2)
+% plot([202.7,203.3],[82.5,78.6], 'b', 'LineWidth', 2)
+% plot([203.9,202.9],[74.6,73.4], 'b', 'LineWidth', 2)
+% plot([202.5,203.1],[70.1,68.1], 'b', 'LineWidth', 2)
+% plot([203,203],[114.3,115.9], 'c', 'LineWidth', 2)
+% plot([203,203.1],[115.9,117.5], 'm', 'LineWidth', 2)
+% plot([203,203.1],[115.9,117.5], 'c', 'LineWidth', 2)
 
+plot([90.2 90.2], [64, 0], 'r')
 
 if ~isempty(start_b)
-    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r')
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r')   
     plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(2,2), 'r')
     plot([1 1] * start_b(1,1), [start_b(1,2), start_b(2,2)], 'r')
     plot([1 1] * start_b(2,1), [start_b(1,2), start_b(2,2)], 'r')

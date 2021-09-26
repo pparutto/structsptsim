@@ -82,9 +82,12 @@ public:
 
   virtual const PointEnsemble<2>& pts() const { return this->pts_; };
 
-  void round_poly_pts();
+  virtual void round_poly_pts();
 
   bool my_inside(const Point<2>& p, bool border_is_inside) const;
+
+  static Polygon reverse(const Polygon& poly);
+  static bool check_normals(const Polygon& poly, bool inner_normals);
 private:
   PointEnsemble<2> pts_;
 };
@@ -130,9 +133,13 @@ public:
 
   virtual double signed_area() const override;
 
+  virtual void round_poly_pts() override;
+
   virtual const PointEnsemble<2>& pts() const override;
   const Polygon& base() const { return this->base_; };
+  Polygon& base() { return this->base_; };
   const std::vector<Polygon>& diffs() const { return this->diffs_; };
+  std::vector<Polygon>& diffs() { return this->diffs_; };
 protected:
   Polygon base_;
   std::vector<Polygon> diffs_;
@@ -151,6 +158,8 @@ public:
 
   virtual bool inside(const Point<2>& p) const;
   virtual Box<2> bounding_box() const;
+
+  virtual void round_poly_pts();
 
   bool empty() const;
 protected:

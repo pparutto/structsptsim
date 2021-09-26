@@ -21,17 +21,24 @@ public:
   bool operator== (const Segment<N>& s2) const;
 
   bool intersect(const Segment<N>& s, Point<N>& inter_p) const;
-  static Point<N> reflect(const Segment<N>& s1, const Segment<N>& s2,
-			  const Point<N>& inter_p);
 
   const Point<N>& p1() const { return this->p1_; };
   const Point<N>& p2() const { return this->p2_; };
+
+  static Point<N> reflect(const Segment<N>& s1, const Segment<N>& s2,
+			  const Point<N>& inter_p);
+  static Segment<N> null();
+
 protected:
   Point<N> p1_;
   Point<N> p2_;
 };
 
 template <size_t N>
-std::ostream& operator<< (std::ostream& os, const Segment<N>& seg);
+std::ostream& operator<< (std::ostream& os, const Segment<N>& seg)
+{
+  return os << seg.p1() << "; " << seg.p2();
+}
+
 
 #endif /// !SEGMENT_HH

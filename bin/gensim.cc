@@ -298,7 +298,10 @@ int main(int argc, char** argv)
     }
 
     if (p_opts.use_pxsize)
+    {
       polys->apply_pxsize(p_opts.pxsize);
+      polys->round_poly_pts();
+    }
 
     if (p_opts.export_poly_txt)
     {

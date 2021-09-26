@@ -23,8 +23,8 @@ public:
   virtual ~Collider();
 
   virtual bool outside(const Point<N>& p) const = 0;
-  virtual Point<N> collide(const Point<N>& p1,
-			   const Point<N>& p2) const = 0;
+  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
+		       Point<N>& res) const = 0;
 };
 
 template <size_t N>
@@ -33,8 +33,8 @@ class NoneCollider: public Collider<N>
 public:
   virtual ~NoneCollider();
   virtual bool outside(const Point<N>& p) const override;
-  virtual Point<N> collide(const Point<N>& p1,
-			   const Point<N>& p2) const override;
+  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
+		       Point<N>& res) const override;
 };
 
 template <size_t N>
@@ -45,8 +45,8 @@ public:
   virtual ~BoxCollider();
 
   virtual bool outside(const Point<N>& p) const override;
-  virtual Point<N> collide(const Point<N>& p1,
-			   const Point<N>& p2) const override;
+  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
+		       Point<N>& res) const override;
 protected:
   Box<N> box_;
 };
@@ -58,8 +58,8 @@ public:
   virtual ~PolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
-  virtual Point<2> collide(const Point<2>& p1,
-			   const Point<2>& p2) const override;
+  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
+		       Point<2>& res) const override;
 protected:
   const Polygon& poly_;
 };
@@ -71,8 +71,8 @@ public:
   virtual ~PolygonCollider3D();
 
   virtual bool outside(const Point<3>& p) const override;
-  virtual Point<3> collide(const Point<3>& p1,
-			   const Point<3>& p2) const override;
+  virtual bool collide(const Point<3>& p1, const Point<3>& p2,
+		       Point<3>& res) const override;
 protected:
   const Polygon3D& poly_;
 };
@@ -84,8 +84,8 @@ public:
   virtual ~MultiplePolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
-  virtual Point<2> collide(const Point<2>& p1,
-			   const Point<2>& p2) const override;
+  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
+		       Point<2>& res) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
 };

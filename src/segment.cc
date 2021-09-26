@@ -22,6 +22,20 @@ Segment<2>::distance(const Point<2>& p) const
 	  d);
 }
 
+// template<>
+// double
+// Segment<2>::distance(const Point<2>& p) const
+// {
+//   // Return minimum distance between line segment vw and point p
+//   double d2 = ((this->p2_[0] - this->p1_[0]) * (this->p2_[0] - this->p1_[0]) +
+// 	       (this->p2_[1] - this->p1_[1]) * (this->p2_[1] - this->p1_[1]));
+//   Vec<2> vec = this->vector();
+
+//   const double t =
+//     std::max(0.0, std::min(1.0, dot(p - this->p1_, vec) / d2));
+//   return dist(p, this->p1_ + vec * t); //projected point
+// }
+
 template <size_t N>
 double
 Segment<N>::distance(const Point<N>& p) const
@@ -38,7 +52,7 @@ Segment<2>::on_segment(const Point<2>& p) const
 
   if (!colinear(this->p1_, this->p2_, p))
   {
-    if (this->distance(p) > DBL_EPSILON)
+    if (this->distance(p) > EPSILON)
       return false;
   }
   //return false;
@@ -116,12 +130,14 @@ Segment<2>::intersect(const Segment<2>& seg, Point<2>& inter_p) const
 
   double s = (-v1[1] * (this->p1_[0] - seg.p1()[0]) + v1[0] *
 	      (this->p1_[1] - seg.p1()[1])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
-  double t = (v2[0] * (this->p1_[1] - seg.p1()[1]) - v2[1] *
+  double t = ( v2[0] * (this->p1_[1] - seg.p1()[1]) - v2[1] *
 	      (this->p1_[0] - seg.p1()[0])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
 
   if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
   {
-    inter_p = this->p1_ + v1 * t;
+    //Vec<2> norm = this->normal();
+    inter_p = this->p1_ + v1 * t;// + norm * EPSILON * 0.5;
+    //round_to_precision<2>(inter_p);
     return true;
   }
 
@@ -136,7 +152,7 @@ Segment<2>::intersect(const Segment<2>& seg, Point<2>& inter_p) const
 
 //   double s = (-n1[1] * (s1.p1()[0] - s2.p1()[0]) +
 // 	      n1[1] * (s1.p1()[1] - s2.p1()[1])) /
-//     (-n2[0] * n1[1] + n1[1] * n2[1]);
+//     (-n2[0] * n1[1] + n1[0] * n2[1]);
 //   double t = (n2[0] * (s1.p1()[1] - s2.p1()[1]) -
 // 	      n2[1] * (s1.p1()[0] - s2.p1()[0])) /
 //     (-n2[0] * n1[1] + n1[0] * n2[1]);
@@ -170,13 +186,10 @@ Segment<2>::reflect(const Segment<2>& s1, const Segment<2>& s2,
   return s1.p2() - N * (2 * s);
 }
 
-
 template <size_t N>
-std::ostream&
-operator<< (std::ostream& os, const Segment<N>& seg)
+Segment<N> Segment<N>::null()
 {
-  os << seg.p1() << "; " << seg.p2();
-  return os;
+  return Segment<N>(null_point<N>(), null_point<N>());
 }
 
 template class Segment<2>;

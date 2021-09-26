@@ -19,7 +19,7 @@ BrownianMotion<N>::step_euler(const Point<N>& p)
   Point<N> res;
   for (size_t i = 0; i < N; ++i)
     res[i] = p[i] + this->s2Ddt_ * this->randn_(this->ng_);
-  return res;
+  return round_to_precision<N>(res);
 }
 
 template <size_t N>
@@ -44,7 +44,8 @@ EmpiricalMotion::step_euler(const Point<2>& p)
 {
   double r = this->ivel_cdf_.draw(this->randu_(this->ng_)) * this->dt_;
   double ang = this->randu_(this->ng_) * 2 * M_PI;
-  return {p[0] + r * cos(ang), p[1] + r * sin(ang)};
+  Point<2> res({p[0] + r * cos(ang), p[1] + r * sin(ang)});
+  return round_to_precision<2>(res);
 }
 
 bool

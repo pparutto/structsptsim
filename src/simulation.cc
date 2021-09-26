@@ -20,7 +20,7 @@ namespace
       }
       catch (std::exception& e)
       {
-	std::cerr << e.what() << std::endl;
+	std::cerr << "Exception " << e.what() << std::endl;
       }
     }
   }
@@ -194,7 +194,7 @@ SimulationEmpirical::run()
       }
       catch (std::exception& e)
       {
-	std::cerr << e.what() << std::endl;
+	std::cerr << "Exception : " << e.what() << std::endl;
       }
     }
   }

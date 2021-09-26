@@ -32,6 +32,8 @@ Vec<3> cross(const Vec<3>& v1, const Vec<3>& v2);
 
 double round_to_precision(double v);
 
+template <size_t N>
+Point<N> null_point();
 
 template <size_t N>
 Point<N> zero();
@@ -73,10 +75,19 @@ template<size_t N>
 std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt);
 
 template <int N>
-void round_to_precision(Point<N>& v);
+Point<N>& round_to_precision(Point<N>& v);
 
 
 /////////// implementation
+
+template <size_t N>
+Point<N> null_point()
+{
+  Point<N> res;
+  for (size_t i = 0; i < N; ++i)
+    res[i] = NAN;
+  return res;
+}
 
 template <size_t N>
 Point<N> zero()
@@ -101,7 +112,8 @@ bool operator== (const std::array<double, N>& v1,
 		 const std::array<double, N>& v2)
 {
   for (size_t i = 0; i < N; ++i)
-    if (std::abs(v1[i] - v2[i]) > EPSILON)
+    if (std::isnan(v1[i]) || std::isnan(v2[i]) ||
+	std::abs(v1[i] - v2[i]) > EPSILON)
       return false;
   return true;
 }
@@ -179,15 +191,16 @@ std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt)
 {
   os << pt[0];
   for (size_t i = 1; i < N; ++i)
-    os << " " << pt[i];
+    os << ", " << pt[i];
   return os;
 }
 
 template <int N>
-void round_to_precision(Point<N>& v)
+Point<N>& round_to_precision(Point<N>& v)
 {
   for (size_t i = 0; i < N; ++i)
     v[i] = round_to_precision(v[i]);
+  return v;
 }
 
 

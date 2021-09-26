@@ -34,14 +34,18 @@ TrajectoryGenerator<N>::init()
   assert(this->traj_rec_->traj().empty());
 
   bool done = false;
-  Point<N> p = zero<N> ();
+  Point<N> p = zero<N>();
   while (!done)
   {
     try
     {
-      this->traj_start_.generate();
-      for (int i = 0; i < 500 && this->collider_.outside(p); ++i)
+      int i = 0;
+      do
+      {
 	p = this->traj_start_.generate();
+	p = round_to_precision<N>(p);
+      }
+      while (i < 500 && this->collider_.outside(p));
       done = true;
     }
     catch (std::runtime_error& e)
@@ -80,8 +84,7 @@ TrajectoryGenerator<N>::generate_step()
 
   //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
 
-  if (this->collider_.outside(p2))
-    p2 = this->collider_.collide(p1, p2);
+  this->collider_.collide(p1, p2, p2);
 
   //std::cout << "p22 = " << p2[0] << " " << p2[1] << std::endl;
 
@@ -106,15 +109,17 @@ TrajectoryGenerator<N>::generate()
     bool done = false;
     while (!done)
     {
-      try
-      {
-	this->generate_step();
-	done = true;
-      }
-      catch (std::exception& e)
-      {
-	std::cerr << e.what() << std::endl;
-      }
+      this->generate_step();
+      done = true;
+      // try
+      // {
+      // 	this->generate_step();
+      // 	done = true;
+      // }
+      // catch (std::exception& e)
+      // {
+      // 	std::cerr << "Exception : " << e.what() << std::endl;
+      // }
     }
   }
 
