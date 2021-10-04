@@ -145,7 +145,7 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
     p = inter_p;
     tmp = p;
     res = Segment<2>::reflect(s1, inter_s, inter_p);
-    res = round_to_precision<2>(res);
+    //res = round_to_precision<2>(res);
 
     s1 = Segment<2>(p, res);
     ++cnt;

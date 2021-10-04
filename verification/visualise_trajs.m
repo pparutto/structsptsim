@@ -1,7 +1,7 @@
 addpath('../external')
 
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
-addpath('/tmp/toto')
+addpath('/tmp/toto2')
 
 outdir = '/tmp/simu_fullcell';
 if ~isfolder(outdir)
@@ -427,8 +427,13 @@ for k=1%unique(tab(:,1))'
 
     %plot([67.6094063, 67.6089001], [21.2413533 21.2256399], 'b', 'LineWidth', 2)
     %Utils.show_trajectories(tab(tab(:,1) == k, :));
-    plot(44.3165149, 57.9196315, 'x')
-    plot(44.3179501, 57.9195661, 'o')
+    %Utils.show_trajectories(tab);
+    %plot(20.3233146, 55.128996, 'xm')
+    %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
+    
+    plot(20.3233063707433, 55.1290140731416, 'x')
+    plot(20.3233064, 55.1290141, 'o')
+
     
     if ~isempty(start_b)
         plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r', 'LineWidth', 2)
@@ -444,6 +449,8 @@ for k=1%unique(tab(:,1))'
     end
     hold off
     daspect([1 1 1])
+    set (gcf, 'WindowButtonMotionFcn', @mouseMove);
+
     %tightfig();
     %print(sprintf('%s/trajs_%d.png', outdir, k), '-dpng', '-r1000')
     %pause(5);

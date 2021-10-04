@@ -22,6 +22,24 @@ int main(int argc, char** argv)
 
   std::cout << std::setprecision(15);
 
+  std::cout << "ER complex poly" << std::endl;
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/ER9_VERYNICE_MMStack_Pos0.ome_Simple Segmentation_cleaned_binary_poly.poly");
+
+    poly->apply_pxsize(0.0645);
+    poly->round_poly_pts();
+    assert(poly->polys()[0].inside({20.3233146, 55.128996}));
+
+    Segment<2> s1({20.233700,55.134600}, {20.543300,55.115300});
+    Segment<2> s2({20.3233, 55.12903}, {20.32332,55.12898});
+    Point<2> ip;
+    s2.intersect(s1, ip);
+    std::cout << ip << std::endl;
+    std::cout << round_to_precision<2>(ip) << std::endl;
+    //    assert(poly->polys()[0].inside({20.3661914, 55.1078195}));
+  }
+
   {
     PointEnsemble<2> pe;
     pe.push_back({72, 30});

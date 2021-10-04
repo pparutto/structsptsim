@@ -57,6 +57,7 @@ TrajectoryGenerator<N>::init()
   if (this->collider_.outside(p))
     throw std::runtime_error("Failed to generate a point in polygon");
 
+  std::cout << p << std::endl;
   this->traj_rec_->record(p);
 }
 
@@ -83,9 +84,8 @@ TrajectoryGenerator<N>::generate_step()
   Point<N> p2 = this->motion_model_.step_euler(p1);
 
   //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
-
   this->collider_.collide(p1, p2, p2);
-
+  std::cout << p2 << std::endl;
   //std::cout << "p22 = " << p2[0] << " " << p2[1] << std::endl;
 
   this->traj_rec_->record(p2);
@@ -102,6 +102,7 @@ template <size_t N>
 Trajectory<N>
 TrajectoryGenerator<N>::generate()
 {
+  std::cout << "================================" << std::endl;
   this->init();
 
   while (!this->finished())
