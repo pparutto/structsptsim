@@ -3,77 +3,48 @@
 #include <cassert>
 #include <iostream>
 
-void
-save_params_csv(const std::string& fname, const ProgramOptions opts)
+TrajectoryCharacs::TrajectoryCharacs(Point<2> pos, int npts)
+  : p0(pos)
+  , npts(npts)
 {
-  std::ofstream f;
-  f.open(fname);
-
-  if (!f.is_open())
-  {
-    std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
-    return;
-  }
-
-  if (opts.motion_type == MotionType::BROWNIAN)
-  {
-    f << "MotionType, Brownian" << std::endl;
-    f << "D, " << std::to_string(opts.D) << std::endl;
-    f << "dt, " << std::to_string(opts.dt) << std::endl;
-  }
-  else if (opts.motion_type == MotionType::DISTRIB)
-  {
-    f << "MotionType, Distribution" << std::endl;
-    f << "DistribFile, " << opts.cdf_path << std::endl;
-  }
-
-  if (opts.tr_gen_type == TrajGenType::NTRAJS)
-  {
-    f << "TrajGenType, Trajs" << std::endl;
-    f << "Ntrajs, " << std::to_string(opts.Ntrajs) << std::endl;
-  }
-  else if (opts.tr_gen_type == TrajGenType::NFRAMES)
-  {
-    f << "TrajGenType, Frames" << std::endl;
-    f << "Nframes, " << std::to_string(opts.Nframes) << std::endl;
-    f << "density, " << std::to_string(opts.spot_dens) << std::endl;
-    f << "FOVWidth, " << std::to_string(opts.width) << std::endl;
-    f << "FOVHeight, " << std::to_string(opts.height) << std::endl;
-  }
-  else
-  {
-    f << "TrajGenType, Empirical" << std::endl;
-    f << "EmpiricalTrajsFile, " << opts.empirical_trajs_file << std::endl;
-  }
-
-  if (opts.tr_len_type == TrajLenType::EXP)
-  {
-    f << "TrajLengthType, Exponential" << std::endl;
-    f << "NptsLambda, " + std::to_string(opts.pdist.lambda()) << std::endl;
-  }
-  else
-  {
-    f << "TrajLengthType, Fixed" << std::endl;
-    f << "Npts, " << std::to_string(opts.Npts) << std::endl;
-  }
-
-  if (opts.use_pxsize)
-    f << "pixelSize, " << opts.pxsize << std::endl;
-
-  f << "DT, " << std::to_string(opts.DT) << std::endl;
-
-  if (opts.use_poly)
-  {
-    f << "ConfinementType, Polygon" << std::endl;
-    f << "polygonFile, " << opts.poly_path << std::endl;
-  }
-  else
-    f << "ConfinementType, FreeSpace" << std::endl;
-
-  f << "Outdir, " << opts.outdir << std::endl;
-
-  f.close();
 }
+
+
+TrajectoryCharacsMap
+TrajectoryCharacs::from_file(const std::string& fname)
+{
+  TrajectoryCharacsMap res;
+
+  std::ifstream ifs(fname);
+  if (!ifs.is_open())
+  {
+    std::cout << "ERROR file not found: " << fname << std::endl;
+    return res;
+  }
+
+  std::string line;
+  std::string tmp;
+  while (std::getline(ifs, line))
+  {
+    std::istringstream ss(line);
+    std::getline(ss, tmp, ',');
+    double px = std::stod(tmp);
+    std::getline(ss, tmp, ',');
+    double py = std::stod(tmp);
+    std::getline(ss, tmp, ',');
+    int frame = std::stoi(tmp);
+    std::getline(ss, tmp);
+    int npts = std::stoi(tmp);
+
+    if (res.find(frame) == res.end())
+      res.insert(std::pair<int, std::vector<TrajectoryCharacs> >
+		 (frame, std::vector<TrajectoryCharacs> ()));
+    res[frame].push_back(TrajectoryCharacs({px, py}, npts));
+  }
+
+  return res;
+}
+
 
 //format:
 //x,y
@@ -421,49 +392,6 @@ save_poly_txt(const CompoundPolygon& poly, const std::string& fname)
   }
 
   f.close();
-}
-
-
-TrajectoryCharacs::TrajectoryCharacs(Point<2> pos, int npts)
-  : p0(pos)
-  , npts(npts)
-{
-}
-
-
-TrajectoryCharacsMap
-load_characs(const std::string& fname)
-{
-  TrajectoryCharacsMap res;
-
-  std::ifstream ifs(fname);
-  if (!ifs.is_open())
-  {
-    std::cout << "ERROR file not found: " << fname << std::endl;
-    return res;
-  }
-
-  std::string line;
-  std::string tmp;
-  while (std::getline(ifs, line))
-  {
-    std::istringstream ss(line);
-    std::getline(ss, tmp, ',');
-    double px = std::stod(tmp);
-    std::getline(ss, tmp, ',');
-    double py = std::stod(tmp);
-    std::getline(ss, tmp, ',');
-    int frame = std::stoi(tmp);
-    std::getline(ss, tmp);
-    int npts = std::stoi(tmp);
-
-    if (res.find(frame) == res.end())
-      res.insert(std::pair<int, std::vector<TrajectoryCharacs> >
-		 (frame, std::vector<TrajectoryCharacs> ()));
-    res[frame].push_back(TrajectoryCharacs({px, py}, npts));
-  }
-
-  return res;
 }
 
 Box<2>

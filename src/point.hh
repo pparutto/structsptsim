@@ -41,40 +41,40 @@ Point<N> zero();
 template <size_t N>
 Point<N> to_point(const TimedPoint<N>& tp);
 
-template<size_t N>
+template <size_t N>
 bool operator== (const std::array<double, N>& v1,
 		 const std::array<double, N>& v2);
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator- (const std::array<double, N>& v1,
 				 const std::array<double, N>& v2);
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator+ (const std::array<double, N>& v1,
 				 const std::array<double, N>& v2);
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator* (const std::array<double, N>& v,
 				 double val);
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator/ (const std::array<double, N>& v,
 				 double val);
 
-template<size_t N>
+template <size_t N>
 double dot(const std::array<double, N>& v1, const std::array<double, N>& v2);
 
-template<size_t N>
+template <size_t N>
 double norm(const Vec<N>& v);
 
-template<size_t N>
+template <size_t N>
 double dist(const Point<N>& p1, const Point<N>& p2);
 
 
-template<size_t N>
+template <size_t N>
 std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt);
 
-template <int N>
+template <size_t N>
 Point<N>& round_to_precision(Point<N>& v);
 
 
@@ -107,7 +107,7 @@ Point<N> to_point(const TimedPoint<N>& tp)
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 bool operator== (const std::array<double, N>& v1,
 		 const std::array<double, N>& v2)
 {
@@ -118,7 +118,7 @@ bool operator== (const std::array<double, N>& v1,
   return true;
 }
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator- (const std::array<double, N>& v1,
 				 const std::array<double, N>& v2)
 {
@@ -128,7 +128,7 @@ std::array<double, N> operator- (const std::array<double, N>& v1,
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator+ (const std::array<double, N>& v1,
 				 const std::array<double, N>& v2)
 {
@@ -138,7 +138,7 @@ std::array<double, N> operator+ (const std::array<double, N>& v1,
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator* (const std::array<double, N>& v,
 				 double val)
 {
@@ -148,7 +148,7 @@ std::array<double, N> operator* (const std::array<double, N>& v,
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 std::array<double, N> operator/ (const std::array<double, N>& v,
 				 double val)
 {
@@ -158,7 +158,7 @@ std::array<double, N> operator/ (const std::array<double, N>& v,
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 double dot(const std::array<double, N>& v1, const std::array<double, N>& v2)
 {
   double res = 0;
@@ -167,7 +167,7 @@ double dot(const std::array<double, N>& v1, const std::array<double, N>& v2)
   return res;
 }
 
-template<size_t N>
+template <size_t N>
 double norm(const Vec<N>& v)
 {
   double res = 0;
@@ -176,7 +176,7 @@ double norm(const Vec<N>& v)
   return sqrt(res);
 }
 
-template<size_t N>
+template <size_t N>
 double dist(const Point<N>& p1, const Point<N>& p2)
 {
   double res = 0;
@@ -186,7 +186,7 @@ double dist(const Point<N>& p1, const Point<N>& p2)
 }
 
 
-template<size_t N>
+template <size_t N>
 std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt)
 {
   os << pt[0];
@@ -195,7 +195,7 @@ std::ostream& operator<< (std::ostream& os, const std::array<double, N>& pt)
   return os;
 }
 
-template <int N>
+template <size_t N>
 Point<N>& round_to_precision(Point<N>& v)
 {
   for (size_t i = 0; i < N; ++i)

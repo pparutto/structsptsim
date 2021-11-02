@@ -59,8 +59,8 @@ SimulationTrajectory<N>::run()
   int cpt = 0;
   while (!this->end_cond_.evaluate(*this))
   {
-    TrajectoryGenerator<N>* tg = this->traj_gen_facto_.get(0.0);
     std::cout << cpt << std::endl;
+    TrajectoryGenerator<N>* tg = this->traj_gen_facto_.get(0.0);
     this->trajs_.push_back(tg->generate());
 
     delete tg;

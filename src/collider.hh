@@ -11,6 +11,7 @@ public:
   ~CollisionException() = default;
   virtual const char* what() const noexcept override;
 
+  const Segment<N>& s() const { return this->s_; };
 protected:
   const Segment<N> s_;
   const std::string what_;
@@ -25,6 +26,7 @@ public:
   virtual bool outside(const Point<N>& p) const = 0;
   virtual bool collide(const Point<N>& p1, const Point<N>& p2,
 		       Point<N>& res) const = 0;
+  virtual void who_am_I(std::ostream& os) const = 0;
 };
 
 template <size_t N>
@@ -35,6 +37,7 @@ public:
   virtual bool outside(const Point<N>& p) const override;
   virtual bool collide(const Point<N>& p1, const Point<N>& p2,
 		       Point<N>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
 };
 
 template <size_t N>
@@ -47,6 +50,7 @@ public:
   virtual bool outside(const Point<N>& p) const override;
   virtual bool collide(const Point<N>& p1, const Point<N>& p2,
 		       Point<N>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   Box<N> box_;
 };
@@ -60,6 +64,7 @@ public:
   virtual bool outside(const Point<2>& p) const override;
   virtual bool collide(const Point<2>& p1, const Point<2>& p2,
 		       Point<2>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   const Polygon& poly_;
 };
@@ -73,6 +78,7 @@ public:
   virtual bool outside(const Point<3>& p) const override;
   virtual bool collide(const Point<3>& p1, const Point<3>& p2,
 		       Point<3>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   const Polygon3D& poly_;
 };
@@ -86,6 +92,7 @@ public:
   virtual bool outside(const Point<2>& p) const override;
   virtual bool collide(const Point<2>& p1, const Point<2>& p2,
 		       Point<2>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
 };

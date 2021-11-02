@@ -29,6 +29,14 @@ NumberTrajectoriesSimulationEndCondition<N>::evaluate(const Simulation<N>& sim)
   return sim.trajs().size() >= this->max_ntrajs_;
 }
 
+template <size_t N>
+void
+NumberTrajectoriesSimulationEndCondition<N>::who_am_I(std::ostream& os) const
+{
+  os << "NumberTrajectoriesSimulationEndCondition(" << this->max_ntrajs_
+     << ")" << std::endl;
+}
+
 
 template <size_t N>
 NumberFramesSimulationEndCondition<N>::
@@ -52,6 +60,14 @@ NumberFramesSimulationEndCondition<N>::evaluate(const Simulation<N>& sim)
     return true;
   ++this->cur_frame_;
   return false;
+}
+
+template <size_t N>
+void
+NumberFramesSimulationEndCondition<N>::who_am_I(std::ostream& os) const
+{
+  os << "NumberFramesSimulationEndCondition(" << this->max_frames_
+     << ")" << std::endl;
 }
 
 

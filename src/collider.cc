@@ -53,6 +53,13 @@ NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
 }
 
 template <size_t N>
+void
+NoneCollider<N>::who_am_I(std::ostream& os) const
+{
+  os << "NoneCollider()" << std::endl;
+}
+
+template <size_t N>
 BoxCollider<N>::BoxCollider(const Box<N>& box)
   : box_(box)
 {
@@ -94,6 +101,13 @@ BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
   }
 
   return collided;
+}
+
+template <size_t N>
+void
+BoxCollider<N>::who_am_I(std::ostream& os) const
+{
+  os << "BoxCollider(" << this->box_ << ")" << std::endl;
 }
 
 
@@ -154,10 +168,18 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
   }
 
   if (!this->poly_.inside(res))
-    std::cout << tmp << " " << p << " " << res << " ; " << inter_s.p1() << " " << inter_s.p2() << " " << cnt << std::endl;
+    throw CollisionException<2>(s1, "Collision result outside of polygon");
+  //std::cout << tmp << " " << p << " " << res << " ; " << inter_s.p1() << " " << inter_s.p2() << " " << cnt << std::endl;
 
   return collided;
 }
+
+void
+PolygonCollider::who_am_I(std::ostream& os) const
+{
+  os << "PolygonCollider()" << std::endl;
+}
+
 
 MultiplePolygonCollider::
 MultiplePolygonCollider(const MultiplePolygon& polys)
@@ -190,6 +212,12 @@ MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
       return true;
 
   return false;
+}
+
+void
+MultiplePolygonCollider::who_am_I(std::ostream& os) const
+{
+  os << "MultiplePolygonCollider()" << std::endl;
 }
 
 

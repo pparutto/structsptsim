@@ -11,7 +11,7 @@
 
 #include "simulation.hh"
 #include "simulation_end_condition.hh"
-#include "io.hh"
+#include "gensim_io.hh"
 
 #include "cum_distrib_function.hh"
 
@@ -65,203 +65,19 @@ int main(int argc, char** argv)
   try
   {
     TCLAP::CmdLine cmd("./gensim", ' ', "1");
+    ArgumentParserOptions arg_parse_opts;
 
-    TCLAP::SwitchArg export_poly_txt_arg
-      ("", "export-poly-txt", "Export polygon geometry as text file", false);
-    cmd.add(export_poly_txt_arg);
-
-    TCLAP::SwitchArg export_poly_mat_arg
-      ("", "export-poly-mat", "Export polygon geometry as malab file", false);
-    cmd.add(export_poly_mat_arg);
-
-    TCLAP::ValueArg<double> pxsize_arg
-      ("", "pxsize", "", false, NAN, "Pixel size for polygon (µm)");
-    cmd.add(pxsize_arg);
-
-    TCLAP::ValueArg<std::string> start_box_arg
-      ("", "start-box", "", false, "",
-       "Box to start trajectories (format: llx,lly;trx,try)");
-    cmd.add(start_box_arg);
-
-    TCLAP::ValueArg<std::string> stop_box_arg
-      ("", "stop-box", "", false, "",
-       "Box to end trajectories (format: llx,lly;trx,try)");
-    cmd.add(stop_box_arg);
-
-    TCLAP::ValueArg<double> exp_l_arg
-      ("", "npts-exp", "", false, NAN, "Exponential λ traj. length");
-    cmd.add(exp_l_arg);
-
-    TCLAP::ValueArg<std::string> empirical_tr_arg
-      ("", "empirical-trajs", "", false, "", "Empirical trajectories");
-    cmd.add(empirical_tr_arg);
-
-    TCLAP::ValueArg<unsigned> Npts_arg
-      ("", "npts-fixed", "", false, 0, "Number of points");
-    cmd.add(Npts_arg);
-
-    TCLAP::ValueArg<unsigned> Ntrajs_arg
-      ("", "ntrajs", "", false, 0, "Number of trajectories");
-    cmd.add(Ntrajs_arg);
-
-    TCLAP::ValueArg<unsigned> Nframes_arg
-      ("", "nframes", "", false, 0, "Number of frames");
-    cmd.add(Nframes_arg);
-
-    TCLAP::ValueArg<unsigned> width_arg
-      ("", "fov-width", "", false, 0, "Width of field of view");
-    cmd.add(width_arg);
-
-    TCLAP::ValueArg<unsigned> height_arg
-      ("", "fov-height", "", false, 0, "Height of field of view");
-    cmd.add(height_arg);
-
-    TCLAP::ValueArg<double> spot_dens_arg
-      ("", "spot-density", "", false, 0.0, "Spots / μm^2 / frame");
-    cmd.add(spot_dens_arg);
-
-    TCLAP::ValueArg<double> D_arg
-      ("", "motion-D", "", false, NAN, "Diffusion coefficient (μm²/s)");
-    cmd.add(D_arg);
-
-    TCLAP::ValueArg<std::string> ivel_cdf_arg
-      ("", "motion-cdf", "", false, "", "CSV file containing inst. vel. cdf");
-    cmd.add(ivel_cdf_arg);
-
-    TCLAP::ValueArg<std::string> poly_arg
-      ("", "poly", "", false, "", "Path to polygon file");
-    cmd.add(poly_arg);
-
-    TCLAP::ValueArg<double> dt_arg
-      ("", "dt", "", false, NAN, "Simulation timestep (s)");
-    cmd.add(dt_arg);
-
-    TCLAP::UnlabeledValueArg<double> DT_arg
-      ("DT", "acquisition timestep (s)", true, NAN, "DT");
-    cmd.add(DT_arg);
-
-    TCLAP::UnlabeledValueArg<std::string> outdir_arg
-      ("outdir", "output directory", true, "", "outdir");
-    cmd.add(outdir_arg);
-
+    arg_parse_opts.add_arguments(cmd);
     cmd.parse(argc, argv);
 
-    if (!(Ntrajs_arg.isSet() ^ Nframes_arg.isSet() ^ empirical_tr_arg.isSet()))
-    {
-      std::cerr << "ERROR: Either ntrajs, nframes or empirical-trajs must be set"
-		<< std::endl;
-      return 0;
-    }
-
-    if (Nframes_arg.isSet() && (!spot_dens_arg.isSet() || !width_arg.isSet() ||
-				!height_arg.isSet()))
-    {
-      std::cerr << "ERROR: spot-density, fov-width and fov-height, must be set when selecting nframes"
-		<< std::endl;
-      return 0;
-    }
-
-    if (!(Npts_arg.isSet() ^ exp_l_arg.isSet() ^ empirical_tr_arg.isSet() ^
-	  stop_box_arg.isSet()))
-    {
-      std::cerr << "ERROR: either npts-fixed, npts-exp, empirical-trajs or stop-box must be set"
-		<< std::endl;
-      return 0;
-    }
-
-    if (D_arg.isSet() && !dt_arg.isSet())
-    {
-      std::cerr << "ERROR: dt must be set if motion is diffusive" << std::endl;
-      return 0;
-    }
-
-    if (poly_arg.isSet())
-    {
-      p_opts.use_poly = true;
-      p_opts.poly_path = poly_arg.getValue();
-    }
-
-    p_opts.export_poly_txt = export_poly_txt_arg.getValue();
-    p_opts.export_poly_mat = export_poly_mat_arg.getValue();
-
-    if (pxsize_arg.isSet())
-    {
-      p_opts.use_pxsize = true;
-      p_opts.pxsize = pxsize_arg.getValue();
-    }
-
-    if (start_box_arg.isSet())
-    {
-      p_opts.use_start_reg = true;
-      p_opts.start_reg = parse_box(start_box_arg.getValue());
-    }
-
-    if (stop_box_arg.isSet())
-    {
-      p_opts.tr_len_type = TrajLenType::REG;
-      p_opts.stop_reg = parse_box(stop_box_arg.getValue());
-    }
-    else if (exp_l_arg.isSet())
-    {
-      p_opts.tr_len_type = EXP;
-      p_opts.pdist =
-	std::exponential_distribution<double>(1 / exp_l_arg.getValue());
-    }
-    else
-    {
-      p_opts.tr_len_type = FIXED;
-      p_opts.Npts = Npts_arg.getValue();
-    }
-
-    if (Ntrajs_arg.isSet())
-    {
-      p_opts.tr_gen_type = TrajGenType::NTRAJS;
-      p_opts.Ntrajs = Ntrajs_arg.getValue();
-    }
-    else if (Nframes_arg.isSet())
-    {
-      p_opts.tr_gen_type = TrajGenType::NFRAMES;
-      p_opts.Nframes = Nframes_arg.getValue();
-      p_opts.spot_dens = spot_dens_arg.getValue();
-      p_opts.width = width_arg.getValue();
-      p_opts.height = height_arg.getValue();
-    }
-    else if (empirical_tr_arg.isSet())
-    {
-      p_opts.tr_gen_type = TrajGenType::EMPIRICAL;
-      p_opts.empirical_trajs_file = empirical_tr_arg.getValue();
-      p_opts.empirical_trajs = load_characs(empirical_tr_arg.getValue());
-    }
-
-    if (ivel_cdf_arg.isSet())
-    {
-      p_opts.motion_type = MotionType::DISTRIB;
-      p_opts.D = NAN;
-      p_opts.cdf_path = ivel_cdf_arg.getValue();
-    }
-    else if (D_arg.isSet())
-    {
-      p_opts.motion_type = MotionType::BROWNIAN;
-      p_opts.D = D_arg.getValue();
-      p_opts.dt = dt_arg.getValue();
-    }
-    else
-    {
-      std::cerr << "ERROR: either motion-cdf or motion-D must be set"
-		<< std::endl;
-      return 0;
-    }
-
-    p_opts.DT = DT_arg.getValue();
-
-    p_opts.outdir = outdir_arg.getValue();
+    arg_parse_opts.verify_command_line();
+    arg_parse_opts.fill_program_options(p_opts);
   }
   catch (TCLAP::ArgException &e)
   {
     std::cerr << "ERROR: " << e.error() << " for arg "
 	      << e.argId() << std::endl;
   }
-
 
   create_dir_if_not_exist(p_opts.outdir);
   //the above function will create only one sub-directory
@@ -273,9 +89,11 @@ int main(int argc, char** argv)
     {
       std::cerr << "ERROR: could not access output directory:"
 		<< p_opts.outdir << std::endl;
-    return 0;
+      return 0;
     }
   }
+
+  p_opts.save_csv(p_opts.outdir + "/params.csv");
 
   std::cout << std::setprecision(15);
 
@@ -325,19 +143,24 @@ int main(int argc, char** argv)
 			"stop_box");
     }
   }
-  else
+  else if (p_opts.use_fov)
   {
     double region_scale = 0.04;
-    poly = new Box<2>({region_scale * p_opts.width * p_opts.pxsize,
-		       region_scale * p_opts.width * p_opts.pxsize},
-      {(1 - region_scale) * p_opts.width * p_opts.pxsize,
-       (1 - region_scale) * p_opts.height * p_opts.pxsize});
+    poly = new Box<2>({region_scale * p_opts.fov_size[0] * p_opts.pxsize,
+		       region_scale * p_opts.fov_size[1] * p_opts.pxsize},
+      {(1 - region_scale) * p_opts.fov_size[0] * p_opts.pxsize,
+       (1 - region_scale) * p_opts.fov_size[1] * p_opts.pxsize});
   }
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
 
   TrajectoryStartGenerator<2>* start_gen = nullptr;
-  if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
+  if (p_opts.use_start_point)
+  {
+    std::cout << "Start point generator: Fixed" << std::endl;
+    start_gen = new FixedPointTrajectoryStartGenerator<2>(p_opts.start_point);
+  }
+  else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {
     std::cout << "Start point generator: Fixed" << std::endl;
     start_gen = new FixedPointTrajectoryStartGenerator<2>({0.0, 0.0});
@@ -352,11 +175,13 @@ int main(int argc, char** argv)
     std::cout << "Start point generator: Poly" << std::endl;
     start_gen = new MultiplePolysRandomTrajectoryStartGenerator(mt, *dynamic_cast<MultiplePolygon*>(poly));
   }
-  else
+  else if (p_opts.use_fov)
   {
     std::cout << "Start point generator: Poly bounding box" << std::endl;
     start_gen = new RandomBoxTrajectoryStartGenerator(mt, *dynamic_cast<Box<2>*>(poly));
   }
+  else
+    assert(false);
 
 
   Motion<2>* motion = nullptr;
@@ -395,7 +220,7 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  if (!p_opts.use_poly)
+  if (p_opts.use_fov)
   {
     std::vector<TrajectoryEndCondition<2>*> conds;
     conds.push_back(traj_end_cond);
@@ -453,7 +278,6 @@ int main(int argc, char** argv)
   sim->run();
 
 
-  save_params_csv(p_opts.outdir + "/params.csv", p_opts);
   save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
 
   delete traj_end_cond;
@@ -470,7 +294,7 @@ int main(int argc, char** argv)
       for (const Trajectory<2>& traj: sim->trajs())
 	length = traj.size() > length ? traj.size() : length;
     }
-    generate_tif_stack(sim->trajs(), p_opts.width, p_opts.height,
+    generate_tif_stack(sim->trajs(), p_opts.fov_size[0], p_opts.fov_size[1],
 		       length, p_opts.pxsize, p_opts.DT,
 		       p_opts.outdir + "/simulated_raw_data.tif");
   }

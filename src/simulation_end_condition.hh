@@ -2,6 +2,7 @@
 #define SIMULATION_END_CONDITION_HH_
 
 # include <cstdlib>
+# include <iostream>
 
 template <size_t N>
 class Simulation;
@@ -12,6 +13,8 @@ class SimulationEndCondition
 public:
   virtual ~SimulationEndCondition();
   virtual bool evaluate(const Simulation<N>& sim) = 0;
+
+  virtual void who_am_I(std::ostream& os) const = 0;
 };
 
 template <size_t N>
@@ -22,6 +25,7 @@ public:
   virtual ~NumberTrajectoriesSimulationEndCondition();
 
   virtual bool evaluate(const Simulation<N>& sim) override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   unsigned max_ntrajs_;
 };
@@ -34,6 +38,7 @@ public:
   virtual ~NumberFramesSimulationEndCondition();
 
   virtual bool evaluate(const Simulation<N>& sim) override;
+  virtual void who_am_I(std::ostream& os) const override;
 protected:
   unsigned cur_frame_;
   unsigned max_frames_;
