@@ -185,6 +185,11 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
     p_opts.tr_gen_type = TrajGenType::NFRAMES;
     p_opts.Nframes = Nframes_arg.getValue();
     p_opts.spot_dens = spot_dens_arg.getValue();
+  }
+
+  if (fov_size_arg.isSet())
+  {
+    p_opts.use_fov = true;
     p_opts.fov_size = ArgumentParserOptions::read_fov_size(fov_size_arg.getValue());
   }
 
