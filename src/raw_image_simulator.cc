@@ -39,7 +39,6 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
 		    double pxsize, double DT, double I0, double sigma,
 		    const TrajectoryEnsemble<2>& trajs)
 {
-  std::cout << width << " " << height << std::endl;
   unsigned short*** res = new unsigned short**[length];
   for (unsigned k = 0; k < length; ++k)
   {

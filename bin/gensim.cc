@@ -18,8 +18,8 @@
 #include <tiffio.h>
 #include "raw_image_simulator.hh"
 
-void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, double width,
-			double height, unsigned length, double pxsize,
+void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, unsigned width,
+			unsigned height, unsigned length, double pxsize,
 			double DT, const std::string& outfile)
 {
   //Pierre: add the two fixed values as arguments
