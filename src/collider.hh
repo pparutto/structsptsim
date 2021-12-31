@@ -2,6 +2,7 @@
 #define COLLIDER_HH_
 
 # include "shape.hh"
+# include "quadtree.hh"
 
 template <size_t N>
 class CollisionException: public std::exception
@@ -58,7 +59,7 @@ protected:
 class PolygonCollider: public Collider<2>
 {
 public:
-  PolygonCollider(const Polygon& poly);
+  PolygonCollider(const Polygon& poly, const QuadTree* qt);
   virtual ~PolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
@@ -67,6 +68,7 @@ public:
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   const Polygon& poly_;
+  const QuadTree* qt_;
 };
 
 class PolygonCollider3D: public Collider<3>
@@ -86,7 +88,7 @@ protected:
 class MultiplePolygonCollider: public Collider<2>
 {
 public:
-  MultiplePolygonCollider(const MultiplePolygon& polys);
+  MultiplePolygonCollider(const MultiplePolygon& polys, const QuadTree* qt);
   virtual ~MultiplePolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
@@ -95,6 +97,7 @@ public:
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
+  const QuadTree* qt_;
 };
 
 

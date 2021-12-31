@@ -634,11 +634,13 @@ int main(int argc, char** argv)
     pe.push_back({51.965, 86.8721});
     pe.push_back({53.1677, 78.5918});
     pe.push_back({99.3132, 78.0573});
-    pe.push_back({116.984, 93.7433});
     Polygon u_poly(pe);
     if (!Polygon::check_normals(u_poly, true))
       u_poly = Polygon::reverse(u_poly);
-    PolygonCollider poly_collider(u_poly);
+    QuadTree qt(u_poly.bounding_box());
+    qt.insert_segments(u_poly.segments(), 2);
+    std::cout << pe.size() << " ; " << qt.size() << std::endl;
+    PolygonCollider poly_collider(u_poly, &qt);
 
     std::cout << " [Test 1]";
     Point<2> p = {107.65, 109.702};
@@ -751,6 +753,7 @@ int main(int argc, char** argv)
 
     std::cout << " [Test 17]";
     s1 = Segment<2>({50.738, 129.225}, {49.3731, 130.11});
+    p1 = null_point<2>();
     collided = poly_collider.collide(s1.p1(), s1.p2(), p1);
     assert(collided == true);
     assert(pts_eq(p1, {51.8693959, 128.914258}, PRECISION));
@@ -785,7 +788,9 @@ int main(int argc, char** argv)
     diff_polys.push_back(Polygon(pe));
 
     CompoundPolygon poly(base_poly, diff_polys);
-    PolygonCollider poly_collider(poly);
+    QuadTree qt(poly.bounding_box());
+    qt.insert_segments(poly.segments(), 2);
+    PolygonCollider poly_collider(poly, &qt);
     (void) poly_collider;
 
     std::cout << " [Test 1]";
@@ -853,7 +858,9 @@ int main(int argc, char** argv)
     diff_polys.push_back(Polygon(pe));
 
     CompoundPolygon poly(base_poly, diff_polys);
-    PolygonCollider poly_collider(poly);
+    QuadTree qt(poly.bounding_box());
+    qt.insert_segments(poly.segments(), 2);
+    PolygonCollider poly_collider(poly, &qt);
     (void) poly_collider;
 
     std::cout << " [Test 1]";
@@ -905,7 +912,7 @@ int main(int argc, char** argv)
       polys_from_inkscape_path("../resources/ER_net1.path");
     //save_polys_matlab(*polys, "/tmp/polys.m");
 
-    std::cout << "++++++++++++++++++++++++++++++++++++" << std::endl;
+
     assert(polys->polys()[0].base().inside({203, 128}));
     assert(polys->polys()[0].base().inside({123, 176.2}));
     assert(polys->polys()[0].base().inside({195.4, 22.1}));

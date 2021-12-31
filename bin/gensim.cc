@@ -18,6 +18,8 @@
 #include <tiffio.h>
 #include "raw_image_simulator.hh"
 
+#include "quadtree.hh"
+
 void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, unsigned width,
 			unsigned height, unsigned length, double pxsize,
 			double DT, const std::string& outfile)
@@ -103,6 +105,7 @@ int main(int argc, char** argv)
   std::cout << "Parsing polygon" << std::endl;
 
   Shape<2>* poly = nullptr;
+  QuadTree* qt = nullptr;
   if (p_opts.use_poly)
   {
     MultiplePolygon* polys =
@@ -121,6 +124,9 @@ int main(int argc, char** argv)
       polys->round_poly_pts();
     }
 
+    qt = new QuadTree(polys->bounding_box());
+    qt->insert_segments(polys->segments(), 10); //make it a parameter
+    
     if (p_opts.export_poly_txt)
     {
       int i = 0;
@@ -243,7 +249,7 @@ int main(int argc, char** argv)
   Collider<2>* collider = nullptr;
   if (p_opts.use_poly)
     collider =
-      new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly));
+      new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly), qt);
   else
     collider = new NoneCollider<2>();
 
@@ -300,6 +306,7 @@ int main(int argc, char** argv)
   }
 
   delete poly;
+  delete qt;
   delete collider;
   delete start_gen;
   delete traj_rec;

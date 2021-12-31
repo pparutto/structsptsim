@@ -29,6 +29,7 @@ public:
   virtual ~Box();
 
   virtual bool inside(const Point<N>& p) const override;
+  virtual bool inside(const Segment<N>& seg) const;
   virtual Box bounding_box() const override;
 
   const Point<N>& min() const { return this->min_; }
@@ -82,6 +83,8 @@ public:
 
   virtual const PointEnsemble<2>& pts() const { return this->pts_; };
 
+  virtual std::vector<Segment<2> > segments() const;
+
   virtual void round_poly_pts();
 
   bool my_inside(const Point<2>& p, bool border_is_inside) const;
@@ -133,6 +136,7 @@ public:
 
   virtual double signed_area() const override;
 
+  virtual std::vector<Segment<2> > segments() const;
   virtual void round_poly_pts() override;
 
   virtual const PointEnsemble<2>& pts() const override;
@@ -159,6 +163,7 @@ public:
   virtual bool inside(const Point<2>& p) const;
   virtual Box<2> bounding_box() const;
 
+  std::vector<Segment<2> > segments() const;
   virtual void round_poly_pts();
 
   bool empty() const;

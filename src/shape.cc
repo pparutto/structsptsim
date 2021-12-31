@@ -46,6 +46,13 @@ Box<N>::inside(const Point<N>& p) const
   return true;
 }
 
+template <size_t N>
+bool
+Box<N>::inside(const Segment<N>& seg) const
+{
+  return this->inside(seg.p1()) && this->inside(seg.p2());
+}
+
 // template <size_t N>
 // PointEnsemble<2>
 // Box::boundary() const
@@ -487,6 +494,16 @@ Polygon::intersect(const Segment<2>& s1,
   return already;
 }
 
+std::vector<Segment<2> >
+Polygon::segments() const
+{
+  std::vector<Segment<2> > res;
+  for (size_t i = 0; i < this->pts_.size() - 1; ++i)
+    res.push_back(Segment<2> (this->pts_[i], this->pts_[i+1]));
+  res.push_back(Segment<2> (this->pts_[this->pts_.size()-1], this->pts_[0]));
+  return res;
+}
+
 void Polygon::round_poly_pts()
 {
   for (Point<2>& p: this->pts_)
@@ -619,6 +636,18 @@ CompoundPolygon::apply_pxsize(double pxsize)
     this->diffs_[i].apply_pxsize(pxsize);
 }
 
+std::vector<Segment<2> >
+CompoundPolygon::segments() const
+{
+  std::vector<Segment<2> > res = this->base_.segments();
+  for (const Polygon& diff: this->diffs_)
+  {
+    std::vector<Segment<2> > segs = diff.segments();
+    res.insert(res.end(), segs.begin(), segs.end());
+  }
+  return res;
+}
+
 void
 CompoundPolygon::round_poly_pts()
 {
@@ -661,6 +690,18 @@ MultiplePolygon(const std::vector<CompoundPolygon>& polys)
 
 MultiplePolygon::~MultiplePolygon()
 {
+}
+
+std::vector<Segment<2> >
+MultiplePolygon::segments() const
+{
+  std::vector<Segment<2> > res;
+  for (const CompoundPolygon& poly: this->polys_)
+  {
+    const std::vector<Segment<2> > tmp = poly.segments();
+    res.insert(res.end(), tmp.begin(), tmp.end());
+  }
+  return res;
 }
 
 void

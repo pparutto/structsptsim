@@ -111,8 +111,9 @@ BoxCollider<N>::who_am_I(std::ostream& os) const
 }
 
 
-PolygonCollider::PolygonCollider(const Polygon& poly)
+PolygonCollider::PolygonCollider(const Polygon& poly, const QuadTree* qt)
   : poly_(poly)
+  , qt_(qt)
 {
 }
 
@@ -152,12 +153,15 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
   bool collided = false;
   int cnt = 0;
   //segment cannot collide with the previously collided polygon segment
-  while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  //while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  std::cout << (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s)) << std::endl;
+  while (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
     collided = true;
     prev_s = inter_s;
     p = inter_p;
     tmp = p;
+    std::cout << inter_s << " ; " << inter_p << std::endl;
     res = Segment<2>::reflect(s1, inter_s, inter_p);
     //res = round_to_precision<2>(res);
 
@@ -167,6 +171,7 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
       assert(false);
   }
 
+  std::cout << "->>>>>>> " << s1 << std::endl;
   if (!this->poly_.inside(res))
     throw CollisionException<2>(s1, "Collision result outside of polygon");
   //std::cout << tmp << " " << p << " " << res << " ; " << inter_s.p1() << " " << inter_s.p2() << " " << cnt << std::endl;
@@ -182,11 +187,12 @@ PolygonCollider::who_am_I(std::ostream& os) const
 
 
 MultiplePolygonCollider::
-MultiplePolygonCollider(const MultiplePolygon& polys)
+MultiplePolygonCollider(const MultiplePolygon& polys, const QuadTree* qt)
   : colliders_()
+  , qt_(qt)
 {
   for (const CompoundPolygon& poly: polys.polys())
-    this->colliders_.push_back(PolygonCollider(poly));
+    this->colliders_.push_back(PolygonCollider(poly, qt));
 }
 
 MultiplePolygonCollider::~MultiplePolygonCollider()
@@ -206,12 +212,14 @@ bool
 MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
 				 Point<2>& res) const
 {
-  res = p2;
-  for (const PolygonCollider& coll: this->colliders_)
-    if (coll.collide(p1, p2, res))
-      return true;
+  Segment<2> inter_s = Segment<2>::null();
+  return this->qt_->intersect(Segment<2>(p1, p2), res, inter_s);
+  // res = p2;
+  // for (const PolygonCollider& coll: this->colliders_)
+  //   if (coll.collide(p1, p2, res))
+  //     return true;
 
-  return false;
+  // return false;
 }
 
 void
