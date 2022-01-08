@@ -35,7 +35,10 @@ int main(int argc, char** argv)
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
 		   bcollider);
 
-  SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
+  // /!!\ HERE
+  double obj_radius = 0.0;
+  
+  SimulationTrajectory<2> sim(traj_gen_facto, end_sim, obj_radius);
 
   sim.run();
 

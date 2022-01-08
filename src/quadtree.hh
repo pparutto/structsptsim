@@ -20,6 +20,9 @@ protected:
   void insert(const Segment<2>& seg, int max_depth);
   bool my_intersect(const Segment<2>& seg, Point<2>& inter_p,
 		    Segment<2>& inter_s, bool already) const;
+    bool my_intersect(const Segment<2>& seg, Point<2>& inter_p,
+		    Segment<2>& inter_s, bool already) const;
+
 protected:
   Box<2> area_;
   std::vector<Segment<2> > segs_;

@@ -245,6 +245,8 @@ int main(int argc, char** argv)
 
   TrajectoryRecorderFactory<2> traj_rec_facto(*traj_rec);
 
+  // /!!\ HERE
+  double obj_radius = 0.0;
 
   Collider<2>* collider = nullptr;
   if (p_opts.use_poly)
@@ -262,7 +264,7 @@ int main(int argc, char** argv)
   if (p_opts.tr_gen_type == TrajGenType::NTRAJS)
   {
     end_sim = new NumberTrajectoriesSimulationEndCondition<2>(p_opts.Ntrajs);
-    sim = new SimulationTrajectory<2>(traj_gen_facto, *end_sim);
+    sim = new SimulationTrajectory<2>(traj_gen_facto, *end_sim, obj_radius);
   }
   else if (p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
@@ -270,12 +272,12 @@ int main(int argc, char** argv)
 	      << " spots per frame" << std::endl;
     end_sim = new NumberFramesSimulationEndCondition<2>((int) p_opts.Nframes);
     sim = new SimulationDensity(traj_gen_facto, *end_sim, p_opts.num_particles(),
-				p_opts.DT, p_opts.t_ratio());
+				p_opts.DT, p_opts.t_ratio(), obj_radius);
   }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {
     sim = new SimulationEmpirical(traj_gen_facto,
-				  p_opts.empirical_trajs, p_opts.DT);
+				  p_opts.empirical_trajs, p_opts.DT, obj_radius);
   }
   else
     assert(false);

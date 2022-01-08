@@ -27,9 +27,11 @@ namespace
 }
 
 template <size_t N>
-Simulation<N>::Simulation(TrajectoryGeneratorFactory<N>& traj_gen_facto)
+Simulation<N>::Simulation(TrajectoryGeneratorFactory<N>& traj_gen_facto,
+			  double obj_radius)
   : traj_gen_facto_(traj_gen_facto)
   , trajs_()
+  , obj_radius_(obj_radius)
 {
 }
 
@@ -41,8 +43,9 @@ Simulation<N>::~Simulation()
 template <size_t N>
 SimulationTrajectory<N>::
 SimulationTrajectory(TrajectoryGeneratorFactory<N>& traj_gen_facto,
-		     SimulationEndCondition<N>& end_cond)
-  : Simulation<N>(traj_gen_facto)
+		     SimulationEndCondition<N>& end_cond,
+		     double obj_radius)
+  : Simulation<N>(traj_gen_facto, obj_radius)
   , end_cond_(end_cond)
 {
 }
@@ -74,8 +77,9 @@ SimulationDensity(TrajectoryGeneratorFactory<N>& traj_gen_facto,
 		  SimulationEndCondition<N>& end_cond,
 		  unsigned ntrajs,
 		  double DT,
-		  unsigned tratio)
-  : Simulation<N>(traj_gen_facto)
+		  unsigned tratio,
+		  double obj_radius)
+  : Simulation<N>(traj_gen_facto, obj_radius)
   , end_cond_(end_cond)
   , ntrajs_(ntrajs)
   , DT_(DT)
@@ -155,8 +159,9 @@ SimulationDensity<N>::run()
 SimulationEmpirical::
 SimulationEmpirical(TrajectoryGeneratorFactory<2>& traj_gen_facto,
 		    const TrajectoryCharacsMap& traj_characs,
-		    double DT)
-  : Simulation(traj_gen_facto)
+		    double DT,
+		    double obj_radius)
+  : Simulation(traj_gen_facto, obj_radius)
   , traj_characs_(traj_characs)
   , DT_(DT)
 {

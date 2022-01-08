@@ -13,7 +13,8 @@ template <size_t N>
 class Simulation
 {
 public:
-  Simulation(TrajectoryGeneratorFactory<N>& traj_gen_facto);
+  Simulation(TrajectoryGeneratorFactory<N>& traj_gen_facto,
+	     double obj_radius);
   virtual ~Simulation();
 
   virtual void run() = 0;
@@ -22,6 +23,7 @@ public:
 protected:
   TrajectoryGeneratorFactory<N>& traj_gen_facto_;
   TrajectoryEnsemble<N> trajs_;
+  double obj_radius_;
 };
 
 template <size_t N>
@@ -29,7 +31,8 @@ class SimulationTrajectory: public Simulation<N>
 {
 public:
   SimulationTrajectory(TrajectoryGeneratorFactory<N>& traj_gen_facto,
-		       SimulationEndCondition<N>& end_cond);
+		       SimulationEndCondition<N>& end_cond,
+		       double obj_radius);
   virtual ~SimulationTrajectory();
 
   virtual void run();
@@ -44,7 +47,8 @@ class SimulationDensity: public Simulation<N>
 public:
   SimulationDensity(TrajectoryGeneratorFactory<N>& traj_gen_facto,
 		    SimulationEndCondition<N>& end_cond,
-		    unsigned ntrajs, double DT, unsigned tratio);
+		    unsigned ntrajs, double DT, unsigned tratio,
+		    double obj_radius);
   virtual ~SimulationDensity();
 
   virtual void run();
@@ -60,7 +64,7 @@ class SimulationEmpirical: public Simulation<2>
 public:
   SimulationEmpirical(TrajectoryGeneratorFactory<2>& traj_gen_facto,
 		      const TrajectoryCharacsMap& traj_characs,
-		      double DT);
+		      double DT, double obj_radius);
   virtual ~SimulationEmpirical();
 
   virtual void run();

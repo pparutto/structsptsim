@@ -150,9 +150,13 @@ int main(int argc, char** argv)
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
 		   collider);
 
+  // /!!\ HERE
+  double obj_radius = 0.0;
+  
   unsigned n_particles = (unsigned) width * height * density;
   std::cout << "Particles per frame: " << n_particles << std::endl;
-  SimulationDensity<2> sim(traj_gen_facto, end_sim, n_particles, DT, t_ratio);
+  SimulationDensity<2> sim(traj_gen_facto, end_sim, n_particles, DT,
+			   t_ratio, obj_radius);
 
   sim.run();
 
