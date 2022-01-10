@@ -39,12 +39,10 @@ QuadTree::my_intersect(const Segment<2>& s1, Point<2>& inter_p,
 {
   Point<2> tmp_inter_p;
 
-  std::cout << "----------" << std::endl;
   for (const Segment<2>& s2: this->segs_)
   {
     if (!s2.on_segment(s1.p1()) && s1.intersect(s2, tmp_inter_p))
     {
-      std::cout << "aaa" << std::endl;
       if (already)
       {
 	if (dist(s1.p1(), tmp_inter_p) < dist(s1.p1(), inter_p))
@@ -66,7 +64,7 @@ QuadTree::my_intersect(const Segment<2>& s1, Point<2>& inter_p,
   bool in_lr = this->lr_ && this->lr_->area_.inside(s1);
   bool in_ul = this->ul_ && this->ul_->area_.inside(s1);
   bool in_ur = this->ur_ && this->ur_->area_.inside(s1);
-  
+
   if (in_ll)
     return already || this->ll_->my_intersect(s1, inter_p, inter_s, already);
   else if (in_lr)
@@ -86,8 +84,8 @@ QuadTree::my_intersect(const Segment<2>& s1, Point<2>& inter_p,
       already = already || this->ul_->my_intersect(s1, inter_p, inter_s, already);
     if (this->ur_)
       already = already || this->ur_->my_intersect(s1, inter_p, inter_s, already);
-  }  
-  
+  }
+
   return already;
 }
 
