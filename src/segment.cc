@@ -129,13 +129,12 @@ Segment<2>::intersect(const Segment<2>& seg, Point<2>& inter_p) const
   Vec<2> v2 = seg.vector();
 
   double s = (-v1[1] * (this->p1_[0] - seg.p1()[0]) + v1[0] *
-	      (this->p1_[1] - seg.p1()[1])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
+  	      (this->p1_[1] - seg.p1()[1])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
   double t = ( v2[0] * (this->p1_[1] - seg.p1()[1]) - v2[1] *
-	      (this->p1_[0] - seg.p1()[0])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
+  	      (this->p1_[0] - seg.p1()[0])) / (-v2[0] * v1[1] + v1[0] * v2[1]);
 
   if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
   {
-    //Vec<2> norm = this->normal();
     inter_p = this->p1_ + v1 * t;// + norm * EPSILON * 0.5;
     //round_to_precision<2>(inter_p);
     return true;
@@ -190,6 +189,25 @@ template <size_t N>
 Segment<N> Segment<N>::null()
 {
   return Segment<N>(null_point<N>(), null_point<N>());
+}
+
+template <size_t N>
+Point<N>
+Segment<N>::orthogonal_project(const Point<N>& p) const
+{
+  Vec<N> v = this->vector();
+  Vec<N> ap = p - this->p1_;
+  double t = dot(ap, v) / dot(v, v);
+  return this->p1_ + v * t;
+}
+
+template <size_t N>
+double
+Segment<N>::orthogonal_project_t(const Point<N>& p) const
+{
+  Vec<N> v = this->vector();
+  Vec<N> ap = p - this->p1_;
+  return dot(ap, v) / dot(v, v);
 }
 
 template class Segment<2>;

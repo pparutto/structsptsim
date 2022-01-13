@@ -29,6 +29,10 @@ public:
 			  const Point<N>& inter_p);
   static Segment<N> null();
 
+
+  Point<N> orthogonal_project(const Point<N>& p) const;
+  double orthogonal_project_t(const Point<N>& p) const;
+
 protected:
   Point<N> p1_;
   Point<N> p2_;

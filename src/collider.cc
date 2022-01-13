@@ -7,9 +7,10 @@
 #include <cassert>
 
 template <size_t N>
-CollisionException<N>::CollisionException (const Segment<N>& s,
-					   std::string what)
-  : s_(s)
+CollisionException<N>::
+CollisionException(const std::vector<Segment<N> >& history,
+		   std::string what)
+  : history_(history)
   , what_(what)
 {
 }
@@ -18,9 +19,14 @@ template <size_t N>
 const char*
 CollisionException<N>::what() const noexcept
 {
+  std::cerr << this->what_ << "; collision history:" << std::endl;
+  for (const Segment<2>& seg: this->history_)
+    std::cerr << seg.p1() << " " << seg.p2() << std::endl;
+
   std::stringstream res;
-  res << "Segment " << this->s_.p1() << " -> " << this->s_.p2() << " "
-      << this->what_;
+  // res << this->what_ << "; collision history:" << std::endl;
+  // for (const Segment<2>& seg: this->history_)
+  //   res << seg.p1() << " " << seg.p2() << std::endl;
   return res.str().c_str();
 }
 
@@ -141,6 +147,7 @@ bool
 PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
 			 Point<2>& res) const
 {
+  // /!\ We need to discard this test at some point
   assert(this->poly_.inside(p1));
   Point<2> p = p1;
   res = p2;
@@ -152,16 +159,16 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
   Segment<2> prev_s = Segment<2>::null();
   bool collided = false;
   int cnt = 0;
+  std::vector<Segment<2> > history;
+
   //segment cannot collide with the previously collided polygon segment
-  //while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
-  std::cout << (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s)) << std::endl;
-  while (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  while (this->poly_.intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
+    history.push_back(s1);
     collided = true;
     prev_s = inter_s;
     p = inter_p;
     tmp = p;
-    std::cout << inter_s << " ; " << inter_p << std::endl;
     res = Segment<2>::reflect(s1, inter_s, inter_p);
     //res = round_to_precision<2>(res);
 
@@ -170,11 +177,11 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
     if (cnt > 20)
       assert(false);
   }
+  history.push_back(s1);
 
-  std::cout << "->>>>>>> " << s1 << std::endl;
+  // /!\ We need to discard this test at some point
   if (!this->poly_.inside(res))
-    throw CollisionException<2>(s1, "Collision result outside of polygon");
-  //std::cout << tmp << " " << p << " " << res << " ; " << inter_s.p1() << " " << inter_s.p2() << " " << cnt << std::endl;
+    throw CollisionException<2>(history, "Collision result outside of polygon");
 
   return collided;
 }
@@ -212,14 +219,15 @@ bool
 MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
 				 Point<2>& res) const
 {
-  Segment<2> inter_s = Segment<2>::null();
-  return this->qt_->intersect(Segment<2>(p1, p2), res, inter_s);
-  // res = p2;
-  // for (const PolygonCollider& coll: this->colliders_)
-  //   if (coll.collide(p1, p2, res))
-  //     return true;
+  //Segment<2> inter_s = Segment<2>::null();
+  //return this->qt_->intersect(Segment<2>(p1, p2), res, inter_s);
 
-  // return false;
+  res = p2;
+  for (const PolygonCollider& coll: this->colliders_)
+    if (coll.collide(p1, p2, res))
+      return true;
+
+  return false;
 }
 
 void
@@ -227,6 +235,95 @@ MultiplePolygonCollider::who_am_I(std::ostream& os) const
 {
   os << "MultiplePolygonCollider()" << std::endl;
 }
+
+
+
+QuadTreeCollider::QuadTreeCollider(const MultiplePolygon& polys,
+				   const QuadTree* qt)
+  : polys_(polys)
+  , qt_(qt)
+{
+}
+
+QuadTreeCollider::~QuadTreeCollider()
+{
+}
+
+bool
+QuadTreeCollider::outside(const Point<2>& p) const
+{
+  return !this->polys_.inside(p);
+}
+
+bool
+QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
+			  Point<2>& res) const
+{
+  assert(this->polys_.inside(p1));
+  Point<2> p = p1;
+  res = p2;
+  Segment<2> s1(p1, res);
+
+  Point<2> tmp = null_point<2>();
+  Point<2> inter_p = null_point<2>();
+  Segment<2> inter_s = Segment<2>::null();
+  Segment<2> prev_s = Segment<2>::null();
+  bool collided = false;
+  int cnt = 0;
+
+  QuadTree* qt = const_cast<QuadTree*> (this->qt_);
+
+  //if (!this->polys_.inside(p2) && !this->polys_.polys()[0].intersect(s1, inter_p, inter_s))
+  if (!this->polys_.inside(p2) && !qt->intersect(s1, inter_p, inter_s))
+  {
+    std::cerr << "qt: " << qt->intersect(s1, inter_p, inter_s) << " poly: " << this->polys_.polys()[0].intersect(s1, inter_p, inter_s) << std::endl;
+    std::cerr << s1 << std::endl;
+    assert(false);
+  }
+
+  std::vector<Segment<2> > history;
+  //segment cannot collide with the previously collided polygon segment
+  //while (this->polys_.polys()[0].intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  while (qt->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  {
+    history.push_back(s1);
+    //std::cout << qt->cnt() << std::endl;
+    collided = true;
+    prev_s = inter_s;
+    p = inter_p;
+    tmp = p;
+    res = Segment<2>::reflect(s1, inter_s, inter_p);
+    res = round_to_precision<2>(res);
+    Segment<2> norm_s = Segment<2> (inter_s.p1(),
+				    inter_s.p1() + inter_s.normal());
+    double t = norm_s.orthogonal_project_t(res);
+    if (t < 0)
+    {
+      std::cout << "YÀYYYYYYYYYYYYYYYYYYYYY " << t << std::endl;
+      res = res + inter_s.normal() * (-2 * t);
+      res = round_to_precision<2>(res);
+      assert(this->polys_.inside(res));
+    }
+
+    s1 = Segment<2>(p, res);
+    ++cnt;
+    if (cnt > 20)
+      assert(false);
+  }
+  history.push_back(s1);
+
+  if (!this->polys_.inside(res))
+    throw CollisionException<2>(history, "Collision result outside of polygon");
+
+  return collided;
+}
+
+void
+QuadTreeCollider::who_am_I(std::ostream& os) const
+{
+  os << "QuadTreeCollider" << std::endl;
+}
+
 
 
 template class CollisionException<2>;

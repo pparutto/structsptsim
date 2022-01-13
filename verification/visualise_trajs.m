@@ -1,10 +1,15 @@
 addpath('../external')
 
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
-%addpath('/tmp/toto2')
+addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
+
+
+%addpath('/tmp/toto')
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
 
-addpath('/mnt/data/SPT_method/simu/ER/simus/lumen/lumen_C2-_2019_10_02__16_23_00_Simple Segmentation_binary_1_D=6_DT=0.006_50pts_50000trajs')
+%addpath('/mnt/data/SPT_method/simu/ER/simus/lumen/lumen_C2-_2019_10_02__16_23_00_Simple Segmentation_binary_1_D=6_DT=0.006_50pts_50000trajs')
+
+%addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 
 %outdir = '/tmp/simu_fullcell';
 outdir = '/tmp/joe';
@@ -12,8 +17,11 @@ if ~isfolder(outdir)
     mkdir(outdir)
 end
 
-[bp, dp] = polys();
-
+bp = {};
+dp = {};
+if exist('polys.m') == 2
+    [bp, dp] = polys();
+end
 
 start_b = [];
 if exist('start_box.m', 'file') == 2
@@ -62,6 +70,10 @@ for k=1%unique(tab(:,1))'
     %plot([67.6094063, 67.6089001], [21.2413533 21.2256399], 'b', 'LineWidth', 2)
     %Utils.show_trajectories(tab(tab(:,1) == k, :));
     Utils.show_trajectories(tab);
+    for u=unique(tab(:,1))'
+        tr = tab(tab(:,1) == u, :);
+        plot(tr(1,3), tr(1,4), 'xk')
+    end
     %plot(20.3233146, 55.128996, 'xm')
     %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
     
@@ -83,7 +95,10 @@ for k=1%unique(tab(:,1))'
     end
     hold off
     daspect([1 1 1])
-    set (gcf, 'WindowButtonMotionFcn', @mouseMove);
+    axis([0 12 0 12])
+    axis off
+    print('/tmp/trajs.png', '-dpng')
+    %set(gcf, 'WindowButtonMotionFcn', @mouseMove);
 
     %tightfig();
     %print(sprintf('%s/trajs_%d.png', outdir, k), '-dpng', '-r1000')

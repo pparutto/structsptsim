@@ -93,8 +93,9 @@ TrajectoryGenerator<N>::generate_step()
     }
     catch (CollisionException<N>& e)
     {
-      std::cerr << this->traj_rec_->traj() << std::endl;
-      std::cerr << e.s().p2() << std::endl;
+      //std::cerr << this->traj_rec_->traj() << std::endl;
+      //std::cerr << e.what()  << std::endl;
+      e.what();
       std::cerr << "===================================" << std::endl;
     }
   }

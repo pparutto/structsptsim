@@ -1,4 +1,6 @@
-addpath('/tmp')
+addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
+
+%addpath('/tmp')
 
 
 p = [1187.5 219];
@@ -26,7 +28,7 @@ for i=1:length(bp)
 end
 for i=1:length(dp)
     for j=1:length(dp{i})
-        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), ':', 'LineWidth', 2)
+        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'LineWidth', 1, 'Color', rand(1,3))
     end
 end
 
@@ -41,8 +43,6 @@ end
 % plot([203,203],[114.3,115.9], 'c', 'LineWidth', 2)
 % plot([203,203.1],[115.9,117.5], 'm', 'LineWidth', 2)
 % plot([203,203.1],[115.9,117.5], 'c', 'LineWidth', 2)
-
-plot([90.2 90.2], [64, 0], 'r')
 
 if ~isempty(start_b)
     plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r')   
@@ -60,3 +60,4 @@ hold off
 
 daspect([1 1 1])
 set (gcf, 'WindowButtonMotionFcn', @mouseMove);
+print('/tmp/polys.png', '-dpng', '-r300')

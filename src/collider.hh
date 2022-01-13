@@ -8,13 +8,14 @@ template <size_t N>
 class CollisionException: public std::exception
 {
 public:
-  CollisionException (const Segment<N>& s, std::string what);
+  CollisionException (const std::vector<Segment<N> >& history,
+		      std::string what);
   ~CollisionException() = default;
   virtual const char* what() const noexcept override;
 
-  const Segment<N>& s() const { return this->s_; };
+  const std::vector<Segment<N> >& history() const { return this->history_; };
 protected:
-  const Segment<N> s_;
+  const std::vector<Segment<N> > history_;
   const std::string what_;
 };
 
@@ -97,6 +98,21 @@ public:
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
+  const QuadTree* qt_;
+};
+
+class QuadTreeCollider: public Collider<2>
+{
+public:
+  QuadTreeCollider(const MultiplePolygon& polys, const QuadTree* qt);
+  virtual ~QuadTreeCollider();
+
+  virtual bool outside(const Point<2>& p) const override;
+  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
+		       Point<2>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
+protected:
+  const MultiplePolygon& polys_;
   const QuadTree* qt_;
 };
 

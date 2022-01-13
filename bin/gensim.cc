@@ -118,15 +118,27 @@ int main(int argc, char** argv)
       return 0;
     }
 
+    std::cout << "Polygon(s) size: " << polys->segments().size() << std::endl;
+
     if (p_opts.use_pxsize)
     {
       polys->apply_pxsize(p_opts.pxsize);
       polys->round_poly_pts();
     }
 
-    qt = new QuadTree(polys->bounding_box());
-    qt->insert_segments(polys->segments(), 10); //make it a parameter
-    
+    Box<2> bb = polys->bounding_box();
+    if (p_opts.use_fov)
+      bb = Box<2>({0, 0}, {p_opts.fov_size[0] * p_opts.pxsize,
+			   p_opts.fov_size[1] * p_opts.pxsize});
+
+    qt = new QuadTree(bb);
+    qt->insert_segments(polys->segments(), 5); //make it a parameter
+    //qt->debug();
+    //qt->show();
+
+    std::cout << "QuadTree size: " << qt->size() << std::endl;
+    std::cout << "QuadTree area: " << qt->area();
+
     if (p_opts.export_poly_txt)
     {
       int i = 0;
@@ -151,11 +163,14 @@ int main(int argc, char** argv)
   }
   else if (p_opts.use_fov)
   {
-    double region_scale = 0.04;
-    poly = new Box<2>({region_scale * p_opts.fov_size[0] * p_opts.pxsize,
-		       region_scale * p_opts.fov_size[1] * p_opts.pxsize},
-      {(1 - region_scale) * p_opts.fov_size[0] * p_opts.pxsize,
-       (1 - region_scale) * p_opts.fov_size[1] * p_opts.pxsize});
+    //double region_scale = 0.04; ????
+    // poly = new Box<2>({region_scale * p_opts.fov_size[0] * p_opts.pxsize,
+    // 		       region_scale * p_opts.fov_size[1] * p_opts.pxsize},
+    //   {(1 - region_scale) * p_opts.fov_size[0] * p_opts.pxsize,
+    //    (1 - region_scale) * p_opts.fov_size[1] * p_opts.pxsize});
+    poly = new Box<2>({0, 0},
+		      {p_opts.fov_size[0] * p_opts.pxsize,
+		       p_opts.fov_size[1] * p_opts.pxsize});
   }
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
@@ -249,10 +264,12 @@ int main(int argc, char** argv)
   Collider<2>* collider = nullptr;
   if (p_opts.use_poly)
     collider =
-      new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly), qt);
+      //new MultiplePolygonCollider(*dynamic_cast<MultiplePolygon*>(poly), qt);
+      new QuadTreeCollider(*dynamic_cast<MultiplePolygon*>(poly), qt);
   else
     collider = new NoneCollider<2>();
 
+  std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
 		   *collider);

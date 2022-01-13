@@ -73,6 +73,19 @@ Box<N>::bounding_box() const
   return Box(this->min_, this->max_);
 }
 
+template <size_t N>
+void
+Box<N>::set_min_v(double v, unsigned idx)
+{
+  this->min_[idx] = v;
+}
+
+template <size_t N>
+void
+Box<N>::set_max_v(double v, unsigned idx)
+{
+  this->max_[idx] = v;
+}
 
 Triangle3D::
 Triangle3D(const Point<3>& p1, const Point<3>& p2, const Point<3>& p3)
@@ -737,7 +750,21 @@ MultiplePolygon::round_poly_pts()
 Box<2>
 MultiplePolygon::bounding_box() const
 {
-  return Box<2>({0, 0}, {0, 0});
+  Box<2> res = this->polys_[0].bounding_box();
+  for (unsigned i = 1; i < this->polys_.size(); ++i)
+  {
+    Box<2> b = this->polys_[i].bounding_box();
+    if (b.min()[0] < res.min()[0])
+      res.set_min_v(b.min()[0], 0);
+    if (b.min()[1] < res.min()[1])
+      res.set_min_v(b.min()[1], 1);
+    if (b.max()[0] > res.max()[0])
+      res.set_max_v(b.max()[0], 0);
+    if (b.max()[1] > res.max()[1])
+      res.set_max_v(b.max()[1], 1);
+  }
+
+  return res;
 }
 
 bool
@@ -752,7 +779,7 @@ template <size_t N>
 std::ostream&
 operator<< (std::ostream& os, const Box<N>& box)
 {
-  return os << box.min() << "; " << box.max() << std::endl;
+  return os << box.min() << ", " << box.max() << std::endl;
 }
 
 std::ostream&

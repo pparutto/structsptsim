@@ -22,6 +22,22 @@ int main(int argc, char** argv)
 
   std::cout << std::setprecision(15);
 
+  std::cout << "QuadTree 1" << std::endl;
+  {
+    QuadTree qt = QuadTree(Box<2> ({0, 0},  {87.333, 81.399}));
+
+    std::vector<Segment<2> > segs;
+    segs.push_back(Segment<2>({19.1076, 48.7332}, {19.0873, 48.7135}));
+    qt.insert_segments(segs, 5);
+
+    Segment<2> s({19.092, 48.98775}, {19.092, 48.7104});
+    Point<2> inter_p;
+    Segment<2> inter_s;
+    std::cout << qt.intersect(s, inter_p, inter_s) << std::endl;
+    assert(qt.intersect(s, inter_p, inter_s));
+    assert(false);
+  }
+
   std::cout << "ER complex poly" << std::endl;
   {
     MultiplePolygon* poly =
@@ -493,6 +509,11 @@ int main(int argc, char** argv)
     s1.intersect(s2, inter_p);
     res = Segment<2>::reflect(s1, s2, inter_p);
     assert(pts_eq(res, {8.72978972, 0.965553917}, PRECISION));
+    std::cout << " OK" << std::endl;
+
+    s1 = Segment<2> ({19.092, 48.98775}, {19.092, 48.7104});
+    s2 = Segment<2> ({19.1076, 48.7332}, {19.0873, 48.7135});
+    assert(s1.intersect(s2, inter_p));
     std::cout << " OK" << std::endl;
   }
 

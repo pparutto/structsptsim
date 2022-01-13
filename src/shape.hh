@@ -36,6 +36,8 @@ public:
   const Point<N>& max() const { return this->max_; }
   const Vec<N>& dims() const { return this->dims_; }
 
+  void set_min_v(double v, unsigned idx);
+  void set_max_v(double v, unsigned idx);
 protected:
   Point<N> min_;
   Point<N> max_;
