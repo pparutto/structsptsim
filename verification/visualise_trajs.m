@@ -1,5 +1,6 @@
 addpath('../external')
 
+addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test2');
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
 addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
 
@@ -7,7 +8,6 @@ addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
 %addpath('/tmp/toto')
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
 
-%addpath('/mnt/data/SPT_method/simu/ER/simus/lumen/lumen_C2-_2019_10_02__16_23_00_Simple Segmentation_binary_1_D=6_DT=0.006_50pts_50000trajs')
 
 %addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 

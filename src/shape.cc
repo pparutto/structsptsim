@@ -148,6 +148,69 @@ Triangle3D::intersect(const Segment<3>& seg, Point<3>& inter_p) const
 }
 
 
+Cylinder::Cylinder(const Segment<3>& base, double r)
+  : base_(base)
+  , r_(r)
+{
+}
+
+bool
+Cylinder::inside(const Point<3>& p) const
+{
+  return this->base_.distance(p) <= this->r_;
+}
+
+Box<3>
+Cylinder::bounding_box() const
+{
+  // /!\ TODO
+  assert(false);
+  return Box<3>();
+}
+
+bool
+Cylinder::intersect(const Segment<3>& s, Point<3>& inter_p) const
+{
+  Vec<3> v = s.vector();
+  Point<3> p0 = s.p1();
+  Point<3> p1 = this->base_.p1();
+  Point<3> p2 = this->base_.p2();
+
+  Vec<3> D1 = p0 - p1;
+  Vec<3> D2 = p0 - p2;
+
+  Vec<3> alpha = {(D1[1] - D2[1]) * v[2] + (D2[2] - D1[2]) * v[1],
+		  (D1[2] - D2[2]) * v[0] + (D2[0] - D1[0]) * v[2],
+		  (D1[0] - D2[0]) * v[1] + (D2[1] - D1[1]) * v[0]};
+  Vec<3> beta = {D1[1] * D2[2] - D1[2] * D2[1],
+		 D1[2] * D2[0] - D1[0] * D2[2],
+		 D1[0] * D2[1] - D1[1] * D2[0]};
+
+  double A = alpha[0] * alpha[0] + alpha[1] * alpha[1] + alpha[2] * alpha[2];
+  double B = alpha[0] * beta[0] + alpha[1] * beta[1] + alpha[2] * beta[2];
+  double C = beta[0] * beta[0] + beta[1] * beta[1] + beta[2] * beta[2];
+
+  double delta = B * B - 4 * A * C;
+
+  if (delta < -EPSILON)
+    return false;
+
+  if (delta < EPSILON)
+    inter_p = p0 + v * (-B / (2 * A));
+  else
+    inter_p = p0 + v * ((-B - sqrt(delta)) / (2 * A));
+  return true;
+}
+
+Vec<3> Cylinder::normal(const Point<3>& p) const
+{
+  Point<3> proj_p = this->base_.orthogonal_project(p);
+  Vec<3> n = p - proj_p;
+  return n / norm(n);
+}
+
+
+
 double orientation(const PointEnsemble<2>& pts)
 {
   return ((pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) -
