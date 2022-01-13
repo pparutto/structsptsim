@@ -40,21 +40,19 @@ QuadTree::insert_segments(const std::vector<Segment<2> >& segs,
 
 bool
 QuadTree::intersect(const Segment<2>& s1, Point<2>& inter_p,
-		    Segment<2>& inter_s)// const
+		    Segment<2>& inter_s) const
 {
-  this->cnt_ = 0;
   return this->my_intersect(s1, inter_p, inter_s, false, false);
 }
 
 bool
 QuadTree::my_intersect(const Segment<2>& s1, Point<2>& inter_p,
-		       Segment<2>& inter_s, bool already, bool all)// const
+		       Segment<2>& inter_s, bool already, bool all) const
 {
   Point<2> tmp_inter_p;
 
   for (const Segment<2>& s2: this->segs_)
   {
-    ++this->cnt_;
     if (!s2.on_segment(s1.p1()) && s1.intersect(s2, tmp_inter_p))
     {
       if (already)

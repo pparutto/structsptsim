@@ -276,7 +276,7 @@ Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 {
   size_t n = this->pts_.size();
   int crossings = 0;
-  bool prev_left;
+  bool prev_left = false;
   for (size_t i = 1; i <= n; ++i)
   {
     if (flt(this->pts_[n-i][0], p[0]) || fgt(this->pts_[n-i][0], p[0]))
@@ -791,6 +791,7 @@ operator<< (std::ostream& os, const Polygon& poly)
   return os;
 }
 
+template class Shape<2>;
 template class Box<2>;
 template class Box<3>;
 

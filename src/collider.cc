@@ -259,7 +259,8 @@ bool
 QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
 			  Point<2>& res) const
 {
-  assert(this->polys_.inside(p1));
+  //assert(this->polys_.inside(p1));
+
   Point<2> p = p1;
   res = p2;
   Segment<2> s1(p1, res);
@@ -269,24 +270,13 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
   Segment<2> inter_s = Segment<2>::null();
   Segment<2> prev_s = Segment<2>::null();
   bool collided = false;
-  int cnt = 0;
 
-  QuadTree* qt = const_cast<QuadTree*> (this->qt_);
-
-  //if (!this->polys_.inside(p2) && !this->polys_.polys()[0].intersect(s1, inter_p, inter_s))
-  if (!this->polys_.inside(p2) && !qt->intersect(s1, inter_p, inter_s))
-  {
-    std::cerr << "qt: " << qt->intersect(s1, inter_p, inter_s) << " poly: " << this->polys_.polys()[0].intersect(s1, inter_p, inter_s) << std::endl;
-    std::cerr << s1 << std::endl;
-    assert(false);
-  }
-
-  std::vector<Segment<2> > history;
+  //int cnt = 0;
+  //std::vector<Segment<2> > history;
   //segment cannot collide with the previously collided polygon segment
-  //while (this->polys_.polys()[0].intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
-  while (qt->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
+  while (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
-    history.push_back(s1);
+    //history.push_back(s1);
     //std::cout << qt->cnt() << std::endl;
     collided = true;
     prev_s = inter_s;
@@ -299,21 +289,21 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
     double t = norm_s.orthogonal_project_t(res);
     if (t < 0)
     {
-      std::cout << "YÀYYYYYYYYYYYYYYYYYYYYY " << t << std::endl;
+      //std::cout << "YÀYYYYYYYYYYYYYYYYYYYYY " << t << std::endl;
       res = res + inter_s.normal() * (-2 * t);
       res = round_to_precision<2>(res);
-      assert(this->polys_.inside(res));
+      //assert(this->polys_.inside(res));
     }
 
     s1 = Segment<2>(p, res);
-    ++cnt;
-    if (cnt > 20)
-      assert(false);
+    //++cnt;
+    //if (cnt > 20)
+    //  assert(false);
   }
-  history.push_back(s1);
+  //history.push_back(s1);
 
-  if (!this->polys_.inside(res))
-    throw CollisionException<2>(history, "Collision result outside of polygon");
+  //if (!this->polys_.inside(res))
+  //  throw CollisionException<2>(history, "Collision result outside of polygon");
 
   return collided;
 }
