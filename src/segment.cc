@@ -22,25 +22,19 @@ Segment<2>::distance(const Point<2>& p) const
 	  d);
 }
 
-// template<>
-// double
-// Segment<2>::distance(const Point<2>& p) const
-// {
-//   // Return minimum distance between line segment vw and point p
-//   double d2 = ((this->p2_[0] - this->p1_[0]) * (this->p2_[0] - this->p1_[0]) +
-// 	       (this->p2_[1] - this->p1_[1]) * (this->p2_[1] - this->p1_[1]));
-//   Vec<2> vec = this->vector();
-
-//   const double t =
-//     std::max(0.0, std::min(1.0, dot(p - this->p1_, vec) / d2));
-//   return dist(p, this->p1_ + vec * t); //projected point
-// }
+template <>
+double
+Segment<3>::distance(const Point<3>& p) const
+{
+  return norm(cross(p - this->p1_, p - this->p2_)) / norm(this->vector());
+}
 
 template <size_t N>
 double
 Segment<N>::distance(const Point<N>& p) const
 {
   (void) p;
+  assert(false);
   return -1;
 }
 

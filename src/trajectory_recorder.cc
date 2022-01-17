@@ -38,8 +38,8 @@ template <size_t N>
 void
 FullTrajectoryRecorder<N>::record(const Point<N>& p)
 {
-  this->traj_.push_back(TimedPoint<N>({this->t0_ + this->traj_.size() * this->DT_,
-				    p[0], p[1]}));
+  this->traj_.push_back(to_timed_point<N>(this->t0_ + this->traj_.size() * this->DT_,
+					  p));
 }
 
 template <size_t N>
@@ -57,7 +57,7 @@ SubsambleTrajectoryRecorder(double t0, double DT, unsigned step)
   : TrajectoryRecorder<N>(t0, DT)
   , step_(step)
   , cnt_(0)
-  , last_simu_pt_({NAN, NAN, NAN})
+  , last_simu_pt_(null_timed_point<N>())
 {
 }
 
@@ -72,8 +72,8 @@ template <size_t N>
 void
 SubsambleTrajectoryRecorder<N>::record(const Point<N>& p)
 {
-  TimedPoint<N> tp({this->t0_ + this->traj_.size() * this->DT_,
-		    p[0], p[1]});
+  TimedPoint<N> tp =
+    to_timed_point<N>(this->t0_ + this->traj_.size() * this->DT_, p);
   this->last_simu_pt_ = tp;
   if (this->cnt_ % this->step_ == 0)
     this->traj_.push_back(tp);
@@ -104,3 +104,5 @@ TrajectoryRecorderFactory<N>::get(double t0)
 template class FullTrajectoryRecorder<2>;
 template class SubsambleTrajectoryRecorder<2>;
 template class TrajectoryRecorderFactory<2>;
+
+template class FullTrajectoryRecorder<3>;

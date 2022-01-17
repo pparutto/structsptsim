@@ -35,7 +35,9 @@ template <size_t N>
 class NoneCollider: public Collider<N>
 {
 public:
+  NoneCollider() = default;
   virtual ~NoneCollider();
+
   virtual bool outside(const Point<N>& p) const override;
   virtual bool collide(const Point<N>& p1, const Point<N>& p2,
 		       Point<N>& res) const override;
@@ -56,6 +58,21 @@ public:
 protected:
   Box<N> box_;
 };
+
+class CylinderCollider: public Collider<3>
+{
+public:
+  CylinderCollider(const Cylinder& c);
+  virtual ~CylinderCollider();
+
+  virtual bool outside(const Point<3>& p) const override;
+  virtual bool collide(const Point<3>& p1, const Point<3>& p2,
+		       Point<3>& res) const override;
+  virtual void who_am_I(std::ostream& os) const override;
+protected:
+  Cylinder c_;
+};
+
 
 class PolygonCollider: public Collider<2>
 {

@@ -84,6 +84,8 @@ TrajectoryGenerator<N>::generate_step()
 
   //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
   bool retry = true;
+  // std::cout << p1 << std::endl;
+  // std::cout << p2 << std::endl;
   while (retry)
   {
     try
@@ -99,9 +101,9 @@ TrajectoryGenerator<N>::generate_step()
       std::cerr << "===================================" << std::endl;
     }
   }
-  //std::cout << p2 << std::endl;
   //std::cout << "p22 = " << p2[0] << " " << p2[1] << std::endl;
 
+  //std::cout << p2 << std::endl;
   this->traj_rec_->record(p2);
 }
 
@@ -189,3 +191,6 @@ TrajectoryGeneratorFactory<N>::traj_end_facto()
 
 template class TrajectoryGenerator<2>;
 template class TrajectoryGeneratorFactory<2>;
+
+
+template class TrajectoryGenerator<3>;

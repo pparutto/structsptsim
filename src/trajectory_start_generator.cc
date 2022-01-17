@@ -156,3 +156,5 @@ MultiplePolysRandomTrajectoryStartGenerator::generate()
 template class RandomBoxTrajectoryStartGenerator<2>;
 template class FixedPointTrajectoryStartGenerator<2>;
 template class RandomTrajectoryStartGenerator<2>;
+
+template class FixedPointTrajectoryStartGenerator<3>;
