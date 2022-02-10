@@ -28,7 +28,8 @@ ArgumentParserOptions::read_start_point(const std::string& str)
 
 
 ArgumentParserOptions::ArgumentParserOptions()
-  : export_poly_txt_arg("", "export-poly-txt", "Export polygon geometry as text file", false)
+  : seed_arg("", "seed", "", false, 0, "Seed for random number generator")
+  , export_poly_txt_arg("", "export-poly-txt", "Export polygon geometry as text file", false)
   , export_poly_mat_arg("", "export-poly-mat", "Export polygon geometry as malab file", false)
   , pxsize_arg("", "pxsize", "", false, NAN, "Pixel size for polygon (µm)")
   , start_point_arg("", "start-point", "", false, "", "x,y Initial trajectories point")
@@ -53,6 +54,7 @@ ArgumentParserOptions::ArgumentParserOptions()
 void
 ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
 {
+  cmd.add(this->seed_arg);
   cmd.add(this->export_poly_txt_arg);
   cmd.add(this->export_poly_mat_arg);
   cmd.add(this->pxsize_arg);
@@ -128,6 +130,14 @@ ArgumentParserOptions::verify_command_line() const
 void
 ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
 {
+  if (this->seed_arg.isSet())
+    p_opts.seed = seed_arg.getValue();
+  else
+  {
+    std::random_device rd;
+    p_opts.seed = rd();
+  }
+
   if (poly_arg.isSet())
   {
     p_opts.use_poly = true;
@@ -231,6 +241,8 @@ ProgramOptions::save_csv(const std::string& fname) const
     std::cerr << "ERROR: Could not open output file: " << fname << std::endl;
     return;
   }
+
+  f << "seed, " << std::to_string(this->seed) << std::endl;
 
   if (this->motion_type == MotionType::BROWNIAN)
   {

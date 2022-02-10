@@ -99,8 +99,8 @@ int main(int argc, char** argv)
 
   std::cout << std::setprecision(15);
 
-  std::random_device rd;
-  std::mt19937_64 mt(rd());
+  std::cout << "Seed: " << p_opts.seed << std::endl;
+  std::mt19937_64 mt(p_opts.seed);
 
   std::cout << "Parsing polygon" << std::endl;
 

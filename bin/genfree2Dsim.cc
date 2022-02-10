@@ -28,6 +28,9 @@ void create_dir_if_not_exist(const std::string& path)
 
 int main(int argc, char** argv)
 {
+  std::random_device rd;
+  unsigned seed = rd();
+
   bool fixed_size = false;
   unsigned width = 0;
   unsigned height = 0;
@@ -44,6 +47,10 @@ int main(int argc, char** argv)
   try
   {
     TCLAP::CmdLine cmd("./gensim", ' ', "1");
+
+    TCLAP::ValueArg<unsigned> seed_arg
+      ("", "seed", "", false, 0, "Seed for random number generator");
+    cmd.add(seed_arg);
 
     TCLAP::SwitchArg fixed_size_arg
       ("", "fixed-size", "fixed trajectory size given as λ arg", false);
@@ -91,6 +98,9 @@ int main(int argc, char** argv)
 
     cmd.parse(argc, argv);
 
+    if (seed_arg.isSet())
+      seed = seed_arg.getValue();
+
     fixed_size = fixed_size_arg.isSet();
     width = width_arg.getValue();
     height = height_arg.getValue();
@@ -113,10 +123,10 @@ int main(int argc, char** argv)
 
   create_dir_if_not_exist(outdir);
 
-  //std::cout << std::setprecision(15);
+  std::cout << std::setprecision(15);
 
-  std::random_device rd;
-  std::mt19937_64 mt(rd());
+  std::cout << "RNG seed: " << seed << std::endl;
+  std::mt19937_64 mt(seed);
 
   double region_scale = 0.04;
   Box<2> simulation_region({region_scale * width * pxsize,
@@ -160,6 +170,7 @@ int main(int argc, char** argv)
 
   std::ofstream f;
   f.open(outdir + "/parameters.csv");
+  f << "seed: " << seed << std::endl;
   f << "width (px): " << width << std::endl;
   f << "height (px): " << height << std::endl;
   f << "length (frame): " << length << std::endl;
