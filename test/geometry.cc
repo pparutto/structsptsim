@@ -33,9 +33,7 @@ int main(int argc, char** argv)
     Segment<2> s({19.092, 48.98775}, {19.092, 48.7104});
     Point<2> inter_p;
     Segment<2> inter_s;
-    std::cout << qt.intersect(s, inter_p, inter_s) << std::endl;
     assert(qt.intersect(s, inter_p, inter_s));
-    assert(false);
   }
 
   std::cout << "ER complex poly" << std::endl;
