@@ -55,3 +55,4 @@ EmpiricalMotion::subsample() const
 }
 
 template class BrownianMotion<2>;
+template class BrownianMotion<3>;

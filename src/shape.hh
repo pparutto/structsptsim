@@ -64,6 +64,45 @@ protected:
   Vec<3> normal_;
 };
 
+class Cylinder: public Shape<3>
+{
+public:
+  Cylinder() = default;
+  Cylinder(const Segment<3>& base, double r);
+
+  virtual bool inside(const Point<3>& p) const;
+  virtual Box<3> bounding_box() const;
+
+  bool intersect(const Segment<3>& s, Point<3>& inter_p) const;
+  bool intersect_side(const Segment<3>& s, Point<3>& inter_p) const;
+
+  Vec<3> normal(const Point<3>& p) const;
+
+  const Segment<3>& base() const { return this->base_; }
+  double r() const { return this->r_; }
+protected:
+  Segment<3> base_;
+  double r_;
+};
+
+class Plane: public Shape<3>
+{
+public:
+  Plane() = default;
+  Plane(const Point<3>& p1, const Point<3>& p2, const Point<3>& p3);
+
+  virtual bool inside(const Point<3>& p) const;
+  virtual Box<3> bounding_box() const;
+
+  bool intersect(const Segment<3>& s, Point<3>& inter_p) const;
+protected:
+  Point<3> p1_;
+  Point<3> p2_;
+  Point<3> p3_;
+};
+
+
+
 class Polygon: public Shape<2>
 {
 public:
@@ -176,6 +215,8 @@ protected:
 template <size_t N>
 std::ostream& operator<< (std::ostream& os, const Box<N>& box);
 
+
+std::ostream& operator<< (std::ostream& os, const Cylinder& c);
 std::ostream& operator<< (std::ostream& os, const Polygon& poly);
 
 #endif /// !SHAPE_HH

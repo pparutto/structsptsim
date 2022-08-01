@@ -11,6 +11,8 @@ enum TrajGenType {NTRAJS, NFRAMES, EMPIRICAL};
 
 struct ProgramOptions
 {
+  unsigned seed = 0;
+
   bool use_poly = false;
   std::string poly_path;
 
@@ -67,6 +69,7 @@ struct ProgramOptions
 
 struct ArgumentParserOptions
 {
+  TCLAP::ValueArg<unsigned> seed_arg;
   TCLAP::SwitchArg export_poly_txt_arg;
   TCLAP::SwitchArg export_poly_mat_arg;
   TCLAP::ValueArg<double> pxsize_arg;

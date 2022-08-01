@@ -151,3 +151,5 @@ template class EscapeEndCondition<2>;
 template class EnterRegionEndCondition<2>;
 template class CompoundEndCondition<2>;
 template class TrajectoryEndConditionFactory<2>;
+
+template class NumberPointsEndCondition<3>;

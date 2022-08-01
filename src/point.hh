@@ -36,10 +36,16 @@ template <size_t N>
 Point<N> null_point();
 
 template <size_t N>
+TimedPoint<N> null_timed_point();
+
+template <size_t N>
 Point<N> zero();
 
 template <size_t N>
 Point<N> to_point(const TimedPoint<N>& tp);
+
+template <size_t N>
+TimedPoint<N> to_timed_point(const Point<N>& p);
 
 template <size_t N>
 bool operator== (const std::array<double, N>& v1,
@@ -90,6 +96,15 @@ Point<N> null_point()
 }
 
 template <size_t N>
+TimedPoint<N> null_timed_point()
+{
+  TimedPoint<N> res;
+  for (size_t i = 0; i < N + 1; ++i)
+    res[i] = NAN;
+  return res;
+}
+
+template <size_t N>
 Point<N> zero()
 {
   Point<N> res;
@@ -104,6 +119,16 @@ Point<N> to_point(const TimedPoint<N>& tp)
   Point<N> res;
   for (size_t i = 0; i < N; ++i)
     res[i] = tp[i+1];
+  return res;
+}
+
+template <size_t N>
+TimedPoint<N> to_timed_point(double t, const Point<N>& p)
+{
+  TimedPoint<N> res;
+  res[0] = t;
+  for (size_t i = 0; i < N; ++i)
+    res[i+1] = p[i];
   return res;
 }
 

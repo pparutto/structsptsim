@@ -148,6 +148,167 @@ Triangle3D::intersect(const Segment<3>& seg, Point<3>& inter_p) const
 }
 
 
+Cylinder::Cylinder(const Segment<3>& base, double r)
+  : base_(base)
+  , r_(r)
+{
+}
+
+bool
+Cylinder::inside(const Point<3>& p) const
+{
+  //std::cout << this->base_.distance(p) << " " <<  this->r_ << std::endl;
+  return this->base_.distance(p) <= this->r_;
+}
+
+Box<3>
+Cylinder::bounding_box() const
+{
+  // /!\ TODO
+  assert(false);
+  return Box<3>();
+}
+
+bool
+Cylinder::intersect_side(const Segment<3>& s, Point<3>& inter_p) const
+{
+  double t = this->base_.orthogonal_project_t(s.p2());
+
+  if (t >= 0 && t <= 1)
+    return false;
+
+  Point<3> p1 = s.p1();
+  Point<3> p2 = s.p1() + s.normal() * 0.4;
+  Point<3> p3 = s.p1() + s.normal() * 0.7;
+  if (t > 1)
+  {
+    p1 = s.p2();
+    p2 = s.p2() + s.normal() * 0.4;
+    p3 = s.p2() + s.normal() * 0.7;
+  }
+  Plane p(p1, p2, p3);
+
+  if (!p.intersect(s, inter_p) ||
+      this->base_.distance(inter_p) > this->r_)
+    return false;
+
+  return true;
+}
+
+
+bool
+Cylinder::intersect(const Segment<3>& s, Point<3>& inter_p) const
+{
+  if (this->inside(s.p2()))
+    return false;
+
+  Vec<3> v = s.vector();
+  Point<3> p0 = s.p1();
+  Point<3> p1 = this->base_.p1();
+  Point<3> p2 = this->base_.p2();
+
+  Vec<3> D1 = p0 - p1;
+  Vec<3> D2 = p0 - p2;
+
+  Vec<3> alpha = {(D1[1] - D2[1]) * v[2] + (D2[2] - D1[2]) * v[1],
+		  (D1[2] - D2[2]) * v[0] + (D2[0] - D1[0]) * v[2],
+		  (D1[0] - D2[0]) * v[1] + (D2[1] - D1[1]) * v[0]};
+  Vec<3> beta = {D1[1] * D2[2] - D1[2] * D2[1],
+		 D1[2] * D2[0] - D1[0] * D2[2],
+		 D1[0] * D2[1] - D1[1] * D2[0]};
+
+  double A = alpha[0] * alpha[0] + alpha[1] * alpha[1] + alpha[2] * alpha[2];
+  double B = 2 * (alpha[0] * beta[0] + alpha[1] * beta[1] + alpha[2] * beta[2]);
+  double C = beta[0] * beta[0] + beta[1] * beta[1] + beta[2] * beta[2] -
+    norm(p1 - p2) * norm(p1 - p2) * this->r_ * this->r_;
+
+  double delta = B * B - 4 * A * C;
+  //std::cout << B << " " << A << " " << C << " " << delta << std::endl;
+  if (delta < -EPSILON)
+    return false;
+
+  if (delta < EPSILON)
+    inter_p = p0 + v * (-B / (2 * A));
+  else
+  {
+    double s_delta = sqrt(delta);
+    double t1 = (-B - s_delta) / (2 * A);
+    double t2 = (-B + s_delta) / (2 * A);
+
+    double t = NAN;
+    if (t1 < -EPSILON || t1 > 1 + EPSILON)
+      t = t2;
+    else if (t2 < -EPSILON || t2 > 1 + EPSILON)
+      t = t2;
+    else
+      t = t1 < t2 ? t1 : t2;
+
+    //std::cout << t << std::endl;
+    inter_p = p0 + v * t;
+
+    //std::cout << this->base_.distance(s.p1()) << " " << this->base_.distance(s.p2()) << " " << this->base_.distance(inter_p) << std::endl;
+      //<< " @ " << t1 << " " << t2 << " " << t << std::endl;
+  }
+
+  return true;
+}
+
+Vec<3> Cylinder::normal(const Point<3>& p) const
+{
+  Point<3> proj_p = this->base_.orthogonal_project(p);
+  Vec<3> n = p - proj_p;
+  return n / norm(n);
+}
+
+
+
+Plane::Plane(const Point<3>& p1, const Point<3>& p2, const Point<3>& p3)
+  : p1_(p1)
+  , p2_(p2)
+  , p3_(p3)
+{
+}
+
+bool
+Plane::inside(const Point<3>& p) const
+{
+  (void) p;
+  assert(false);
+  return false;
+}
+
+Box<3>
+Plane::bounding_box() const
+{
+  assert(false);
+  return Box<3> ();
+}
+
+
+bool
+Plane::intersect(const Segment<3>& s, Point<3>& inter_p) const
+{
+  Vec<3> p12 = this->p2_ - this->p1_;
+  Vec<3> p13 = this->p3_ - this->p1_;
+  Vec<3> v = s.vector();
+
+  double det = -dot(v, cross(p12, p13));
+
+  if (det >= -EPSILON && det <= EPSILON)
+    return false;
+
+  double t = dot(cross(p12, p13), s.p1() - this->p1_) / det;
+
+  if (t < 0 || t > 1)
+    return false;
+
+  inter_p = s.p1() + v * t;
+  return true;
+}
+
+
+
+
 double orientation(const PointEnsemble<2>& pts)
 {
   return ((pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1]) -
@@ -783,6 +944,12 @@ operator<< (std::ostream& os, const Box<N>& box)
 }
 
 std::ostream&
+operator<< (std::ostream& os, const Cylinder& c)
+{
+  return os << c.base() << ", " << c.r() << std::endl;
+}
+
+std::ostream&
 operator<< (std::ostream& os, const Polygon& poly)
 {
   for (const Point<2>& p: poly.pts())
@@ -792,6 +959,8 @@ operator<< (std::ostream& os, const Polygon& poly)
 }
 
 template class Shape<2>;
+template class Shape<3>;
+
 template class Box<2>;
 template class Box<3>;
 
