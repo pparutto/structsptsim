@@ -27,7 +27,8 @@ void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, unsigned width,
   //Pierre: add the two fixed values as arguments
   unsigned short*** imgs =
     raw_image_simulator(length, width, height, pxsize, DT,
-			1000.0, 0.2, trajs);
+			10000.0, 0.1, trajs);
+  //1000.0, 0.2
 
   TIFF* tif = TIFFOpen(outfile.c_str(), "w");
   for (unsigned k = 0; k < length; ++k)
@@ -128,8 +129,8 @@ int main(int argc, char** argv)
 
     Box<2> bb = polys->bounding_box();
     if (p_opts.use_fov)
-      bb = Box<2>({0, 0}, {p_opts.fov_size[0] * p_opts.pxsize,
-			   p_opts.fov_size[1] * p_opts.pxsize});
+      bb = Box<2>({0, 0}, {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
+		           (p_opts.fov_size[1] - 1) * p_opts.pxsize});
 
     qt = new QuadTree(bb);
     qt->insert_segments(polys->segments(), 5); //make it a parameter
@@ -169,8 +170,8 @@ int main(int argc, char** argv)
     //   {(1 - region_scale) * p_opts.fov_size[0] * p_opts.pxsize,
     //    (1 - region_scale) * p_opts.fov_size[1] * p_opts.pxsize});
     poly = new Box<2>({0, 0},
-		      {p_opts.fov_size[0] * p_opts.pxsize,
-		       p_opts.fov_size[1] * p_opts.pxsize});
+		      {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
+		       (p_opts.fov_size[1] - 1) * p_opts.pxsize});
   }
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});

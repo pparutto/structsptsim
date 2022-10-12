@@ -29,7 +29,7 @@ struct ProgramOptions
   double dt = NAN;
   double DT = NAN;
 
-  TrajGenType tr_gen_type;
+  TrajGenType tr_gen_type = TrajGenType::NTRAJS;
 
   unsigned Ntrajs = 0;
   unsigned Nframes = 0;
@@ -40,15 +40,15 @@ struct ProgramOptions
   bool use_fov = false;
   std::array<unsigned, 2> fov_size; //{width, height}
 
-  MotionType motion_type;
+  MotionType motion_type = MotionType::BROWNIAN;
   double D = NAN;
   std::string cdf_path;
 
-  bool use_start_reg;
+  bool use_start_reg = false;
   Box<2> start_reg;
   Box<2> stop_reg;
 
-  bool use_start_point;
+  bool use_start_point = false;
   Point<2> start_point;
 
   std::string outdir;

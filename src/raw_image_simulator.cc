@@ -51,7 +51,7 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
     }
   }
 
-  unsigned ker_half = 7;
+  unsigned ker_half = 21; //7
   double** gker = new double*[2 * ker_half + 1];
   for (unsigned i = 0; i < 2 * ker_half + 1; ++i)
     gker[i] = new double[2 * ker_half + 1];

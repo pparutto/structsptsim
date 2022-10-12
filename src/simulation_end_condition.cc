@@ -56,7 +56,7 @@ bool
 NumberFramesSimulationEndCondition<N>::evaluate(const Simulation<N>& sim)
 {
   (void) sim;
-  if (this->cur_frame_ >= this->max_frames_)
+  if (this->cur_frame_ >= this->max_frames_ - 1)
     return true;
   ++this->cur_frame_;
   return false;
