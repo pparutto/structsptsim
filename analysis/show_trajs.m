@@ -1,6 +1,6 @@
 addpath('../../SPT_analyzer/src/analysis')
 
-tab = csvread('/mnt/data/SPT_method/simu/mito/simus/Mito_Halo-N1-paJF646_003/trajs_D=1.600000_dt=0.000100_DT=0.006000_npts=20_ntrajs=5000.csv');
+tab = csvread('/tmp/totati/trajs.csv');
 
 idxs = unique(tab(:,1))';
 

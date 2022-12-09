@@ -1,6 +1,10 @@
-addpath('../external')
+restoredefaultpath
+addpath('../external/plot2svg')
 
-addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test3');
+%addpath('/mnt/data3/SPT_method/simu/fullcell/simus/arrival_times_freespace')
+%addpath('/mnt/data3/SPT_method/simu/fullcell/simus/arrival_times_pts=15000')
+addpath('/mnt/data3/SPT_method/simu/211217_COS7_4MTS-Halo-PA646_4MTS-mNG_Ionomycin15min-10uM_4/sim')
+
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
 
@@ -69,13 +73,21 @@ end
 %Utils.show_trajectories(tab(tab(:,1) == k, :));
 %Utils.show_trajectories(tab);
 
-plot(tab(:,3), tab(:,4))
+idxs = unique(tab(:,1));
+
+for k=idxs'%(1:10:length(idxs))
+    plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
+end
 %plot(20.3233146, 55.128996, 'xm')
 %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
 
 %plot(20.3233063707433, 55.1290140731416, 'x')
 %plot(20.3233064, 55.1290141, 'o')
 
+% plot(41.1, 64.3, 'xk')b 
+% dths = 0.025:0.05:(2*pi+0.025);
+% r = 15;
+% plot(41.1 + r * cos(dths), 64.3 + r * sin(dths), 'r')
 
 if ~isempty(start_b)
     plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r', 'LineWidth', 2)
@@ -91,6 +103,7 @@ if ~isempty(stop_b)
 end
 hold off
 daspect([1 1 1])
+plot2svg('/tmp/trajs_struct.svg')
 %)axis([0 12 0 12])
 %axis off
 %print('/tmp/trajs.png', '-dpng')
