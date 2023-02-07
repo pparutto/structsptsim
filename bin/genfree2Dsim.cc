@@ -31,6 +31,7 @@ int main(int argc, char** argv)
   std::random_device rd;
   unsigned seed = rd();
 
+  bool no_img = false;
   bool fixed_size = false;
   unsigned width = 0;
   unsigned height = 0;
@@ -47,6 +48,10 @@ int main(int argc, char** argv)
   try
   {
     TCLAP::CmdLine cmd("./gensim", ' ', "1");
+
+    TCLAP::SwitchArg no_img_arg
+      ("", "noimg", "Do not create output img", false);
+    cmd.add(no_img_arg);
 
     TCLAP::ValueArg<unsigned> seed_arg
       ("", "seed", "", false, 0, "Seed for random number generator");
@@ -101,6 +106,7 @@ int main(int argc, char** argv)
     if (seed_arg.isSet())
       seed = seed_arg.getValue();
 
+    no_img = no_img_arg.isSet();
     fixed_size = fixed_size_arg.isSet();
     width = width_arg.getValue();
     height = height_arg.getValue();
@@ -169,44 +175,47 @@ int main(int argc, char** argv)
   save_trajectories_csv<2>(outdir + "/trajs.csv", sim.trajs());
 
   std::ofstream f;
-  f.open(outdir + "/parameters.csv");
-  f << "seed: " << seed << std::endl;
-  f << "width (px): " << width << std::endl;
-  f << "height (px): " << height << std::endl;
-  f << "length (frame): " << length << std::endl;
-  f << "pxsize (µm): " << pxsize << std::endl;
-  f << "Exponential lambda (frame): " << exp_lambda << std::endl;
-  f << "dt (s): " << dt << std::endl;
-  f << "DT (s): " << DT << std::endl;
-  f << "D (µm2/s): " << D << std::endl;
-  f << "density (1/mu m2): " << density << std::endl;
-  f << "region scale factor: " << region_scale << std::endl;
+  f.open(outdir + "/params.csv");
+  f << "seed, " << seed << std::endl;
+  f << "width (px), " << width << std::endl;
+  f << "height (px), " << height << std::endl;
+  f << "length (frame), " << length << std::endl;
+  f << "pixelSize (µm), " << pxsize << std::endl;
+  f << "Exponential lambda (frame), " << exp_lambda << std::endl;
+  f << "dt (s), " << dt << std::endl;
+  f << "DT (s), " << DT << std::endl;
+  f << "D (µm2/s), " << D << std::endl;
+  f << "density (1/mu m2), " << density << std::endl;
+  f << "region scale factor, " << region_scale << std::endl;
   f.close();
 
-  unsigned short*** imgs = raw_image_simulator(length, width, height, pxsize,
-					       DT, 1000.0, 0.2, sim.trajs());
-  TIFF* tif = TIFFOpen((outdir + "/raw_data.tif").c_str(), "w");
-  for (unsigned k = 0; k < length; ++k)
+  if (!no_img)
   {
-    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
-    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
-    //TIFFSetField(tif, TIFFTAG_TILELENGTH, pxsize);
-    //TIFFSetField(tif, TIFFTAG_TILEWIDTH, pxsize);
-    for (unsigned i = 0; i < width; ++i)
-      TIFFWriteScanline(tif, imgs[k][i], i);
-    TIFFWriteDirectory(tif);
-  }
-  TIFFClose(tif);
+    unsigned short*** imgs = raw_image_simulator(length, width, height, pxsize,
+						 DT, 1000.0, 0.2, sim.trajs());
+    TIFF* tif = TIFFOpen((outdir + "/raw_data.tif").c_str(), "w");
+    for (unsigned k = 0; k < length; ++k)
+    {
+      TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
+      TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
+      TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+      TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+      //TIFFSetField(tif, TIFFTAG_TILELENGTH, pxsize);
+      //TIFFSetField(tif, TIFFTAG_TILEWIDTH, pxsize);
+      for (unsigned i = 0; i < width; ++i)
+	TIFFWriteScanline(tif, imgs[k][i], i);
+      TIFFWriteDirectory(tif);
+    }
+    TIFFClose(tif);
 
-  for (unsigned k = 0; k < length; ++k)
-  {
-    for (unsigned i = 0; i < width; ++i)
-      delete[] imgs[k][i];
-    delete[] imgs[k];
+    for (unsigned k = 0; k < length; ++k)
+      {
+	for (unsigned i = 0; i < width; ++i)
+	  delete[] imgs[k][i];
+	delete[] imgs[k];
+      }
+    delete[] imgs;
   }
-  delete[] imgs;
 
   std::cout << "DONE" << std::endl;
 }

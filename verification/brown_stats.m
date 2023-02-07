@@ -1,7 +1,8 @@
 %disps_bins = 0.0004:0.0008:0.02;
 disps_bins = 0.0025:0.005:2;
 
-tab = dlmread('/tmp/sim/trajs_D=1.500000_dt=0.000100_DT=0.006000_lambdaNpts=0.050000_nframes=0_width=128_height=128_dens=0.000123.csv');
+%tab = dlmread('/tmp/sim/trajs_D=1.500000_dt=0.000100_DT=0.006000_lambdaNpts=0.050000_nframes=0_width=128_height=128_dens=0.000123.csv');
+tab = dlmread('/mnt/data/SPT_method/simu/freespace/density/1_25_0.006_2000/trajs.csv');
 %tab = dlmread('/mnt/data/SPT_method/simu/very_low/trajs.csv');
 DT = Utils.find_dt(tab);
 
@@ -33,7 +34,8 @@ figure
 hold on
 bar(b, o / sum(o), 'hist')
 plot(b, raylpdf(b, f) / sum(raylpdf(b, f)), 'r')
-plot(b, raylpdf(b, sqrt(2 * 20 * 0.004)) / sum(raylpdf(b, sqrt(2 * 20 * 0.004))), 'm--')
+%plot(b, raylpdf(b, sqrt(2 * 20 * 0.004)) / sum(raylpdf(b, sqrt(2 * 20 * 0.004))), 'm--')
+plot(b, raylpdf(b, sqrt(2 * Dest * DT)) / sum(raylpdf(b, sqrt(2 * Dest * DT))), 'm--')
 hold off
 title(sprintf('Estimated D=%.4f', Dest), 'Interpreter', 'None')
 axis square
@@ -46,12 +48,12 @@ ylabel('Frequency')
 % bar(b, o / sum(o), 'hist')
 % axis square
 
-D = 3;
-DT = [0.002 0.004 0.006 0.008 0.01 0.012 0.014];
-
-figure
-hold on
-for i=1:length(DT)
-   plot(0.01:0.02:1.5, raylpdf(0.01:0.02:1.5, sqrt(2*D * DT(i))))
-end
-hold off
+% D = 3;
+% DTs = [0.002 0.004 0.006 0.008 0.01 0.012 0.014];
+% 
+% figure
+% hold on
+% for i=1:length(DTs)
+%    plot(0.01:0.02:1.5, raylpdf(0.01:0.02:1.5, sqrt(2*D * DTs(i))))
+% end
+% hold off
