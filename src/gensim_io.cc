@@ -28,7 +28,8 @@ ArgumentParserOptions::read_start_point(const std::string& str)
 
 
 ArgumentParserOptions::ArgumentParserOptions()
-  : seed_arg("", "seed", "", false, 0, "Seed for random number generator")
+  : noimg_arg("", "noimg", "Do not generate output img", false)
+  , seed_arg("", "seed", "", false, 0, "Seed for random number generator")
   , export_poly_txt_arg("", "export-poly-txt", "Export polygon geometry as text file", false)
   , export_poly_mat_arg("", "export-poly-mat", "Export polygon geometry as malab file", false)
   , pxsize_arg("", "pxsize", "", false, NAN, "Pixel size for polygon (µm)")
@@ -54,6 +55,7 @@ ArgumentParserOptions::ArgumentParserOptions()
 void
 ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
 {
+  cmd.add(this->noimg_arg);
   cmd.add(this->seed_arg);
   cmd.add(this->export_poly_txt_arg);
   cmd.add(this->export_poly_mat_arg);
@@ -130,6 +132,9 @@ ArgumentParserOptions::verify_command_line() const
 void
 ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
 {
+  if (this->noimg_arg.isSet())
+    p_opts.noimg = true;
+
   if (this->seed_arg.isSet())
     p_opts.seed = seed_arg.getValue();
   else

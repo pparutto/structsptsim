@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     TCLAP::CmdLine cmd("./gensim", ' ', "1");
 
     TCLAP::SwitchArg no_img_arg
-      ("", "noimg", "Do not create output img", false);
+      ("", "noimg", "Do not generate output img", false);
     cmd.add(no_img_arg);
 
     TCLAP::ValueArg<unsigned> seed_arg
@@ -192,12 +192,12 @@ int main(int argc, char** argv)
   if (!no_img)
   {
     unsigned short*** imgs = raw_image_simulator(length, width, height, pxsize,
-						 DT, 1000.0, 0.2, sim.trajs());
+						 DT, 10000.0, 0.2, sim.trajs());
     TIFF* tif = TIFFOpen((outdir + "/raw_data.tif").c_str(), "w");
     for (unsigned k = 0; k < length; ++k)
     {
-      TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 128);
-      TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 128);
+      TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+      TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
       TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
       TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
       //TIFFSetField(tif, TIFFTAG_TILELENGTH, pxsize);

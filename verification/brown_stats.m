@@ -2,9 +2,10 @@
 disps_bins = 0.0025:0.005:2;
 
 %tab = dlmread('/tmp/sim/trajs_D=1.500000_dt=0.000100_DT=0.006000_lambdaNpts=0.050000_nframes=0_width=128_height=128_dens=0.000123.csv');
-tab = dlmread('/mnt/data/SPT_method/simu/freespace/density/1_25_0.006_2000/trajs.csv');
+tab = dlmread('/mnt/data/SPT_method/simu/freespace/density2/1/1_1_0.0025_60000/trajs.csv');
 %tab = dlmread('/mnt/data/SPT_method/simu/very_low/trajs.csv');
-DT = Utils.find_dt(tab);
+%DT = Utils.find_dt(tab);
+DT = 0.0025;
 
 sds = Utils.ensemble_MSD(tab);
 
@@ -23,6 +24,23 @@ end
 
 [f, fci] = raylfit(disps);
 Dest = f^2 / DT / 2;
+
+
+
+M = max(disps);
+db = 0.005;%M / ceil(sqrt(length(disps)));
+bins = (db/2):db:(M+db/2);
+[oo,bb] = hist(disps, bins);
+
+[f, gof] = fit(bb', oo' / sum(oo), 'B * x / a^2 * exp(-x^2/(2*a^2))', 'Lower', [0 0], 'Upper', [inf M/2]);
+
+
+figure
+hold on
+plot(b, o / sum(o), 'r')
+plot(bb, oo / sum(oo), 'k')
+hold off
+axis square
 
 %mypdf = @(bins, sd) raylpdf(bins, sd) / sum(raylpdf(b, sd));
 %[f, gof] = fit(b', o' / sum(o), @(sd, x) mypdf(x, sd), 'Robust', 'LAR', 'Lower', 0', 'Upper', 5);

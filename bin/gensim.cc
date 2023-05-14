@@ -306,7 +306,7 @@ int main(int argc, char** argv)
 
   delete traj_end_cond;
 
-  if (p_opts.tr_gen_type == TrajGenType::NFRAMES)
+  if (!p_opts.noimg && p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
     std::cout << "Generating images" << std::endl;
 

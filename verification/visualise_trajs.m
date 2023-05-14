@@ -3,7 +3,7 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data3/SPT_method/simu/fullcell/simus/arrival_times_freespace')
 %addpath('/mnt/data3/SPT_method/simu/fullcell/simus/arrival_times_pts=15000')
-addpath('/mnt/data3/SPT_method/simu/211217_COS7_4MTS-Halo-PA646_4MTS-mNG_Ionomycin15min-10uM_4/sim')
+%addpath('/mnt/data3/SPT_method/simu/211217_COS7_4MTS-Halo-PA646_4MTS-mNG_Ionomycin15min-10uM_4/sim')
 
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/1');
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
@@ -15,8 +15,14 @@ addpath('/mnt/data3/SPT_method/simu/211217_COS7_4MTS-Halo-PA646_4MTS-mNG_Ionomyc
 
 %addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 
+%addpath('/mnt/data3/yutong/masks/cell3/test')
+
+addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
+
+
+outdir = '/tmp';
 %outdir = '/tmp/simu_fullcell';
-outdir = '/tmp/joe';
+%outdir = '/mnt/data3/yutong/masks/cell3/test';
 if ~isfolder(outdir)
     mkdir(outdir)
 end
@@ -52,7 +58,7 @@ for i=1:length(bp)
     %             plot([p(1) p(1) + norm(1) * 0.005], [p(2) p(2) + norm(2) * 0.005], 'm')
     %         end
     for j=1:length(dp{i})
-        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'k')
+        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'r')
         %             for kk=1:(size(dp{i}{j})-1)
         %                 p = dp{i}{j}(kk,:) + (dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:)) / 2;
         %                 v = dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:);
@@ -75,9 +81,18 @@ end
 
 idxs = unique(tab(:,1));
 
+
 for k=idxs'%(1:10:length(idxs))
-    plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
+    tr = tab(tab(:,1) == k, :);
+    plot(tr(1,3), tr(1,4), 'xk')
+    plot(tr(2:(end-1), 3), tr(2:(end-1), 4), 'k*')
+    plot(tr(end,3), tr(end,4), 'ok')
 end
+
+% for k=idxs'%(1:10:length(idxs))
+%     plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
+% end
+
 %plot(20.3233146, 55.128996, 'xm')
 %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
 
