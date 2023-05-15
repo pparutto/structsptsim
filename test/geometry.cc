@@ -11,6 +11,7 @@
 #include "segment.hh"
 #include "collider.hh"
 #include "io.hh"
+#include "trajectory_start_generator.hh"
 
 bool pts_eq(const Point<2>& p1, const Point<2>& p2, double prec)
 {
@@ -1475,6 +1476,171 @@ public:
   }
 };
 
+class Test28: public Test
+{
+public:
+  Test28() : Test("MitoPoly1") {}
+
+  virtual bool check() const
+  {
+    PointEnsemble<2> pe;
+    pe.push_back({1.2824, 1.2533}); pe.push_back({1.1783, 1.2436});
+    pe.push_back({1.0767, 1.2340}); pe.push_back({1.0283, 1.2557});
+    pe.push_back({0.9799, 1.2775}); pe.push_back({0.9098, 1.3501});
+    pe.push_back({0.8396, 1.4251}); pe.push_back({0.8420, 1.4929});
+    pe.push_back({0.8420, 1.5606}); pe.push_back({0.8638, 1.6453});
+    pe.push_back({0.8856, 1.7300}); pe.push_back({0.9678, 1.7856});
+    pe.push_back({1.0525, 1.8437}); pe.push_back({1.1565, 1.8316});
+    pe.push_back({1.2630, 1.8195}); pe.push_back({1.3453, 1.7397});
+    pe.push_back({1.4275, 1.6598}); pe.push_back({1.4421, 1.5824});
+    pe.push_back({1.4566, 1.5074}); pe.push_back({1.4082, 1.4106});
+    pe.push_back({1.3574, 1.3162}); pe.push_back({1.3211, 1.2848});
+    pe.push_back({1.2824, 1.2533});
+    Polygon inpoly(pe);
+
+    pe.clear();
+    pe.push_back({1.2945, 0.8710}); pe.push_back({1.3453, 0.8710});
+    pe.push_back({1.3961, 0.8710}); pe.push_back({1.4324, 0.9122});
+    pe.push_back({1.4711, 0.9557}); pe.push_back({1.5243, 1.0646});
+    pe.push_back({1.5776, 1.1735}); pe.push_back({1.6308, 1.2340});
+    pe.push_back({1.6864, 1.2945}); pe.push_back({1.7155, 1.3961});
+    pe.push_back({1.7445, 1.4977}); pe.push_back({1.7276, 1.5655});
+    pe.push_back({1.7106, 1.6332}); pe.push_back({1.6187, 1.7348});
+    pe.push_back({1.5243, 1.8389}); pe.push_back({1.5243, 1.8752});
+    pe.push_back({1.5243, 1.9139}); pe.push_back({1.4880, 1.9840});
+    pe.push_back({1.4493, 2.0566}); pe.push_back({1.3791, 2.0566});
+    pe.push_back({1.3090, 2.0566}); pe.push_back({1.2945, 2.0808});
+    pe.push_back({1.2799, 2.1050}); pe.push_back({1.2267, 2.1050});
+    pe.push_back({1.1735, 2.1050}); pe.push_back({1.0404, 2.0542});
+    pe.push_back({0.9073, 2.0034}); pe.push_back({0.8130, 1.9695});
+    pe.push_back({0.7210, 1.9332}); pe.push_back({0.6509, 1.8994});
+    pe.push_back({0.5831, 1.8631}); pe.push_back({0.5565, 1.8171});
+    pe.push_back({0.5323, 1.7687}); pe.push_back({0.5323, 1.6695});
+    pe.push_back({0.5323, 1.5703}); pe.push_back({0.5589, 1.4614});
+    pe.push_back({0.5855, 1.3550}); pe.push_back({0.5565, 1.2485});
+    pe.push_back({0.5275, 1.1444}); pe.push_back({0.5662, 1.0719});
+    pe.push_back({0.6025, 0.9969}); pe.push_back({0.6412, 0.9823});
+    pe.push_back({0.6823, 0.9678}); pe.push_back({0.7331, 0.9678});
+    pe.push_back({0.7864, 0.9702}); pe.push_back({0.8323, 1.0041});
+    pe.push_back({0.8807, 1.0404}); pe.push_back({0.9364, 1.0404});
+    pe.push_back({0.9944, 1.0404}); pe.push_back({1.0936, 0.9848});
+    pe.push_back({1.1928, 0.9315}); pe.push_back({1.2436, 0.9025});
+    pe.push_back({1.2945, 0.8710});
+    Polygon outpoly(pe);
+
+    std::vector<Polygon> diffs;
+    diffs.push_back(inpoly);
+    CompoundPolygon poly(outpoly, diffs);
+
+    std::vector<CompoundPolygon> polygons;
+    polygons.push_back(poly);
+    MultiplePolygon mpoly(polygons);
+
+    bool res = !poly.inside({1.15985, 1.75677});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.22427, 1.61475});
+    if (!res)
+      return false;
+
+    res =  !mpoly.inside({1.07553, 1.70413});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.07553, 1.70413});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.26513, 1.53848});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.15985, 1.75677});
+    if (!res)
+      return false;
+
+    res = !poly.inside({0.921662, 1.75394});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.05201, 1.49568});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.35753, 1.5707});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.32302, 1.68398});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.30714, 1.52976});
+    if (!res)
+      return false;
+
+    res = !poly.inside({0.906049, 1.55602});
+    if (!res)
+      return false;
+
+    res = !poly.inside({0.997528, 1.39995});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.12422, 1.24075});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.27815, 1.45686});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.07082, 1.61078});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.15187, 1.25991});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.14541, 1.24154});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.12252, 1.29263});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.06067, 1.34256});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.10912, 1.43321});
+    if (!res)
+      return false;
+
+    res = !poly.inside({0.856275, 1.61253});
+    if (!res)
+      return false;
+
+    res = !poly.inside({1.31179, 1.51114});
+    if (!res)
+      return false;
+
+    std::mt19937_64 ng;
+    MultiplePolysRandomTrajectoryStartGenerator start(ng, mpoly);
+    for (int i = 0; i < 1000; ++i)
+    {
+      res = mpoly.inside(start.generate());
+      if (!res)
+	return false;
+    }
+
+    return res;
+  }
+};
+
 
 // class TestX: public Test
 // {
@@ -1502,7 +1668,7 @@ int main(int argc, char** argv)
     new Test10(), new Test11(), new Test12(), new Test13(), new Test14(),
     new Test15(), new Test16(), new Test17(), new Test18(), new Test19(),
     new Test20(), new Test21(), new Test22(), new Test23(), new Test24(),
-    new Test25(), new Test26(), new Test27()};
+    new Test25(), new Test26(), new Test27(), new Test28()};
 
   std::unordered_map<std::string, Test*> tests_map;
   for (Test* t: tests)

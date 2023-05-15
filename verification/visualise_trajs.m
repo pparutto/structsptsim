@@ -9,7 +9,7 @@ addpath('../external/plot2svg')
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/regions/test');
 
 
-%addpath('/tmp/toto')
+%addpath('/tmp/b')
 %addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
 
 
@@ -17,7 +17,10 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data3/yutong/masks/cell3/test')
 
-addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
+%addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
+addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
+
+
 
 
 outdir = '/tmp';
@@ -43,22 +46,37 @@ if exist('stop_box.m', 'file') == 2
     stop_b = stop_box();
 end
 
+% for k=1:length(bp)
+%     figure
+%     hold on
+%     plot(bp{k}(:,1), bp{k}(:,2), 'k')
+%     for l=1:length(dp{k})
+%         plot(dp{k}{l}(:,1), dp{k}{l}(:,2), 'r')
+%     end
+%     hold off
+%     title(sprintf('%d', k))
+%     axis square
+% end
+
 tab = dlmread('trajs.csv', ',');
 
 figure%('Visible', 'off')
 hold on
 for i=1:length(bp)
     plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k')
-    %         for kk=1:(size(bp{i}, 1)-1)
-    %             p = bp{i}(kk,:) + (bp{i}(kk+1,:) - bp{i}(kk,:)) / 2;
-    %             v = bp{i}(kk+1,:) - bp{i}(kk,:);
-    %             n = sqrt(sum(v.^2));
-    %             norm =  [-v(2) / n, v(1) / n];
-    %             %plot(p(1), p(2), 'xr')
-    %             plot([p(1) p(1) + norm(1) * 0.005], [p(2) p(2) + norm(2) * 0.005], 'm')
-    %         end
+
+    %%show normals
+    for kk=1:(size(bp{i}, 1)-1)
+        p = bp{i}(kk,:) + (bp{i}(kk+1,:) - bp{i}(kk,:)) / 2;
+        v = bp{i}(kk+1,:) - bp{i}(kk,:);
+        n = sqrt(sum(v.^2));
+        norm =  [-v(2) / n, v(1) / n];
+        %plot(p(1), p(2), 'xr')
+        plot([p(1) p(1) + norm(1) * 0.005], [p(2) p(2) + norm(2) * 0.005], 'm')
+    end
     for j=1:length(dp{i})
         plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'r')
+        %%show normals
         %             for kk=1:(size(dp{i}{j})-1)
         %                 p = dp{i}{j}(kk,:) + (dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:)) / 2;
         %                 v = dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:);
@@ -82,11 +100,26 @@ end
 idxs = unique(tab(:,1));
 
 
-for k=idxs'%(1:10:length(idxs))
+% for k=unique(tab(:,1))'
+%     tr = tab(tab(:,1) == k, :);
+%     plot(tr(1,3), tr(1,4), 'xk')
+%     plot(tr(2:(end-1), 3), tr(2:(end-1), 4), 'k*')
+%     plot(tr(end,3), tr(end,4), 'ok')
+%     if inpolygon(tr(1,3), tr(1,4), dp{1}{1}(:,1), dp{1}{1}(:,2))
+%         display(sprintf('({%g, %g});', tr(1,3), tr(1,4)))
+%     end
+% end
+
+for k=unique(tab(:,1))'
     tr = tab(tab(:,1) == k, :);
-    plot(tr(1,3), tr(1,4), 'xk')
-    plot(tr(2:(end-1), 3), tr(2:(end-1), 4), 'k*')
-    plot(tr(end,3), tr(end,4), 'ok')
+    in = 1;
+    for l=1:length(bp)
+        s = sum(~inpolygon(tr(:,3), tr(:,4), bp{l}(:,1), bp{l}(:,2)));
+        if s > 0 && s < size(tr,1)
+            k
+            plot(tr(:,3), tr(:,4))
+        end
+    end
 end
 
 % for k=idxs'%(1:10:length(idxs))

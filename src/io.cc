@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 
 TrajectoryCharacs::TrajectoryCharacs(Point<2> pos, int npts)
   : p0(pos)
@@ -101,6 +102,12 @@ Point<2> read_point(const std::string& s)
   double b = std::stod(tmp);
   return {a, b};
 }
+
+bool poly_area_gt(const Polygon& p1, const Polygon& p2)
+{
+  return abs(p1.signed_area()) > abs(p2.signed_area());
+}
+
 
 //Inkscape polygon format: can contain letters M, h, v, z
 //Each line is a polygon
@@ -215,6 +222,10 @@ polys_from_inkscape_path(const std::string& fname)
   for (Polygon& poly: polys)
     poly.round_poly_pts();
 
+  //Sort polygons by area (larger to smaller) so that merging happens in
+  //the correct order
+  std::sort(polys.begin(), polys.end(), poly_area_gt);
+
   std::vector<CompoundPolygon> res;
   bool go = true;
   while (go)
@@ -239,8 +250,6 @@ polys_from_inkscape_path(const std::string& fname)
 	  idxs.push_back(j);
 	}
 
-	if (!ins)
-	  std::cout << "FAILED" << std::endl;
 	//sanity check for ER
 	// if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
 	//     !ins)
