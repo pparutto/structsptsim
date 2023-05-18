@@ -31,6 +31,16 @@ shift_coords(TrajectoryEnsemble<N>& te, const Point<N>& shifts)
     shift_coords(tr, shifts);
 }
 
+template <size_t N>
+unsigned
+count_pts(const TrajectoryEnsemble<N>& te)
+{
+  unsigned cnt = 0;
+  for (const Trajectory<N>& tr: te)
+    cnt += tr.size();
+  return cnt;
+}
 
 template void shift_coords(Trajectory<2>& te, const Point<2>& shifts);
 template void shift_coords(TrajectoryEnsemble<2>& te, const Point<2>& shifts);
+template unsigned count_pts<2>(const TrajectoryEnsemble<2>& te);

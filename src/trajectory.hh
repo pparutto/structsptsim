@@ -24,6 +24,8 @@ void shift_coords(TrajectoryEnsemble<N>& te, const Point<N>& shifts);
 template <size_t N>
 std::ostream& operator<< (std::ostream& os, const Trajectory<N>& tr);
 
+template <size_t N>
+unsigned count_pts(const TrajectoryEnsemble<N>& te);
 
 //////////////////////// Implementation
 

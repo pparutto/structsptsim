@@ -68,5 +68,50 @@ void save_trajectories_csv(const std::string& fname,
   f.close();
 }
 
+template <size_t N>
+TrajectoryEnsemble<N> read_trajectories_csv(const std::string& fname)
+{
+  std::ifstream ifs;
+  ifs.open(fname);
+
+  TrajectoryEnsemble<N> res;
+
+  if (!ifs.is_open())
+  {
+    std::cerr << "ERROR: Could not open input file: " << fname << std::endl;
+    return res;
+  }
+
+  int last_id = -1;
+  std::string line;
+  std::string tmp;
+  while (std::getline(ifs, line))
+  {
+    std::istringstream ss(line);
+
+    std::getline(ss, tmp, ',');
+    int cur_id = std::stoi(tmp);
+
+    std::getline(ss, tmp, ',');
+    double t = std::stod(tmp);
+
+    Point<N> pt;
+    for (unsigned i = 0; i < N; ++i)
+    {
+      std::getline(ss, tmp, ',');
+      pt[i] = std::stod(tmp);
+    }
+
+    if (last_id != cur_id)
+      res.push_back(Trajectory<N>());
+    res[res.size() - 1].push_back(to_timed_point(t, pt));
+
+    last_id = cur_id;
+  }
+
+  ifs.close();
+
+  return res;
+}
 
 #endif /// !IO_HH

@@ -15,12 +15,11 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 
-%addpath('/mnt/data3/yutong/masks/cell3/test')
+addpath('/mnt/data3/yutong/masks/cell3/test')
 
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_10.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
-
 
 
 outdir = '/tmp';
@@ -136,6 +135,7 @@ idxs = unique(tab(:,1));
 for k=idxs'%(1:10:length(idxs))
     plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
 end
+%axis([0 2204*0.01625 0 1902*0.01625])
 
 %plot(20.3233146, 55.128996, 'xm')
 %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
