@@ -127,10 +127,12 @@ int main(int argc, char** argv)
       polys->round_poly_pts();
     }
 
+    polys->shift_coords({100.0, 100.0});
+
     Box<2> bb = polys->bounding_box();
     if (p_opts.use_fov)
       bb = Box<2>({0, 0}, {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
-		           (p_opts.fov_size[1] - 1) * p_opts.pxsize});
+		     (p_opts.fov_size[1] - 1) * p_opts.pxsize});
 
     qt = new QuadTree(bb);
     qt->insert_segments(polys->segments(), 5); //make it a parameter
@@ -139,28 +141,6 @@ int main(int argc, char** argv)
 
     std::cout << "QuadTree size: " << qt->size() << std::endl;
     std::cout << "QuadTree area: " << qt->area();
-
-    if (p_opts.export_poly_txt)
-    {
-      int i = 0;
-      for (const CompoundPolygon& poly: polys->polys())
-      {
-	save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
-	++i;
-      }
-    }
-
-    if (p_opts.export_poly_mat)
-    {
-      save_polys_matlab(*polys, p_opts.outdir + "/polys.m");
-
-      if (p_opts.use_start_reg)
-	save_box_matlab(p_opts.start_reg, p_opts.outdir + "/start_box.m",
-			"start_box");
-      if (p_opts.tr_len_type == TrajLenType::REG)
-	save_box_matlab(p_opts.stop_reg, p_opts.outdir + "/stop_box.m",
-			"stop_box");
-    }
   }
   else if (p_opts.use_fov)
   {
@@ -172,6 +152,7 @@ int main(int argc, char** argv)
     poly = new Box<2>({0, 0},
 		      {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
 		       (p_opts.fov_size[1] - 1) * p_opts.pxsize});
+    poly->shift_coords({100.0, 100.0});
   }
 
   //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
@@ -180,15 +161,16 @@ int main(int argc, char** argv)
   if (p_opts.use_start_point)
   {
     std::cout << "Start point generator: Fixed" << std::endl;
-    start_gen = new FixedPointTrajectoryStartGenerator<2>(p_opts.start_point);
+    start_gen = new FixedPointTrajectoryStartGenerator<2>(p_opts.start_point + Point<2>({100.0, 100.0}));
   }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {
     std::cout << "Start point generator: Fixed" << std::endl;
-    start_gen = new FixedPointTrajectoryStartGenerator<2>({0.0, 0.0});
+    start_gen = new FixedPointTrajectoryStartGenerator<2>({100.0, 100.0});
   }
   else if (p_opts.use_start_reg)
   {
+    p_opts.start_reg.shift_coords({100.0, 100.0});
     std::cout << "Start point generator: Box" << std::endl;
     start_gen = new RandomBoxInPolyTrajectoryStartGenerator(mt, *poly, p_opts.start_reg);
   }
@@ -232,6 +214,7 @@ int main(int argc, char** argv)
   else if (p_opts.tr_len_type == REG)
   {
     std::cout << "Trajectory end condition: enter region" << std::endl;
+    p_opts.stop_reg.shift_coords({100.0, 100.0});
     traj_end_cond = new EnterRegionEndCondition<2>(p_opts.stop_reg);
   }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
@@ -255,7 +238,7 @@ int main(int argc, char** argv)
   TrajectoryRecorder<2>* traj_rec = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
     traj_rec =
-      new SubsambleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio());
+      new SubsampleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio());
   else if (p_opts.motion_type == MotionType::DISTRIB)
     traj_rec = new FullTrajectoryRecorder<2>(0.0, p_opts.DT);
 
@@ -270,10 +253,12 @@ int main(int argc, char** argv)
   else
     collider = new NoneCollider<2>();
 
+  BufferLogger* log = new BufferLogger();
+
   std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
-		   *collider);
+		   *collider, log);
 
   SimulationEndCondition<2>* end_sim = nullptr;
   Simulation<2>* sim = nullptr;
@@ -300,9 +285,41 @@ int main(int argc, char** argv)
 
   std::cout << "Running simulation" << std::endl;
   sim->run();
-
+  sim->shift_trajs_coords({-100.0, -100.0});
 
   save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
+
+  if (p_opts.export_poly_txt)
+  {
+    MultiplePolygon* polys = dynamic_cast<MultiplePolygon*>(poly);
+    polys->shift_coords({-100.0, -100.0});
+    int i = 0;
+    for (const CompoundPolygon& poly: polys->polys())
+     {
+       save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
+       ++i;
+     }
+  }
+
+  if (p_opts.export_poly_mat)
+  {
+    MultiplePolygon* polys = dynamic_cast<MultiplePolygon*>(poly);
+    polys->shift_coords({-100.0, -100.0});
+    save_polys_matlab(*polys, p_opts.outdir + "/polys.m");
+
+    if (p_opts.use_start_reg)
+    {
+      p_opts.start_reg.shift_coords({-100.0, -100.0});
+      save_box_matlab(p_opts.start_reg, p_opts.outdir + "/start_box.m",
+		      "start_box");
+    }
+    if (p_opts.tr_len_type == TrajLenType::REG)
+    {
+      p_opts.stop_reg.shift_coords({-100.0, -100.0});
+      save_box_matlab(p_opts.stop_reg, p_opts.outdir + "/stop_box.m",
+		      "stop_box");
+    }
+  }
 
   delete traj_end_cond;
 
@@ -323,6 +340,9 @@ int main(int argc, char** argv)
 		       p_opts.outdir + "/simulated_raw_data.tif");
   }
 
+  log->save_to_file(p_opts.outdir + "/errors");
+
+  delete log;
   delete poly;
   delete qt;
   delete collider;

@@ -115,16 +115,18 @@ int main(int argc, char** argv)
   BrownianMotion<2> bm(mt, D, dt);
 
   unsigned t_ratio = (unsigned) (DT / dt);
-  SubsambleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
+  SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
   TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
   NumberTrajectoriesSimulationEndCondition<2> end_sim(Ntrajs);
 
   NoneCollider<2> collider;
 
+  BufferLogger* log = new BufferLogger();
+
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider);
+		   collider, log);
 
   SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
 
@@ -140,8 +142,10 @@ int main(int argc, char** argv)
   f << "D (µm2/s), " << D << std::endl;
   f << "Ntrajs, " << Ntrajs << std::endl;
   f << "Npts, " << Npts << std::endl;
-
   f.close();
 
+  log->save_to_file(outdir + "errors");
+
+  delete log;
   std::cout << "DONE" << std::endl;
 }

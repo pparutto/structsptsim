@@ -39,6 +39,14 @@ Simulation<N>::~Simulation()
 }
 
 template <size_t N>
+void
+Simulation<N>::shift_trajs_coords(const Point<N>& shifts)
+{
+  for (Trajectory<N>& tr: this->trajs_)
+    shift_coords(tr, shifts);
+}
+
+template <size_t N>
 SimulationTrajectory<N>::
 SimulationTrajectory(TrajectoryGeneratorFactory<N>& traj_gen_facto,
 		     SimulationEndCondition<N>& end_cond)
@@ -103,7 +111,7 @@ SimulationDensity<N>::run()
   std::list<TrajectoryGenerator<N>*> new_trajs;
   while (!this->end_cond_.evaluate(*this))
   {
-    std::cout << frame << std::endl;
+    //std::cout << frame << std::endl;
     for (TrajectoryGenerator<N>* tg: alive_trajs)
     {
       if (tg->subsample())

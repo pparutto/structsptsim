@@ -31,9 +31,11 @@ int main(int argc, char** argv)
   NumberTrajectoriesSimulationEndCondition<2> end_sim(max_ntrajs);
   BoxCollider<2> bcollider(sim_box);
 
+  VoidLogger* log = new VoidLogger();
+
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   bcollider);
+		   bcollider, log);
 
   SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
 
@@ -41,5 +43,6 @@ int main(int argc, char** argv)
 
   save_trajectories_csv<2>("/tmp/trajs.csv", sim.trajs());
 
+  delete log;
   std::cout << "DONE" << std::endl;
 }

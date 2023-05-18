@@ -10,12 +10,14 @@ TrajectoryGenerator(TrajectoryStartGenerator<N>& traj_start,
 		    Motion<N>& motion_model,
 		    TrajectoryEndCondition<N>* traj_end,
 		    TrajectoryRecorder<N>* traj_rec,
-		    Collider<N>& collider)
+		    Collider<N>& collider,
+		    Logger* log)
   : traj_start_(traj_start)
   , motion_model_(motion_model)
   , traj_end_(traj_end)
   , traj_rec_(traj_rec)
   , collider_(collider)
+  , log_(log)
 {
 }
 
@@ -82,10 +84,7 @@ TrajectoryGenerator<N>::generate_step()
   Point<N> p1 = to_point<N>(this->traj_rec_->last_simu_point());
   Point<N> p2 = this->motion_model_.step_euler(p1);
 
-  //std::cout << "p2 = " << p2[0] << " " << p2[1] << std::endl;
   bool retry = true;
-  // std::cout << p1 << std::endl;
-  // std::cout << p2 << std::endl;
   while (retry)
   {
     try
@@ -95,15 +94,11 @@ TrajectoryGenerator<N>::generate_step()
     }
     catch (CollisionException<N>& e)
     {
-      //std::cerr << this->traj_rec_->traj() << std::endl;
-      //std::cerr << e.what()  << std::endl;
-      e.what();
-      std::cerr << "===================================" << std::endl;
+      this->log_->write(e.what());
+      //std::cerr << e.what() << std::endl;
     }
   }
-  //std::cout << "p22 = " << p2[0] << " " << p2[1] << std::endl;
 
-  //std::cout << p2 << std::endl;
   this->traj_rec_->record(p2);
 }
 
@@ -127,15 +122,6 @@ TrajectoryGenerator<N>::generate()
     {
       this->generate_step();
       done = true;
-      // try
-      // {
-      // 	this->generate_step();
-      // 	done = true;
-      // }
-      // catch (std::exception& e)
-      // {
-      // 	std::cerr << "Exception : " << e.what() << std::endl;
-      // }
     }
   }
 
@@ -155,12 +141,14 @@ TrajectoryGeneratorFactory(TrajectoryStartGenerator<N>& traj_start,
 			   Motion<N>& motion_model,
 			   TrajectoryEndConditionFactory<N>& traj_end_facto,
 			   TrajectoryRecorderFactory<N>& traj_rec_facto,
-			   Collider<N>& collider)
+			   Collider<N>& collider,
+			   Logger* log)
   : traj_start_(traj_start)
   , motion_model_(motion_model)
   , traj_end_facto_(traj_end_facto)
   , traj_rec_facto_(traj_rec_facto)
   , collider_(collider)
+  , log_(log)
 {
 }
 
@@ -171,7 +159,7 @@ TrajectoryGeneratorFactory<N>::get(double t0) const
   return new TrajectoryGenerator<N>(this->traj_start_, this->motion_model_,
 				    this->traj_end_facto_.get(),
 				    this->traj_rec_facto_.get(t0),
-				    this->collider_);
+				    this->collider_, this->log_);
 }
 
 template <size_t N>

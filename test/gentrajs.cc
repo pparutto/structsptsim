@@ -26,9 +26,11 @@ int main(int argc, char** argv)
 
   NoneCollider<2> collider;
 
+  VoidLogger* log = new VoidLogger();
+
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider);
+		   collider, log);
 
   TrajectoryGenerator<2>* traj_gen = traj_gen_facto.get(0.0);
 
@@ -44,4 +46,5 @@ int main(int argc, char** argv)
   }
 
   delete traj_gen;
+  delete log;
 }

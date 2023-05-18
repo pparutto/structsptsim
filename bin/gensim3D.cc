@@ -41,10 +41,13 @@ int main(int argc, char** argv)
   NumberPointsEndCondition<3>* end = new NumberPointsEndCondition<3>(10000);
   FullTrajectoryRecorder<3>* rec = new FullTrajectoryRecorder<3>(0, DT);
 
-  TrajectoryGenerator<3> tgen(start, bm, end, rec, ccollider);
+  VoidLogger* log = new VoidLogger();
+
+  TrajectoryGenerator<3> tgen(start, bm, end, rec, ccollider, log);
 
 
   Trajectory<3> traj = tgen.generate();
 
+  delete log;
   //std::cout << traj;
 }

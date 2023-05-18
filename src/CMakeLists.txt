@@ -7,6 +7,7 @@ add_library(libsim
   cum_distrib_function.cc
   io.cc
   motion.cc
+  logger.cc
   shape.cc
   simulation.cc
   simulation_end_condition.cc

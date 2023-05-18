@@ -186,6 +186,14 @@ Segment<N> Segment<N>::null()
 }
 
 template <size_t N>
+void
+Segment<N>::shift_coords(const Point<N>& shifts)
+{
+  this->p1_ = this->p1_ + shifts;
+  this->p2_ = this->p2_ + shifts;
+}
+
+template <size_t N>
 Point<N>
 Segment<N>::orthogonal_project(const Point<N>& p) const
 {

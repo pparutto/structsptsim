@@ -8,6 +8,7 @@
 # include "trajectory_end_condition.hh"
 # include "trajectory_recorder.hh"
 # include "collider.hh"
+# include "logger.hh"
 
 template <size_t N>
 class TrajectoryGenerator
@@ -17,7 +18,8 @@ public:
 		      Motion<N>& motion_model,
 		      TrajectoryEndCondition<N>* traj_end,
 		      TrajectoryRecorder<N>* traj_rec,
-		      Collider<N>& collider);
+		      Collider<N>& collider,
+		      Logger* log);
   ~TrajectoryGenerator();
 
   void init();
@@ -36,6 +38,7 @@ protected:
   TrajectoryEndCondition<N>* traj_end_;
   TrajectoryRecorder<N>* traj_rec_;
   Collider<N>& collider_;
+  Logger* log_;
 };
 
 template <size_t N>
@@ -46,7 +49,8 @@ public:
 			     Motion<N>& motion_model,
 			     TrajectoryEndConditionFactory<N>& traj_end_facto,
 			     TrajectoryRecorderFactory<N>& traj_rec_facto,
-			     Collider<N>& collider);
+			     Collider<N>& collider,
+			     Logger* log);
 
   TrajectoryGenerator<N>* get(double t0) const;
 
@@ -59,6 +63,7 @@ protected:
   TrajectoryEndConditionFactory<N>& traj_end_facto_;
   TrajectoryRecorderFactory<N>& traj_rec_facto_;
   Collider<N>& collider_;
+  Logger* log_;
 };
 
 

@@ -9,6 +9,10 @@ class CollisionException: public std::exception
 {
 public:
   CollisionException (const std::vector<Segment<N> >& history,
+		      const std::vector<bool>& intersect,
+		      const std::vector<bool>& pts_eq,
+		      const std::vector<Point<2> >& inter_p,
+		      const std::vector<Segment<2> >& inter_s,
 		      std::string what);
   ~CollisionException() = default;
   virtual const char* what() const noexcept override;
@@ -16,6 +20,10 @@ public:
   const std::vector<Segment<N> >& history() const { return this->history_; };
 protected:
   const std::vector<Segment<N> > history_;
+  const std::vector<bool> intersect_;
+  const std::vector<bool> pts_eq_;
+  const std::vector<Point<2> > inter_p_;
+  const std::vector<Segment<2> > inter_s_;
   const std::string what_;
 };
 
@@ -84,6 +92,8 @@ public:
   virtual bool collide(const Point<2>& p1, const Point<2>& p2,
 		       Point<2>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
+
+  const Polygon& poly() const { return this->poly_; };
 protected:
   const Polygon& poly_;
   const QuadTree* qt_;

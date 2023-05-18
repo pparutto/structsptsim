@@ -19,6 +19,8 @@ public:
   virtual void run() = 0;
 
   const TrajectoryEnsemble<N>& trajs() const { return this->trajs_; }
+
+  virtual void shift_trajs_coords(const Point<N>& shifts);
 protected:
   TrajectoryGeneratorFactory<N>& traj_gen_facto_;
   TrajectoryEnsemble<N> trajs_;

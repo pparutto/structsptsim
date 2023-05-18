@@ -16,8 +16,13 @@ template <size_t N>
 TimedPoint<N> from_point(double t, const Point<N>& p);
 
 template <size_t N>
-std::ostream& operator<< (std::ostream& os, const Trajectory<N>& tr);
+void shift_coords(Trajectory<N>& tr, const Point<N>& shifts);
 
+template <size_t N>
+void shift_coords(TrajectoryEnsemble<N>& te, const Point<N>& shifts);
+
+template <size_t N>
+std::ostream& operator<< (std::ostream& os, const Trajectory<N>& tr);
 
 
 //////////////////////// Implementation

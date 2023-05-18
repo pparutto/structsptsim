@@ -39,12 +39,12 @@ public:
 };
 
 template <size_t N>
-class SubsambleTrajectoryRecorder: public TrajectoryRecorder<N>
+class SubsampleTrajectoryRecorder: public TrajectoryRecorder<N>
 {
 public:
-  SubsambleTrajectoryRecorder(double t0, double DT, unsigned step);
+  SubsampleTrajectoryRecorder(double t0, double DT, unsigned step);
 
-  virtual SubsambleTrajectoryRecorder<N>* clone_reset(double t0) const;
+  virtual SubsampleTrajectoryRecorder<N>* clone_reset(double t0) const;
   virtual void record(const Point<N>& p) override;
   virtual TimedPoint<N> last_simu_point() const;
 protected:

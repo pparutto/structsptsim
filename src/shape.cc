@@ -75,6 +75,14 @@ Box<N>::bounding_box() const
 
 template <size_t N>
 void
+Box<N>::shift_coords(const Point<N>& shifts)
+{
+  this->min_ = this->min_ + shifts;
+  this->max_ = this->max_ + shifts;
+}
+
+template <size_t N>
+void
 Box<N>::set_min_v(double v, unsigned idx)
 {
   this->min_[idx] = v;
@@ -111,6 +119,14 @@ Triangle3D::bounding_box() const
   }
 
   return Box<3> (min, max);
+}
+
+void
+Triangle3D::shift_coords(const Point<3>& shifts)
+{
+  this->p1_ = this->p1_ + shifts;
+  this->p2_ = this->p2_ + shifts;
+  this->p3_ = this->p3_ + shifts;
 }
 
 bool
@@ -260,6 +276,12 @@ Vec<3> Cylinder::normal(const Point<3>& p) const
   return n / norm(n);
 }
 
+void
+Cylinder::shift_coords(const Point<3>& shifts)
+{
+  this->base_.shift_coords(shifts);
+}
+
 
 
 Plane::Plane(const Point<3>& p1, const Point<3>& p2, const Point<3>& p3)
@@ -284,6 +306,13 @@ Plane::bounding_box() const
   return Box<3> ();
 }
 
+void
+Plane::shift_coords(const Point<3>& shifts)
+{
+  this->p1_ = this->p1_ + shifts;
+  this->p2_ = this->p2_ + shifts;
+  this->p3_ = this->p3_ + shifts;
+}
 
 bool
 Plane::intersect(const Segment<3>& s, Point<3>& inter_p) const
@@ -684,6 +713,16 @@ void Polygon::round_poly_pts()
     round_to_precision<2>(p);
 }
 
+void
+Polygon::shift_coords(const Point<2>& shifts)
+{
+  for (unsigned i = 0; i < this->pts_.size(); ++i)
+  {
+    this->pts_[i][0] += shifts[0];
+    this->pts_[i][1] += shifts[1];
+  }
+}
+
 double
 Polygon::signed_area() const
 {
@@ -726,7 +765,6 @@ Polygon3D::bounding_box() const
 {
   return Box<3>();
 }
-
 
 bool
 Polygon3D::intersect(const Segment<3>& seg,
@@ -830,6 +868,14 @@ CompoundPolygon::round_poly_pts()
     diff.round_poly_pts();
 }
 
+void
+CompoundPolygon::shift_coords(const Point<2>& shifts)
+{
+  this->base_.shift_coords(shifts);
+  for (Polygon& diff: this->diffs_)
+    diff.shift_coords(shifts);
+}
+
 bool
 CompoundPolygon::intersect(const Segment<2>& seg,
 			   Point<2>& inter_p, Segment<2>& inter_s) const
@@ -906,6 +952,13 @@ MultiplePolygon::round_poly_pts()
 {
   for (CompoundPolygon& poly: this->polys_)
     poly.round_poly_pts();
+}
+
+void
+MultiplePolygon::shift_coords(const Point<2>& shifts)
+{
+  for (CompoundPolygon& poly: this->polys_)
+    poly.shift_coords(shifts);
 }
 
 Box<2>

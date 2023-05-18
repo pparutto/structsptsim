@@ -155,16 +155,18 @@ int main(int argc, char** argv)
   BrownianMotion<2> bm(mt, D, dt);
 
   unsigned t_ratio = (unsigned) (DT / dt);
-  SubsambleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
+  SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
   TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
   NumberFramesSimulationEndCondition<2> end_sim((int) length);
 
   NoneCollider<2> collider;
 
+  BufferLogger* log = new BufferLogger();
+
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider);
+		   collider, log);
 
   unsigned n_particles = (unsigned) width * height * density;
   std::cout << "Particles per frame: " << n_particles << std::endl;
@@ -216,6 +218,10 @@ int main(int argc, char** argv)
       }
     delete[] imgs;
   }
+
+  log->save_to_file(outdir + "errors");
+
+  delete log;
 
   std::cout << "DONE" << std::endl;
 }

@@ -29,6 +29,7 @@ public:
 			  const Point<N>& inter_p);
   static Segment<N> null();
 
+  void shift_coords(const Point<N>& shifts);
 
   Point<N> orthogonal_project(const Point<N>& p) const;
   double orthogonal_project_t(const Point<N>& p) const;

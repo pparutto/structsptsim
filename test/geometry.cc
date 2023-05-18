@@ -12,6 +12,7 @@
 #include "collider.hh"
 #include "io.hh"
 #include "trajectory_start_generator.hh"
+#include "simulation.hh"
 
 bool pts_eq(const Point<2>& p1, const Point<2>& p2, double prec)
 {
@@ -1641,6 +1642,146 @@ public:
   }
 };
 
+class Test29: public Test
+{
+public:
+  Test29() : Test("MitoPolygonParse1") {}
+
+  virtual bool check() const
+  {
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly");
+
+    return poly->polys().size() == 12;
+
+    delete poly;
+  }
+};
+
+
+class Test30: public Test
+{
+public:
+  Test30() : Test("MitoCollide1") {}
+
+  virtual bool check() const
+  {
+    std::cout << std::endl;
+
+    PointEnsemble<2> pe;
+    pe.push_back({3.4430, 1.5727}); pe.push_back({3.4575, 1.5727});
+    pe.push_back({3.4721, 1.5751}); pe.push_back({3.5156, 1.6090});
+    pe.push_back({3.5616, 1.6429}); pe.push_back({3.6439, 1.7711});
+    pe.push_back({3.7285, 1.8994}); pe.push_back({3.7406, 1.9526});
+    pe.push_back({3.7551, 2.0082}); pe.push_back({3.7406, 2.0687});
+    pe.push_back({3.7261, 2.1268}); pe.push_back({3.6051, 2.1873});
+    pe.push_back({3.4842, 2.2478}); pe.push_back({3.4358, 2.1461});
+    pe.push_back({3.3849, 2.0445}); pe.push_back({3.3753, 1.9381});
+    pe.push_back({3.3656, 1.8340}); pe.push_back({3.4043, 1.7759});
+    pe.push_back({3.4406, 1.7179}); pe.push_back({3.4261, 1.6622});
+    pe.push_back({3.4116, 1.6042}); pe.push_back({3.4285, 1.5872});
+    pe.push_back({3.4430, 1.5727});
+    Polygon poly(pe);
+
+    QuadTree qt(poly.bounding_box());
+    qt.insert_segments(poly.segments(), 2);
+    std::cout << pe.size() << " ; " << qt.size() << std::endl;
+    PolygonCollider poly_collider(poly, &qt);
+
+    Point<2> p1 = {3.40725, 2.01571};
+    Point<2> p2 = {3.27182, 1.85078};
+
+    bool res = poly.inside(p1);
+    if (!res)
+      return false;
+    res = !poly.inside(p2);
+
+    Point<2> p_res;
+    bool collided = poly_collider.collide(p1, p2, p_res);
+    return collided == true;
+  }
+};
+
+class Test31: public Test
+{
+public:
+  Test31() : Test("MitoCollide2") {}
+
+  virtual bool check() const
+  {
+    std::cout << std::endl;
+    std::random_device rd;
+    std::mt19937_64 ng(rd());
+
+    // PointEnsemble<2> pe;
+    // pe.push_back({3.4430, 1.5727}); pe.push_back({3.4575, 1.5727});
+    // pe.push_back({3.4721, 1.5751}); pe.push_back({3.5156, 1.6090});
+    // pe.push_back({3.5616, 1.6429}); pe.push_back({3.6439, 1.7711});
+    // pe.push_back({3.7285, 1.8994}); pe.push_back({3.7406, 1.9526});
+    // pe.push_back({3.7551, 2.0082}); pe.push_back({3.7406, 2.0687});
+    // pe.push_back({3.7261, 2.1268}); pe.push_back({3.6051, 2.1873});
+    // pe.push_back({3.4842, 2.2478}); pe.push_back({3.4358, 2.1461});
+    // pe.push_back({3.3849, 2.0445}); pe.push_back({3.3753, 1.9381});
+    // pe.push_back({3.3656, 1.8340}); pe.push_back({3.4043, 1.7759});
+    // pe.push_back({3.4406, 1.7179}); pe.push_back({3.4261, 1.6622});
+    // pe.push_back({3.4116, 1.6042}); pe.push_back({3.4285, 1.5872});
+    // pe.push_back({3.4430, 1.5727});
+    // Polygon poly(pe);
+
+    MultiplePolygon* poly =
+      polys_from_inkscape_path("../resources/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly");
+    poly->apply_pxsize(0.0241955);
+    poly->shift_coords({100.0, 100.0});
+    poly->round_poly_pts();
+
+    QuadTree qt(poly->bounding_box());
+    qt.insert_segments(poly->segments(), 2);
+    MultiplePolygonCollider collider(*poly, &qt);
+
+    MultiplePolysRandomTrajectoryStartGenerator start_gen(ng, *poly);
+    NumberPointsEndCondition<2> traj_end_cond(5);
+    TrajectoryEndConditionFactory<2> traj_end_cond_facto(traj_end_cond);
+
+    double D = 1.0;
+    double dt = 0.0001;
+    double DT = 0.01;
+    int t_ratio = DT / dt;
+
+    VoidLogger* log = new VoidLogger();
+
+    BrownianMotion<2> motion(ng, D, dt);
+    //FullTrajectoryRecorder<2> traj_rec(0.0, DT);
+    SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
+    TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
+    TrajectoryGeneratorFactory<2> traj_gen_facto(start_gen, motion,
+						 traj_end_cond_facto,
+						 traj_rec_facto, collider, log);
+
+    //NumberTrajectoriesSimulationEndCondition<2> end_sim(1);
+    //SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
+
+    //Point<2> pt = start_gen.generate();
+    //std::cout << pt << " " << poly->inside(pt) << std::endl;
+    //std::cout << poly->inside({0.827797, 1.71335}) << std::endl;
+
+    // Segment<2> seg ({0.825973, 1.72776}, {0.827797, 1.71335});
+    // std::cout << poly->inside(seg.p1()) << " " << poly->inside(seg.p2()) << std::endl;
+    // Point<2> res;
+    // collider.collide(seg.p1(), seg.p2(), res);
+
+    NumberFramesSimulationEndCondition<2> end_sim(5000);
+    SimulationDensity sim(traj_gen_facto, end_sim, 10, DT, t_ratio);
+
+    sim.run();
+    sim.shift_trajs_coords({-100.0, -100.0});
+    save_trajectories_csv<2>("/tmp/trajs.csv", sim.trajs());
+
+    delete poly;
+    delete log;
+
+    return true;
+  }
+};
 
 // class TestX: public Test
 // {
@@ -1668,7 +1809,8 @@ int main(int argc, char** argv)
     new Test10(), new Test11(), new Test12(), new Test13(), new Test14(),
     new Test15(), new Test16(), new Test17(), new Test18(), new Test19(),
     new Test20(), new Test21(), new Test22(), new Test23(), new Test24(),
-    new Test25(), new Test26(), new Test27(), new Test28()};
+    new Test25(), new Test26(), new Test27(), new Test28(), new Test29(),
+    new Test30(), new Test31()};
 
   std::unordered_map<std::string, Test*> tests_map;
   for (Test* t: tests)

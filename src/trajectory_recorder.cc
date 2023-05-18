@@ -52,8 +52,8 @@ FullTrajectoryRecorder<N>::last_simu_point() const
 
 
 template <size_t N>
-SubsambleTrajectoryRecorder<N>::
-SubsambleTrajectoryRecorder(double t0, double DT, unsigned step)
+SubsampleTrajectoryRecorder<N>::
+SubsampleTrajectoryRecorder(double t0, double DT, unsigned step)
   : TrajectoryRecorder<N>(t0, DT)
   , step_(step)
   , cnt_(0)
@@ -62,18 +62,20 @@ SubsambleTrajectoryRecorder(double t0, double DT, unsigned step)
 }
 
 template <size_t N>
-SubsambleTrajectoryRecorder<N>*
-SubsambleTrajectoryRecorder<N>::clone_reset(double t0) const
+SubsampleTrajectoryRecorder<N>*
+SubsampleTrajectoryRecorder<N>::clone_reset(double t0) const
 {
-  return new SubsambleTrajectoryRecorder<N>(t0, this->DT_, this->step_);
+  return new SubsampleTrajectoryRecorder<N>(t0, this->DT_, this->step_);
 }
 
 template <size_t N>
 void
-SubsambleTrajectoryRecorder<N>::record(const Point<N>& p)
+SubsampleTrajectoryRecorder<N>::record(const Point<N>& p)
 {
   TimedPoint<N> tp =
     to_timed_point<N>(this->t0_ + this->traj_.size() * this->DT_, p);
+
+  //we need the last simu point in the collider
   this->last_simu_pt_ = tp;
   if (this->cnt_ % this->step_ == 0)
     this->traj_.push_back(tp);
@@ -82,7 +84,7 @@ SubsambleTrajectoryRecorder<N>::record(const Point<N>& p)
 
 template <size_t N>
 TimedPoint<N>
-SubsambleTrajectoryRecorder<N>::last_simu_point() const
+SubsampleTrajectoryRecorder<N>::last_simu_point() const
 {
   return this->last_simu_pt_;
 }
@@ -102,7 +104,7 @@ TrajectoryRecorderFactory<N>::get(double t0)
 }
 
 template class FullTrajectoryRecorder<2>;
-template class SubsambleTrajectoryRecorder<2>;
+template class SubsampleTrajectoryRecorder<2>;
 template class TrajectoryRecorderFactory<2>;
 
 template class FullTrajectoryRecorder<3>;

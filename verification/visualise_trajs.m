@@ -18,8 +18,8 @@ addpath('../external/plot2svg')
 %addpath('/mnt/data3/yutong/masks/cell3/test')
 
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
-addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
-
+%addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
+%addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_10.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
 
 
 
@@ -46,13 +46,14 @@ if exist('stop_box.m', 'file') == 2
     stop_b = stop_box();
 end
 
-% for k=1:length(bp)
+% for k=11%:length(bp)
 %     figure
 %     hold on
 %     plot(bp{k}(:,1), bp{k}(:,2), 'k')
 %     for l=1:length(dp{k})
 %         plot(dp{k}{l}(:,1), dp{k}{l}(:,2), 'r')
 %     end
+%     plot(3.3792228084523, 1.98157779367967, 'xr')
 %     hold off
 %     title(sprintf('%d', k))
 %     axis square
@@ -110,21 +111,31 @@ idxs = unique(tab(:,1));
 %     end
 % end
 
-for k=unique(tab(:,1))'
-    tr = tab(tab(:,1) == k, :);
-    in = 1;
-    for l=1:length(bp)
-        s = sum(~inpolygon(tr(:,3), tr(:,4), bp{l}(:,1), bp{l}(:,2)));
-        if s > 0 && s < size(tr,1)
-            k
-            plot(tr(:,3), tr(:,4))
-        end
-    end
-end
+% plot([108.229, 108.242] - 100, [104.666 , 104.683] - 100, 'r')
+% plot([108.235, 108.246] - 100, [104.674 , 104.677] - 100, 'r')
+% 
+% plot(108.235 - 100, 104.674 - 100, 'xr')
+% plot([108.236, 108.125] - 100, [104.675 104.6] - 100, 'm')
 
-% for k=idxs'%(1:10:length(idxs))
-%     plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
+%plot(0.568540541483617, 1.28632113263532, 'xr')
+%plot([0.825973, 0.827797], [1.72776 , 1.71335], 'r')
+
+
+% for k=unique(tab(:,1))'
+%     tr = tab(tab(:,1) == k, :);
+%     in = 1;
+%     for l=1:length(bp)
+%         s = sum(~inpolygon(tr(:,3), tr(:,4), bp{l}(:,1), bp{l}(:,2)));
+%         if s > 0 && s < size(tr,1)
+%             tr(end,:)
+%             plot(tr(:,3), tr(:,4), 'Color', rand(1,3))
+%         end
+%     end
 % end
+
+for k=idxs'%(1:10:length(idxs))
+    plot(tab(tab(:,1) == k,3), tab(tab(:,1) == k,4), 'Color', rand(1,3));
+end
 
 %plot(20.3233146, 55.128996, 'xm')
 %plot(20.3661914 * [1 1], 55.1078195 * [1 0], 'r')
@@ -151,7 +162,7 @@ if ~isempty(stop_b)
 end
 hold off
 daspect([1 1 1])
-plot2svg('/tmp/trajs_struct.svg')
+%plot2svg('/tmp/trajs_struct.svg')
 %)axis([0 12 0 12])
 %axis off
 %print('/tmp/trajs.png', '-dpng')

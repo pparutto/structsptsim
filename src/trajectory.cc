@@ -10,3 +10,27 @@ from_point(double t, const Point<N>& p)
     res[i+1] = p[i];
   return res;
 }
+
+template <size_t N>
+void
+shift_coords(Trajectory<N>& tr, const Point<N>& shifts)
+{
+  for (unsigned i = 0; i < tr.size(); ++i)
+  {
+    //it is a TimedPoint
+    for (unsigned k = 0; k < N; ++k)
+      tr[i][k+1] += shifts[k];
+  }
+}
+
+template <size_t N>
+void
+shift_coords(TrajectoryEnsemble<N>& te, const Point<N>& shifts)
+{
+  for (Trajectory<N>& tr: te)
+    shift_coords(tr, shifts);
+}
+
+
+template void shift_coords(Trajectory<2>& te, const Point<2>& shifts);
+template void shift_coords(TrajectoryEnsemble<2>& te, const Point<2>& shifts);
