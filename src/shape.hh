@@ -193,6 +193,7 @@ public:
   virtual const PointEnsemble<2>& pts() const override;
   const Polygon& base() const { return this->base_; };
   Polygon& base() { return this->base_; };
+  void base(Polygon& p);
   const std::vector<Polygon>& diffs() const { return this->diffs_; };
   std::vector<Polygon>& diffs() { return this->diffs_; };
 protected:

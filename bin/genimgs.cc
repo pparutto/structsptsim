@@ -35,7 +35,7 @@ void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, double I0,
 
   for (unsigned k = 0; k < length; ++k)
   {
-    for (unsigned i = 0; i < width; ++i)
+    for (unsigned i = 0; i < height; ++i)
       delete[] imgs[k][i];
     delete[] imgs[k];
   }

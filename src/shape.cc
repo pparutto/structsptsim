@@ -379,7 +379,7 @@ bool feq(double a, double b, double tol)
 bool
 Polygon::check_normals(const Polygon& poly, bool inner_normals)
 {
-  double DELTA_DISP = 0.005;
+  double DELTA_DISP = 0.0005;
   for (size_t i = 0; i < poly.pts().size(); ++i)
   {
     int next = (i + 1) % poly.pts().size();
@@ -900,6 +900,11 @@ CompoundPolygon::signed_area() const
   return res;
 }
 
+void
+CompoundPolygon::base(Polygon& p)
+{
+  this->base_ = p;
+};
 
 MultiplePolygon::
 MultiplePolygon(const std::vector<CompoundPolygon>& polys)

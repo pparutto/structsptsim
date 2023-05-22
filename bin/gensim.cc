@@ -45,7 +45,7 @@ void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, unsigned width,
 
   for (unsigned k = 0; k < length; ++k)
   {
-    for (unsigned i = 0; i < width; ++i)
+    for (unsigned i = 0; i < height; ++i)
       delete[] imgs[k][i];
     delete[] imgs[k];
   }
@@ -321,8 +321,6 @@ int main(int argc, char** argv)
     }
   }
 
-  delete traj_end_cond;
-
   if (!p_opts.noimg && p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
     std::cout << "Generating images" << std::endl;
@@ -335,6 +333,7 @@ int main(int argc, char** argv)
       for (const Trajectory<2>& traj: sim->trajs())
 	length = traj.size() > length ? traj.size() : length;
     }
+
     generate_tif_stack(sim->trajs(), p_opts.fov_size[0], p_opts.fov_size[1],
 		       length, p_opts.pxsize, p_opts.DT,
 		       p_opts.outdir + "/simulated_raw_data.tif");
@@ -342,6 +341,7 @@ int main(int argc, char** argv)
 
   log->save_to_file(p_opts.outdir + "/errors");
 
+  delete traj_end_cond;
   delete log;
   delete poly;
   delete qt;

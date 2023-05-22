@@ -146,7 +146,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + read_point(tmp);
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	      cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -159,7 +162,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = read_point(tmp);
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	    cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -169,7 +175,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + (Point<2>) {0, std::stod(tmp)};
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	    cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -179,7 +188,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = {pos[0], std::stod(tmp)};
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	    cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -189,7 +201,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = pos + (Point<2>) {std::stod(tmp), 0};
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	    cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -199,7 +214,10 @@ polys_from_inkscape_path(const std::string& fname)
 	while (!is_letter(tmp))
 	{
 	  pos = {std::stod(tmp), pos[1]};
-	  cur_pe.push_back(pos);
+	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
+	    cur_pe.push_back(pos);
+	  else
+	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -275,16 +293,17 @@ polys_from_inkscape_path(const std::string& fname)
     if (!Polygon::check_normals(cp.base(), true))
     {
       std::cout << "Corrected poly normals" << std::endl;
-      cp.base() = Polygon::reverse(cp.base());
+      Polygon pol = Polygon::reverse(cp.base());
+      cp.base(pol);
     }
     assert(Polygon::check_normals(cp.base(), true));
     for (Polygon& diff_poly: cp.diffs())
     {
       if (!Polygon::check_normals(diff_poly, false))
       {
-  	std::cout << "Corrected poly normals" << std::endl;
-  	diff_poly = Polygon::reverse(diff_poly);
-  	assert(Polygon::check_normals(diff_poly, false));
+	std::cout << "Corrected poly normals" << std::endl;
+	diff_poly = Polygon::reverse(diff_poly);
+	assert(Polygon::check_normals(diff_poly, false));
       }
     }
   }
