@@ -32,3 +32,15 @@ BufferLogger::save_to_file(const std::string& fpath) const
 
   f.close();
 }
+
+DirectFileLogger::DirectFileLogger(std::ofstream& ofs)
+  : ofs_(ofs)
+{
+}
+
+void
+DirectFileLogger::write(const std::string& str)
+{
+  this->ofs_ << str << std::endl;
+  this->ofs_.flush();
+}

@@ -148,7 +148,6 @@ bool
 CylinderCollider::collide(const Point<3>& p1, const Point<3>& p2,
 		     Point<3>& res) const
 {
-  //std::cout << "p1 = " << p1 << " " << this->c_.inside(p1) << std::endl;
   assert(this->c_.inside(p1));
   Segment<3> s1(p1, p2);
   Point<3> inter_p = null_point<3>();
@@ -158,13 +157,11 @@ CylinderCollider::collide(const Point<3>& p1, const Point<3>& p2,
   //   assert(this->c_.intersect(s1, inter_p));
   while (this->c_.intersect(s1, inter_p))
   {
-    //std::cout << inter_p << " @@ " << this->c_.base().distance(inter_p) << std::endl;
     collided = true;
     Vec<3> N = this->c_.normal(inter_p);
     // double s = (N[0] * (s1.p2()[0] - inter_p[0]) +
     // 		N[1] * (s1.p2()[1] - inter_p[1]) +
     // 		N[2] * (s1.p2()[2] - inter_p[2]));
-    // //std::cout << s << std::endl;
     // res = s1.p2() - N * (2 * s);
 
     Vec<3> v = this->c_.base().vector();
@@ -172,8 +169,6 @@ CylinderCollider::collide(const Point<3>& p1, const Point<3>& p2,
 
     res = (inter_p + v * t0) * 2 - s1.p2();
 
-    std::cout << "N  " << norm(s1.vector()) << "   " << norm(s1.p1() - inter_p) + norm(inter_p - res) << std::endl;
-    //std::cout << this->c_.base().distance(s1.p2()) << " " << this->c_.base().distance(inter_p) << " " << this->c_.base().distance(res) << std::endl;
     assert(this->c_.inside(res));
     res = round_to_precision<3>(res);
 
@@ -181,19 +176,16 @@ CylinderCollider::collide(const Point<3>& p1, const Point<3>& p2,
     double t = norm_s.orthogonal_project_t(res);
     if (t < 0)
     {
-      std::cout << "YÀYYYYYYYYYYYYYYYYYYYYY " << t << std::endl;
       res = res - N * (-2 * t);
       res = round_to_precision<3>(res);
       assert(this->c_.inside(res));
     }
 
-    std::cout << this->c_.base().distance(s1.p2()) << " " << this->c_.base().distance(res) << std::endl;
     s1 = Segment<3>(inter_p, res);
     assert(this->c_.inside(res));
   }
 
   res = s1.p2();
-  std::cout << "res = " << res << " " << this->c_.inside(res) << std::endl;
   return collided;
 }
 
@@ -367,6 +359,7 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
   Segment<2> prev_s = Segment<2>::null();
   bool collided = false;
 
+  unsigned cnt = 0;
   //segment cannot collide with the previously collided polygon segment
   while (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
@@ -386,6 +379,10 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
     }
 
     s1 = Segment<2>(p, res);
+
+    ++cnt;
+    if (cnt > 20)
+      assert(false);
   }
 
   if (!this->polys_.inside(res))

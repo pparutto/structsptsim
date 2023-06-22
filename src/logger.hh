@@ -35,4 +35,15 @@ protected:
   std::vector<std::string> elts_;
 };
 
+class DirectFileLogger: public Logger
+{
+public:
+  DirectFileLogger(std::ofstream& ofs);
+  virtual ~DirectFileLogger() = default;
+
+  virtual void write(const std::string& str);
+protected:
+  std::ofstream& ofs_;
+};
+
 #endif /// !LOGGER_HH

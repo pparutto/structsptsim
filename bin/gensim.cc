@@ -253,7 +253,9 @@ int main(int argc, char** argv)
   else
     collider = new NoneCollider<2>();
 
-  BufferLogger* log = new BufferLogger();
+  //BufferLogger* log = new BufferLogger();
+  std::ofstream log_ofs(p_opts.outdir + "/errors");
+  Logger* log = new DirectFileLogger(log_ofs);
 
   std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
@@ -339,7 +341,11 @@ int main(int argc, char** argv)
 		       p_opts.outdir + "/simulated_raw_data.tif");
   }
 
-  log->save_to_file(p_opts.outdir + "/errors");
+  BufferLogger* bl = dynamic_cast<BufferLogger*> (log);
+  if (bl != NULL)
+    bl->save_to_file(p_opts.outdir + "/errors");
+  if (dynamic_cast<DirectFileLogger*> (log) != NULL)
+    log_ofs.close();
 
   delete traj_end_cond;
   delete log;

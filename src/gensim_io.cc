@@ -15,7 +15,7 @@ ArgumentParserOptions::read_fov_size(const std::string& str)
 }
 
 Point<2>
-ArgumentParserOptions::read_start_point(const std::string& str)
+ArgumentParserOptions::read_point(const std::string& str)
 {
   std::istringstream ss(str);
   std::string tmp;
@@ -161,7 +161,7 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
   if (start_point_arg.isSet())
   {
     p_opts.use_start_point = true;
-    p_opts.start_point = ArgumentParserOptions::read_start_point(start_point_arg.getValue());
+    p_opts.start_point = ArgumentParserOptions::read_point(start_point_arg.getValue());
   }
 
   if (start_box_arg.isSet())

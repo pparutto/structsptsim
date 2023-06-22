@@ -42,8 +42,6 @@ template <>
 bool
 Segment<2>::on_segment(const Point<2>& p) const
 {
-  //std::cout << this->distance(p) << std::endl;
-
   if (!colinear(this->p1_, this->p2_, p))
   {
     if (this->distance(p) > EPSILON)

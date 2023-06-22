@@ -16,6 +16,19 @@ public:
 };
 
 template <size_t N>
+class TimeEndCondition: public TrajectoryEndCondition<N>
+{
+public:
+  TimeEndCondition(double max_t);
+  ~TimeEndCondition() {}
+
+  virtual bool evaluate(const Trajectory<N>& traj) override;
+  virtual TimeEndCondition<N>* clone_reset() override;
+protected:
+  double max_t_;
+};
+
+template <size_t N>
 class NumberPointsEndCondition: public TrajectoryEndCondition<N>
 {
 public:

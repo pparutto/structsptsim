@@ -94,7 +94,7 @@ struct ArgumentParserOptions
   TCLAP::UnlabeledValueArg<std::string> outdir_arg;
 
   static std::array<unsigned, 2> read_fov_size(const std::string& str);
-  static Point<2> read_start_point(const std::string& str);
+  static Point<2> read_point(const std::string& str);
 
   ArgumentParserOptions();
   void add_arguments(TCLAP::CmdLine& cmd);

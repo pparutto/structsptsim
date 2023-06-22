@@ -263,7 +263,7 @@ polys_from_inkscape_path(const std::string& fname)
 	if (abs(polys[i].signed_area()) > abs(polys[j].signed_area()) &&
 	    ins)
 	{
-	  std::cout << "Detected a diff polygon" << std::endl;
+	  //std::cout << "Detected a diff polygon" << std::endl;
 	  overlap.push_back(polys[j]);
 	  idxs.push_back(j);
 	}
@@ -292,7 +292,7 @@ polys_from_inkscape_path(const std::string& fname)
   {
     if (!Polygon::check_normals(cp.base(), true))
     {
-      std::cout << "Corrected poly normals" << std::endl;
+      //std::cout << "Corrected poly normals" << std::endl;
       Polygon pol = Polygon::reverse(cp.base());
       cp.base(pol);
     }
@@ -301,7 +301,7 @@ polys_from_inkscape_path(const std::string& fname)
     {
       if (!Polygon::check_normals(diff_poly, false))
       {
-	std::cout << "Corrected poly normals" << std::endl;
+	//std::cout << "Corrected poly normals" << std::endl;
 	diff_poly = Polygon::reverse(diff_poly);
 	assert(Polygon::check_normals(diff_poly, false));
       }

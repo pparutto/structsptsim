@@ -173,7 +173,6 @@ Cylinder::Cylinder(const Segment<3>& base, double r)
 bool
 Cylinder::inside(const Point<3>& p) const
 {
-  //std::cout << this->base_.distance(p) << " " <<  this->r_ << std::endl;
   return this->base_.distance(p) <= this->r_;
 }
 
@@ -239,7 +238,6 @@ Cylinder::intersect(const Segment<3>& s, Point<3>& inter_p) const
     norm(p1 - p2) * norm(p1 - p2) * this->r_ * this->r_;
 
   double delta = B * B - 4 * A * C;
-  //std::cout << B << " " << A << " " << C << " " << delta << std::endl;
   if (delta < -EPSILON)
     return false;
 
@@ -259,11 +257,8 @@ Cylinder::intersect(const Segment<3>& s, Point<3>& inter_p) const
     else
       t = t1 < t2 ? t1 : t2;
 
-    //std::cout << t << std::endl;
     inter_p = p0 + v * t;
 
-    //std::cout << this->base_.distance(s.p1()) << " " << this->base_.distance(s.p2()) << " " << this->base_.distance(inter_p) << std::endl;
-      //<< " @ " << t1 << " " << t2 << " " << t << std::endl;
   }
 
   return true;
@@ -421,7 +416,6 @@ Polygon Polygon::reverse(const Polygon& poly)
 
 //     if (colinear(seg.p1(), seg.p2(), p))
 //     {
-//       std::cout << "COLINEAR " << seg.p1() << " " << seg.p2() << " " << p << " " << triangle_area(seg.p1(), seg.p2(), p) <<  std::endl;
 //       continue;
 //     }
 
@@ -429,15 +423,11 @@ Polygon Polygon::reverse(const Polygon& poly)
 //     {
 //       if (dist(inter_p, this->pts_[i+1]) > EPSILON)
 //       {
-// 	std::cout << "[" << seg.p1()[0] << " " << seg.p2()[0] << "],[" << seg.p1()[1] << " " << seg.p2()[1] << "])" << std::endl;
 // 	++cnt;
 //       }
 //     }
 //   }
 
-//   if ((cnt % 2) == 0)
-//     std::cout << p << "  " << cnt << std::endl;
-//   //std::cout << cnt << std::endl;
 //   return (cnt % 2) == 1;
 
 bool flt(double a, double b)
@@ -492,7 +482,6 @@ Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 	return border_is_inside;
       else if (fgt(p[1], cy))
       {
-	//std::cout << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'c', 'LineWidth', 2) " << (std::abs(p[0] - p2[0]) < -EPSILON) << std::endl;
 	++crossings;
       }
     }
@@ -510,27 +499,14 @@ Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
       if (fle(p1[1], p[1]) && ((prev_left && fgt(p2[0], p[0]))
 			       || (!prev_left && flt(p2[0], p[0]))))
       {
-	//std::cout << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'm', 'LineWidth', 2)" << std::endl;
 	++crossings;
       }
-
-      // if (prev_left && p1[0] > p[0])
-      // {
-      // 	std::cout << "2 " << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'm', 'LineWidth', 2)" << std::endl;
-      // 	++crossings;
-      // }
-      // else if (p0[0] > p[0])
-      // {
-      // 	std::cout << "3 " << "plot([" << p1[0] << "," << p2[0] << "],[" << p1[1] << "," << p2[1] << "], 'c', 'LineWidth', 2)" << std::endl;
-      // 	++crossings;
-      // }
     }
 
     if (!feq(p2[0], p[0], EPSILON))
       prev_left = flt(p2[0], p[0]);
   }
 
-  //std::cout << crossings << std::endl;
   return (crossings % 2) == 1;
 }
 
@@ -564,20 +540,16 @@ Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 //     bx = this->pts_[i][0] - p[0];
 //     by = this->pts_[i][1] - p[1];
 
-//     std::cout << this->pts_[i] << std::endl;
 
-//     std::cout << "ax = " << ax << " ay = " << ay << " bx = " << bx << " by = " << by << std::endl;
 //     if ((ay < -EPSILON && by < -EPSILON) ||
 //   	(ay > EPSILON  && by > EPSILON) ||
 //   	(ax < -EPSILON && bx < -EPSILON))
 //     {
-//       std::cout << "CONT 1" << std::endl;
 //       continue;
 //     }
 
 //     if (feq(ay, by, EPSILON) && std::min(ax, bx) <= 0)
 //     {
-//       std::cout << "?????????" << std::endl;
 //       return true;
 //     }
 
@@ -585,29 +557,24 @@ Polygon::my_inside(const Point<2>& p, bool border_is_inside) const
 //       continue;
 
 //     double lx = ax + (bx - ax) * (-ay) / (by - ay);
-//     std::cout << "lx = " << lx << std::endl;
 //     if (feq(lx, 0, EPSILON))
 //     {
-//       std::cout << "BORDER" << std::endl;
 //       return border_is_inside;
 //     }
 
 //     if (lx > 0)
 //     {
-//       std::cout << "PLUS " << std::endl;
 //       ++depth;
 //     }
 //     if (feq(ay, 0, EPSILON) && lup && by > ay)
 //       --depth;
 //     if (feq(ay, 0, EPSILON) && !lup && by < ay)
 //     {
-//       std::cout << "MINUS " << ay << " " << by << std::endl;
 //       --depth;
 //     }
 
 //     lup = (by - ay) > EPSILON;
 //   }
-//   std::cout << "depth = " << depth << std::endl;
 
 //   return depth % 2 == 1;
 // }

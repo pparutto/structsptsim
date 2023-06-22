@@ -1,6 +1,7 @@
 #include "trajectory_start_generator.hh"
 
 #include <iostream>
+#include <cassert>
 
 template <size_t N>
 TrajectoryStartGenerator<N>::~TrajectoryStartGenerator()
@@ -106,8 +107,14 @@ Point<2>
 RandomBoxInPolyTrajectoryStartGenerator::generate()
 {
   Point<2> p = this->rnd_box_.generate();
+  unsigned cpt = 5000;
   while (!this->poly_.inside(p))
+  {
     p = this->rnd_box_.generate();
+    if (cpt > 100000)
+      assert(false);
+    ++cpt;
+  }
 
   return p;
 }

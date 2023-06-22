@@ -15,8 +15,8 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 
-%addpath('/mnt/data3/yutong/masks/cell3/test')
-addpath('/mnt/data3/perk_ire1/simu/040423_H3_UNT_5_ER/sim')
+addpath('/mnt/data3/yutong/simu/simu_cell8_100623/')
+
 
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/50');
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_1.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');

@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   std::string outdir;
   try
   {
-    TCLAP::CmdLine cmd("./gensim", ' ', "1");
+    TCLAP::CmdLine cmd("./brown2D", ' ', "1");
 
     TCLAP::ValueArg<unsigned> seed_arg
       ("", "seed", "", false, 0, "Seed for random number generator");
@@ -75,7 +75,6 @@ int main(int argc, char** argv)
     TCLAP::UnlabeledValueArg<unsigned> Npts_arg
       ("Npts", "Trajectory size (num points)", true, 0, "Np");
     cmd.add(Npts_arg);
-
 
     TCLAP::UnlabeledValueArg<std::string> outdir_arg
       ("outdir", "output directory", true, "", "outdir");

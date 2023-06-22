@@ -81,12 +81,16 @@ void
 TrajectoryGenerator<N>::generate_step()
 {
   assert(!this->traj_rec_->traj().empty());
-  Point<N> p1 = to_point<N>(this->traj_rec_->last_simu_point());
-  Point<N> p2 = this->motion_model_.step_euler(p1);
 
+  Point<N> p1 = to_point<N>(this->traj_rec_->last_simu_point());
+  Point<N> p2;
+
+  unsigned cnt = 0;
   bool retry = true;
   while (retry)
   {
+    p2 = this->motion_model_.step_euler(p1);
+
     try
     {
       this->collider_.collide(p1, p2, p2);
@@ -95,7 +99,14 @@ TrajectoryGenerator<N>::generate_step()
     catch (CollisionException<N>& e)
     {
       this->log_->write(e.what());
-      //std::cerr << e.what() << std::endl;
+      std::cerr << "GenerateStep:" << std::string(e.what()) << std::endl;
+    }
+
+    ++cnt;
+    if (retry && cnt > 20)
+    {
+      this->log_->write("Could not generate a valid successor");
+      assert(false);
     }
   }
 
@@ -117,11 +128,15 @@ TrajectoryGenerator<N>::generate()
 
   while (!this->finished())
   {
+    unsigned cpt = 0;
     bool done = false;
     while (!done)
     {
       this->generate_step();
       done = true;
+      if (cpt > 20)
+	assert(false);
+      ++cpt;
     }
   }
 

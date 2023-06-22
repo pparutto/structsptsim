@@ -4,6 +4,27 @@
 #include <cmath>
 
 template <size_t N>
+TimeEndCondition<N>::TimeEndCondition(double max_t)
+  : max_t_(max_t)
+{
+}
+
+template <size_t N>
+bool
+TimeEndCondition<N>::evaluate(const Trajectory<N>& traj)
+{
+  return traj.at(traj.size()-1)[0] >= this->max_t_;
+}
+
+template <size_t N>
+TimeEndCondition<N>*
+TimeEndCondition<N>::clone_reset()
+{
+  return new TimeEndCondition<N>(this->max_t_);
+}
+
+
+template <size_t N>
 NumberPointsEndCondition<N>::NumberPointsEndCondition(unsigned max_npts)
   : max_npts_(max_npts)
 {
@@ -145,6 +166,7 @@ TrajectoryEndConditionFactory<N>::template_condition()
 }
 
 
+template class TimeEndCondition<2>;
 template class NumberPointsEndCondition<2>;
 template class NumberPointsExpEndCondition<2>;
 template class EscapeEndCondition<2>;

@@ -111,7 +111,7 @@ SimulationDensity<N>::run()
   std::list<TrajectoryGenerator<N>*> new_trajs;
   while (!this->end_cond_.evaluate(*this))
   {
-    //std::cout << frame << std::endl;
+    std::cout << frame << std::endl;
     for (TrajectoryGenerator<N>* tg: alive_trajs)
     {
       if (tg->subsample())
@@ -143,7 +143,6 @@ SimulationDensity<N>::run()
       new_trajs.back()->init();
     }
 
-    //std::cout << alive_trajs.size() << std::endl;
     ++frame;
   }
 
@@ -191,7 +190,6 @@ SimulationEmpirical::run()
     {
       start.update_start_point(jt->p0);
       end_cond.update_max_npts(jt->npts);
-      //std::cout << it->first << std::endl;
       try
       {
 	TrajectoryGenerator<2>* tg =
