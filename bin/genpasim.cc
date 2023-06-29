@@ -302,7 +302,7 @@ int main(int argc, char** argv)
   save_trajectories_csv<2>(outdir + "/trajs.csv", trajs);
 
   std::cout << "Generating images" << std::endl;
-  generate_tif_stack(trajs, fov_size[0], fov_size[1], Nframes, pxsize,
+  generate_tif_stack(trajs, fov_size[1], fov_size[0], Nframes, pxsize,
 		     DT, outdir + "/simulated_raw_data.tif");
 
   BufferLogger* bl = dynamic_cast<BufferLogger*> (log);

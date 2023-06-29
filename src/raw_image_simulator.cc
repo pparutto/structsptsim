@@ -66,8 +66,8 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
       if ((unsigned) frame >= length)
 	continue;
 
-      int pos[] = {(int) round(p[2] / pxsize), (int) round(p[1] / pxsize)};
-      double mu[] = {p[2], p[1]};
+      int pos[] = {(int) round(p[1] / pxsize), (int) round(p[2] / pxsize)};
+      double mu[] = {p[1], p[2]};
 
       gaussian_kernel(&gker, I0, sigma, 2 * ker_half + 1, pxsize, pos, mu);
 
