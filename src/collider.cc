@@ -11,8 +11,8 @@ CollisionException<N>::
 CollisionException(const std::vector<Segment<N> >& history,
 		   const std::vector<bool>& intersect,
 		   const std::vector<bool>& pts_eq,
-		   const std::vector<Point<2> >& inter_p,
-		   const std::vector<Segment<2> >& inter_s,
+		   const std::vector<Point<N> >& inter_p,
+		   const std::vector<Segment<N> >& inter_s,
 		   std::string what)
   : history_(history)
   , intersect_(intersect)
@@ -29,15 +29,15 @@ CollisionException<N>::what() const noexcept
 {
   std::stringstream res;
   res << this->what_ << "; collision history:" << std::endl;
-  for (const Segment<2>& seg: this->history_)
+  for (const Segment<N>& seg: this->history_)
     res << seg.p1() << " " << seg.p2() << std::endl;
   for (bool inter: this->intersect_)
     res << inter << std::endl;
   for (bool inter: this->pts_eq_)
     res << inter << std::endl;
-  for (Point<2> inter_p: this->inter_p_)
+  for (Point<N> inter_p: this->inter_p_)
     res << inter_p << std::endl;
-  for (Segment<2> inter_s: this->inter_s_)
+  for (Segment<N> inter_s: this->inter_s_)
     res << inter_s << std::endl;
 
   return res.str().c_str();
@@ -381,8 +381,12 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
     s1 = Segment<2>(p, res);
 
     ++cnt;
-    if (cnt > 20)
-      assert(false);
+    if (cnt > 100)
+      throw CollisionException<2>(std::vector<Segment<2> >(), std::vector<bool>(),
+				  std::vector<bool>(),
+				  std::vector<Point<2> >(),
+				  std::vector<Segment<2> >(),
+				  "Reached max. num. collisions for a segment");
   }
 
   if (!this->polys_.inside(res))
@@ -404,6 +408,7 @@ QuadTreeCollider::who_am_I(std::ostream& os) const
 
 
 template class CollisionException<2>;
+template class CollisionException<3>;
 template class NoneCollider<2>;
 template class BoxCollider<2>;
 

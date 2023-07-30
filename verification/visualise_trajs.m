@@ -15,10 +15,16 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data/Dropbox/Avezov_lab/Pierre/simu/mito')
 
-addpath('/mnt/data3/yutong/simu/simu_cell2_230623_100ms_60killRate')
+%addpath('/mnt/data3/yutong/simu/simu_cell2_230623_100ms_60killRate')
 
 
 %addpath('/mnt/data/SPT_method/simu/mito/211217/C2-211217_COS7_4MTS-Halo-P  _4MTS-Halo-PA646_4MTS-mNG_FCCP15min-10uM_10.czi.tif_avg17.tif_musical_NImgs=11_NFrames=10_th=4.0_alpha=6.0_gauss=1.5pxs_croped=67_usharp_r=4_mask=0.9_Simple_Segmentation_erode_disk2_close_disk2_poly.poly/1_30_0.006_2000');
+
+%addpath('/mnt/data2/SPT_method/simu/ER/debug_struct/simus/D=5_DT=0.01_1spot')
+
+%addpath('/mnt/data3/yutong/simu/simu_cell2_230623_100ms_60killRate/simu_cell2_230623_100ms_60killRate_1')
+
+addpath('/mnt/data2/SPT_method/simu/ER/density2/C2-Sec61b_Halo-paJF646+400uMBSA_001.czi.tif_avg17.tif_musical_4_6_50frames_croped46pxs_avg_norm_gauss1.5px_Simple_Segmentation_binary_close1px_erode1px_erode1px_poly.poly/1/1_15_0.01_4000')
 
 
 outdir = '/tmp';
@@ -41,8 +47,7 @@ end
 
 stop_b = [];
 if exist('stop_box.m', 'file') == 2
-    stop_b = stop_box();
-end
+    stop_b = stop_box();end
 
 % for k=11%:length(bp)
 %     figure
@@ -57,13 +62,13 @@ end
 %     axis square
 % end
 
-%tab = dlmread('trajs.csv', ',');
-tab = zeros(0,5);
+tab = dlmread('trajs.csv', ',');
+%tab = zeros(0,5);
 
 figure%('Visible', 'off')
 hold on
 for i=1:length(bp)
-    plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k')
+    plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k', 'LineWidth', 2)
 
     %%show normals
     for kk=1:(size(bp{i}, 1)-1)
@@ -75,7 +80,7 @@ for i=1:length(bp)
         plot([p(1) p(1) + norm(1) * 0.005], [p(2) p(2) + norm(2) * 0.005], 'm')
     end
     for j=1:length(dp{i})
-        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'r')
+        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'r', 'LineWidth', 2)
         %%show normals
         %             for kk=1:(size(dp{i}{j})-1)
         %                 p = dp{i}{j}(kk,:) + (dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:)) / 2;
@@ -162,7 +167,7 @@ if ~isempty(stop_b)
 end
 hold off
 daspect([1 1 1])
-set(gca, 'YDir','reverse')
+%set(gca, 'YDir','reverse')
 %plot2svg('/tmp/trajs_struct.svg')
 %)axis([0 12 0 12])
 %axis off
@@ -173,3 +178,11 @@ set(gca, 'YDir','reverse')
 %print(sprintf('%s/trajs_%d.png', outdir, k), '-dpng', '-r1000')
 %pause(5);
 
+
+disps = [];
+for k=unique(tab(:,1))'
+    tr = tab(tab(:,1) == k, :);
+    disps = [disps; sqrt(sum((tr(2:end, 3:4) - tr(1:(end-1), 3:4)).^2, 2))];
+end
+figure
+plot(zeros(length(disps), 1), disps, 'x')

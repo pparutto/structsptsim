@@ -64,7 +64,8 @@ void create_dir_if_not_exist(const std::string& path)
 
 int main(int argc, char** argv)
 {
-  unsigned seed;
+  bool runover = false;
+  unsigned seed = 0;
   double pxsize = NAN;
   unsigned Nframes = 0;
   double dt = NAN;
@@ -83,6 +84,10 @@ int main(int argc, char** argv)
   {
     TCLAP::CmdLine cmd("./genPAsim", ' ', "1");
     ArgumentParserOptions arg_parse_opts;
+
+    TCLAP::SwitchArg runover_arg
+      ("", "runover", "continue simulating trajs going after final frame", false);
+    cmd.add(runover_arg);
 
     TCLAP::ValueArg<unsigned> seed_arg
       ("", "seed", "", false, 0, "Seed for random number generator");
@@ -147,6 +152,7 @@ int main(int argc, char** argv)
       seed = rd();
     }
 
+    runover = runover_arg.isSet();
     Nframes = Nframes_arg.getValue();
     pxsize = pxsize_arg.getValue();
     dt = dt_arg.getValue();
@@ -231,7 +237,10 @@ int main(int argc, char** argv)
   conds.push_back(new NumberPointsExpEndCondition<2>(kill_pdist, mt));
   //Trajs longer than the number of frames will not be displayed anyway
   //conds.push_back(new NumberPointsEndCondition<2>(Nframes+1));
-  conds.push_back(new TimeEndCondition<2>((Nframes+1)*DT));
+
+  std::cout << "Runover: " << std::to_string(runover) << std::endl;
+  if (!runover)
+    conds.push_back(new TimeEndCondition<2>((Nframes+1)*DT));
   conds.push_back(new EscapeEndCondition<2>(*poly));
   TrajectoryEndCondition<2>* traj_end_cond = new CompoundEndCondition<2>(conds);
 
@@ -263,6 +272,7 @@ int main(int argc, char** argv)
     std::cerr << "ERROR: Could not open output file: " << outdir + "/params.csv" << std::endl;
   else
   {
+    f << "runover, " << std::to_string(runover) << std::endl;
     f << "seed, " << std::to_string(seed) << std::endl;
     f << "Nframes," << std::to_string(Nframes) << std::endl;
     f << "pxsize, " << std::to_string(pxsize) << std::endl;

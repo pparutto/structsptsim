@@ -62,7 +62,7 @@ raw_image_simulator(unsigned length, unsigned width, unsigned height,
     for (const TimedPoint<2>& p: traj)
     {
       int frame = (int) round(p[0] / DT);
-
+      
       if ((unsigned) frame >= length)
 	continue;
 

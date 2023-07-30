@@ -3,6 +3,22 @@
 #include <cassert>
 #include <iostream>
 
+template <size_t N>
+TrajectoryGenerationException<N>::
+TrajectoryGenerationException(const CollisionException<N>& base_except,
+			      std::string what)
+  : base_except_(base_except)
+  , what_(what)
+{
+}
+
+template <size_t N>
+const char*
+TrajectoryGenerationException<N>::what() const noexcept
+{
+  return this->what_.c_str();
+}
+
 
 template <size_t N>
 TrajectoryGenerator<N>::
@@ -87,6 +103,7 @@ TrajectoryGenerator<N>::generate_step()
 
   unsigned cnt = 0;
   bool retry = true;
+  CollisionException<N> last_e = CollisionException<N> ();
   while (retry)
   {
     p2 = this->motion_model_.step_euler(p1);
@@ -99,14 +116,15 @@ TrajectoryGenerator<N>::generate_step()
     catch (CollisionException<N>& e)
     {
       this->log_->write(e.what());
+      last_e = e;
       std::cerr << "GenerateStep:" << std::string(e.what()) << std::endl;
     }
 
     ++cnt;
-    if (retry && cnt > 20)
+    if (retry && cnt > 50)
     {
       this->log_->write("Could not generate a valid successor");
-      assert(false);
+      throw TrajectoryGenerationException<N> (last_e, "Next point generation failed");
     }
   }
 
@@ -134,8 +152,8 @@ TrajectoryGenerator<N>::generate()
     {
       this->generate_step();
       done = true;
-      if (cpt > 20)
-	assert(false);
+      if (cpt > 50)
+	throw TrajectoryGenerationException<N> (CollisionException<N> (), "Next point generation failed");
       ++cpt;
     }
   }
@@ -192,6 +210,7 @@ TrajectoryGeneratorFactory<N>::traj_end_facto()
 }
 
 
+template class TrajectoryGenerationException<2>;
 template class TrajectoryGenerator<2>;
 template class TrajectoryGeneratorFactory<2>;
 

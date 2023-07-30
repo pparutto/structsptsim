@@ -11,6 +11,23 @@
 # include "logger.hh"
 
 template <size_t N>
+class TrajectoryGenerationException: public std::exception
+{
+public:
+  TrajectoryGenerationException (const CollisionException<N>& base_except,
+				 std::string what);
+  ~TrajectoryGenerationException() = default;
+
+  virtual const char* what() const noexcept override;
+
+  const CollisionException<N>& base_except() const { return this->base_except_; }
+ protected:
+  CollisionException<N> base_except_;
+  std::string what_;
+};
+
+
+template <size_t N>
 class TrajectoryGenerator
 {
 public:

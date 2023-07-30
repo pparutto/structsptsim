@@ -11,20 +11,21 @@ public:
   CollisionException (const std::vector<Segment<N> >& history,
 		      const std::vector<bool>& intersect,
 		      const std::vector<bool>& pts_eq,
-		      const std::vector<Point<2> >& inter_p,
-		      const std::vector<Segment<2> >& inter_s,
+		      const std::vector<Point<N> >& inter_p,
+		      const std::vector<Segment<N> >& inter_s,
 		      std::string what);
+  CollisionException () = default;
   ~CollisionException() = default;
   virtual const char* what() const noexcept override;
 
   const std::vector<Segment<N> >& history() const { return this->history_; };
 protected:
-  const std::vector<Segment<N> > history_;
-  const std::vector<bool> intersect_;
-  const std::vector<bool> pts_eq_;
-  const std::vector<Point<2> > inter_p_;
-  const std::vector<Segment<2> > inter_s_;
-  const std::string what_;
+  std::vector<Segment<N> > history_;
+  std::vector<bool> intersect_;
+  std::vector<bool> pts_eq_;
+  std::vector<Point<N> > inter_p_;
+  std::vector<Segment<N> > inter_s_;
+  std::string what_;
 };
 
 template <size_t N>
