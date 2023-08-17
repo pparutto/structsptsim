@@ -24,7 +24,7 @@ if not isdir(res):
 
 cur = np.zeros((0, 4))
 for i in range(1, args.N+1):
-    dats = np.loadtxt(join(args.dirPath + "_" + str(i), "trajs.csv"), delimiter=",")
+    dats = np.loadtxt(join(args.dirPath + str(i), "trajs.csv"), delimiter=",")
     if i > 1:
         last_tr = cur[cur[:,0] == np.max(cur[:,0]), 1]
         min_t = last_tr[0] + (cur[1,1] - cur[0,1])

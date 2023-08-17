@@ -65,6 +65,9 @@ void create_dir_if_not_exist(const std::string& path)
 int main(int argc, char** argv)
 {
   bool runover = false;
+  bool nokill = false;
+  double tmax = NAN;
+  double t0 = NAN;
   unsigned seed = 0;
   double pxsize = NAN;
   unsigned Nframes = 0;
@@ -88,6 +91,18 @@ int main(int argc, char** argv)
     TCLAP::SwitchArg runover_arg
       ("", "runover", "continue simulating trajs going after final frame", false);
     cmd.add(runover_arg);
+
+    TCLAP::SwitchArg nokill_arg
+      ("", "nokill", "do not kill trajectories", false);
+    cmd.add(nokill_arg);
+
+    TCLAP::ValueArg<double> t0_arg
+      ("", "t0", "", false, 0.0, "max time");
+    cmd.add(t0_arg);
+
+    TCLAP::ValueArg<double> tmax_arg
+      ("", "tmax", "", false, NAN, "max time");
+    cmd.add(tmax_arg);
 
     TCLAP::ValueArg<unsigned> seed_arg
       ("", "seed", "", false, 0, "Seed for random number generator");
@@ -152,7 +167,17 @@ int main(int argc, char** argv)
       seed = rd();
     }
 
+    if (nokill_arg.isSet() && !tmax_arg.isSet())
+    {
+      std::cerr << "--tmax must be set if --nokill is set" << std::endl;
+      return 1;
+    }
+
     runover = runover_arg.isSet();
+    nokill = nokill_arg.isSet();
+    t0 = t0_arg.getValue();
+    if (tmax_arg.isSet())
+      tmax = tmax_arg.getValue();
     Nframes = Nframes_arg.getValue();
     pxsize = pxsize_arg.getValue();
     dt = dt_arg.getValue();
@@ -230,17 +255,26 @@ int main(int argc, char** argv)
   Motion<2>* motion =
     new BrownianMotion<2>(mt, D, dt);
 
-  std::cout << "Trajectory end condition: exponential npts (lambda="
-	    << kill_rate << ")" << std::endl;
+  if (!nokill)
+    std::cout << "Trajectory end condition: exponential npts (lambda="
+	      << kill_rate << ")" << std::endl;
+  else
+    std::cout << "Trajectory end condition: nokill (tmax="
+	      << tmax << ")" << std::endl;
+  std::cout << "t0 = " << t0 << std::endl;
+  std::cout << "D = " << D <<std::endl;
 
   std::vector<TrajectoryEndCondition<2>*> conds;
-  conds.push_back(new NumberPointsExpEndCondition<2>(kill_pdist, mt));
+  if (!nokill)
+    conds.push_back(new NumberPointsExpEndCondition<2>(kill_pdist, mt));
+  else
+    conds.push_back(new TimeEndCondition<2>(tmax));
   //Trajs longer than the number of frames will not be displayed anyway
   //conds.push_back(new NumberPointsEndCondition<2>(Nframes+1));
 
   std::cout << "Runover: " << std::to_string(runover) << std::endl;
   if (!runover)
-    conds.push_back(new TimeEndCondition<2>((Nframes+1)*DT));
+    conds.push_back(new TimeEndCondition<2>(t0 + (Nframes+1)*DT));
   conds.push_back(new EscapeEndCondition<2>(*poly));
   TrajectoryEndCondition<2>* traj_end_cond = new CompoundEndCondition<2>(conds);
 
@@ -273,6 +307,9 @@ int main(int argc, char** argv)
   else
   {
     f << "runover, " << std::to_string(runover) << std::endl;
+    f << "t0, " << std::to_string(t0) << std::endl;
+    f << "nokill, " << std::to_string(nokill) << std::endl;
+    f << "tmax, " << std::to_string(tmax) << std::endl;
     f << "seed, " << std::to_string(seed) << std::endl;
     f << "Nframes," << std::to_string(Nframes) << std::endl;
     f << "pxsize, " << std::to_string(pxsize) << std::endl;
@@ -301,7 +338,7 @@ int main(int argc, char** argv)
     for (unsigned l = 0; l < mol_per_frame; ++l)
     {
       std::cout << k << " " << l << std::endl;
-      tg = traj_gen_facto.get(k * DT);
+      tg = traj_gen_facto.get(t0 + k * DT);
       trajs.push_back(tg->generate());
       delete tg;
     }
