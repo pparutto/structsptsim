@@ -32,6 +32,7 @@ int main(int argc, char** argv)
   unsigned seed = rd();
 
   bool no_img = false;
+  bool no_boundary = false;
   bool fixed_size = false;
   unsigned width = 0;
   unsigned height = 0;
@@ -52,6 +53,10 @@ int main(int argc, char** argv)
     TCLAP::SwitchArg no_img_arg
       ("", "noimg", "Do not generate output img", false);
     cmd.add(no_img_arg);
+
+    TCLAP::SwitchArg no_boundary_arg
+      ("", "noboundary", "Do not stop trajectories at FOV limit", false);
+    cmd.add(no_boundary_arg);
 
     TCLAP::ValueArg<unsigned> seed_arg
       ("", "seed", "", false, 0, "Seed for random number generator");
@@ -107,6 +112,7 @@ int main(int argc, char** argv)
       seed = seed_arg.getValue();
 
     no_img = no_img_arg.isSet();
+    no_boundary = no_boundary_arg.isSet();
     fixed_size = fixed_size_arg.isSet();
     width = width_arg.getValue();
     height = height_arg.getValue();
@@ -148,13 +154,15 @@ int main(int argc, char** argv)
   else
     end_conds.push_back(new NumberPointsExpEndCondition<2>(pdist, mt));
 
-  end_conds.push_back(new EscapeEndCondition<2>(simulation_region));
+  if (!no_boundary)
+    end_conds.push_back(new EscapeEndCondition<2>(simulation_region));
   CompoundEndCondition<2> traj_end_cond(end_conds);
   TrajectoryEndConditionFactory<2> traj_end_cond_facto(traj_end_cond);
 
   BrownianMotion<2> bm(mt, D, dt);
 
-  unsigned t_ratio = (unsigned) (DT / dt);
+  unsigned t_ratio = (unsigned) round(DT / dt);
+  std::cout << "dt = " << dt << " DT = " << DT << " dt/DT = " << t_ratio << std::endl;
   SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
   TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
@@ -178,6 +186,9 @@ int main(int argc, char** argv)
 
   std::ofstream f;
   f.open(outdir + "/params.csv");
+  f << "no_img, " << no_img << std::endl;
+  f << "no_boundary, " << no_boundary << std::endl;
+  f << "fixed_size, " << fixed_size << std::endl;
   f << "seed, " << seed << std::endl;
   f << "width (px), " << width << std::endl;
   f << "height (px), " << height << std::endl;
@@ -186,6 +197,7 @@ int main(int argc, char** argv)
   f << "Exponential lambda (frame), " << exp_lambda << std::endl;
   f << "dt (s), " << dt << std::endl;
   f << "DT (s), " << DT << std::endl;
+  f << "DT/dt, " << t_ratio << std::endl;
   f << "D (µm2/s), " << D << std::endl;
   f << "density (1/mu m2), " << density << std::endl;
   f << "region scale factor, " << region_scale << std::endl;

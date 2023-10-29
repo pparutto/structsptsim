@@ -7,6 +7,7 @@
 
 # include <fstream>
 # include <sstream>
+# include <iomanip>
 
 # include "shape.hh"
 # include "trajectory.hh"
@@ -53,6 +54,8 @@ void save_trajectories_csv(const std::string& fname,
     return;
   }
 
+  f << std::fixed;
+
   int cpt = 0;
   for (const Trajectory<N>& traj: trajs)
   {
@@ -60,7 +63,14 @@ void save_trajectories_csv(const std::string& fname,
     {
       f << cpt;
       for (size_t i = 0; i < N + 1; ++i)
+      {
+	if (i == 0)
+	  f.precision(6);
+	else
+	  f.precision(5);
+
 	f << "," << p[i];
+      }
       f << std::endl;
     }
     ++cpt;

@@ -24,7 +24,9 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data3/yutong/simu/simu_cell2_230623_100ms_60killRate/simu_cell2_230623_100ms_60killRate_1')
 
-addpath('/mnt/data2/SPT_method/simu/ER/density2/C2-Sec61b_Halo-paJF646+400uMBSA_001.czi.tif_avg17.tif_musical_4_6_50frames_croped46pxs_avg_norm_gauss1.5px_Simple_Segmentation_binary_close1px_erode1px_erode1px_poly.poly/1/1_15_0.01_4000')
+%addpath('/mnt/data2/SPT_method/simu/ER/density2/C2-Sec61b_Halo-paJF646+400uMBSA_001.czi.tif_avg17.tif_musical_4_6_50frames_croped46pxs_avg_norm_gauss1.5px_Simple_Segmentation_binary_close1px_erode1px_erode1px_poly.poly/1/1_15_0.01_4000')
+
+addpath('/tmp/a/1_5_0.146_12000')
 
 
 outdir = '/tmp';

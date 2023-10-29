@@ -238,7 +238,7 @@ int main(int argc, char** argv)
   TrajectoryRecorder<2>* traj_rec = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
     traj_rec =
-      new SubsampleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio());
+      new SubsampleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio);
   else if (p_opts.motion_type == MotionType::DISTRIB)
     traj_rec = new FullTrajectoryRecorder<2>(0.0, p_opts.DT);
 
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
 	      << " spots per frame" << std::endl;
     end_sim = new NumberFramesSimulationEndCondition<2>((int) p_opts.Nframes);
     sim = new SimulationDensity(traj_gen_facto, *end_sim, p_opts.num_particles(),
-				p_opts.DT, p_opts.t_ratio());
+				p_opts.DT, p_opts.t_ratio);
   }
   else if (p_opts.tr_gen_type == TrajGenType::EMPIRICAL)
   {

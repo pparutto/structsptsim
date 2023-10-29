@@ -230,6 +230,7 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
   }
 
   p_opts.DT = DT_arg.getValue();
+  p_opts.t_ratio = (unsigned) round(p_opts.DT / p_opts.dt);
 
   p_opts.outdir = outdir_arg.getValue();
 }
@@ -271,6 +272,7 @@ ProgramOptions::save_csv(const std::string& fname) const
     f << "TrajGenType, Frames" << std::endl;
     f << "Nframes, " << std::to_string(this->Nframes) << std::endl;
     f << "density, " << std::to_string(this->spot_dens) << std::endl;
+    f << "num spts per frame, " << std::to_string(this->num_particles()) << std::endl;
     f << "FOVWidth, " << std::to_string(this->fov_size[0]) << std::endl;
     f << "FOVHeight, " << std::to_string(this->fov_size[1]) << std::endl;
   }
@@ -295,7 +297,8 @@ ProgramOptions::save_csv(const std::string& fname) const
     f << "pixelSize, " << this->pxsize << std::endl;
 
   f << "DT, " << std::to_string(this->DT) << std::endl;
-
+  f << "DT/dt, " << this->t_ratio << std::endl;
+  
   if (this->use_poly)
   {
     f << "ConfinementType, Polygon" << std::endl;

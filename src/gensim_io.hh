@@ -30,6 +30,7 @@ struct ProgramOptions
 
   double dt = NAN;
   double DT = NAN;
+  unsigned t_ratio = 0;
 
   TrajGenType tr_gen_type = TrajGenType::NTRAJS;
 
@@ -55,12 +56,7 @@ struct ProgramOptions
 
   std::string outdir;
 
-  unsigned t_ratio()
-  {
-    return (unsigned) (this->DT / this->dt);
-  }
-
-  unsigned num_particles()
+  unsigned num_particles() const
   {
     return (unsigned) (this->fov_size[0] * this->fov_size[1] * this->spot_dens);
   }
