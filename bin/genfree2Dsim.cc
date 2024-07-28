@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 			    region_scale * width * pxsize},
     {(1 - region_scale) * width * pxsize,
      (1 - region_scale) * height * pxsize});
-
+  
   RandomBoxTrajectoryStartGenerator<2> start_gen(mt, simulation_region);
 
   std::vector<TrajectoryEndCondition<2>*> end_conds;
@@ -200,6 +200,7 @@ int main(int argc, char** argv)
   f << "DT/dt, " << t_ratio << std::endl;
   f << "D (µm2/s), " << D << std::endl;
   f << "density (1/mu m2), " << density << std::endl;
+  f << "Spots per frame, " << n_particles << std::endl;
   f << "region scale factor, " << region_scale << std::endl;
   f.close();
 
