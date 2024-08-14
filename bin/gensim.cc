@@ -136,26 +136,18 @@ int main(int argc, char** argv)
 
     qt = new QuadTree(bb);
     qt->insert_segments(polys->segments(), 5); //make it a parameter
-    //qt->debug();
-    //qt->show();
 
     std::cout << "QuadTree size: " << qt->size() << std::endl;
     std::cout << "QuadTree area: " << qt->area();
   }
   else if (p_opts.use_fov)
   {
-    //double region_scale = 0.04; ????
-    // poly = new Box<2>({region_scale * p_opts.fov_size[0] * p_opts.pxsize,
-    // 		       region_scale * p_opts.fov_size[1] * p_opts.pxsize},
-    //   {(1 - region_scale) * p_opts.fov_size[0] * p_opts.pxsize,
-    //    (1 - region_scale) * p_opts.fov_size[1] * p_opts.pxsize});
     poly = new Box<2>({0, 0},
 		      {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
 		       (p_opts.fov_size[1] - 1) * p_opts.pxsize});
     poly->shift_coords({100.0, 100.0});
   }
 
-  //FixedPointTrajectoryStartGenerator start_gen({10.0, 10.0});
 
   TrajectoryStartGenerator<2>* start_gen = nullptr;
   if (p_opts.use_start_point)
