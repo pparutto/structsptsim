@@ -92,14 +92,14 @@ bool is_letter(const std::string& s)
   return (s[0] >= 'a' && s[0] <= 'z') || (s[0] >= 'A' && s[0] <= 'Z');
 }
 
-Point<2> read_point(const std::string& s)
+Point<2> read_point(const std::string& s, const Point<2>& scale)
 {
   std::istringstream ss(s);
   std::string tmp;
   std::getline(ss, tmp, ',');
-  double a = std::stod(tmp);
+  double a = std::stod(tmp) * scale[0];
   std::getline(ss, tmp, ',');
-  double b = std::stod(tmp);
+  double b = std::stod(tmp) * scale[1];
   return {a, b};
 }
 
@@ -123,12 +123,30 @@ polys_from_inkscape_path(const std::string& fname)
     return nullptr;
   }
 
-
   std::vector<Polygon> polys;
   std::string line;
+  std::vector<double> transf = {0.0, 0.0, 1.0, 1.0};
   while(std::getline(ifs, line))
   {
-    Point<2> pos = {0, 0};
+    if (line.find("TRANSFORM") == 0)
+    {
+      std::istringstream ss(line);
+      std::string tmp;
+      std::getline(ss, tmp, ' '); //remove TRANSFORM
+      for (int i = 0; i < 4; ++i)
+      {
+	std::getline(ss, tmp, ' ');
+	if (tmp[tmp.size()-1] == '\n')
+	  tmp.pop_back();
+	transf[i] = std::stod(tmp);
+      }
+
+      std::cout << "POLYGON transform = " << transf[0] << " " << transf[1]
+		<< " " << transf[2] << " " << transf[3] << std::endl;
+      continue;
+    }
+
+    Point<2> pos = {transf[0], transf[1]};
     PointEnsemble<2> cur_pe;
 
     std::string tmp;
@@ -145,9 +163,10 @@ polys_from_inkscape_path(const std::string& fname)
 	std::getline(ss, tmp, ' ');
 	while (!is_letter(tmp))
 	{
-	  pos = pos + read_point(tmp);
+	  pos = pos + read_point(tmp, {transf[2], transf[3]});
+	  //std::cout << cur_pe[cur_pe.size()-1] << " ; " << pos << " : " << dist(cur_pe[cur_pe.size()-1], pos) << std::endl;
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
-	      cur_pe.push_back(pos);
+	    cur_pe.push_back(pos);
 	  else
 	    std::cout << "Skipping duplicated point" << std::endl;
 	  std::getline(ss, tmp, ' ');
@@ -161,7 +180,8 @@ polys_from_inkscape_path(const std::string& fname)
 	std::getline(ss, tmp, ' ');
 	while (!is_letter(tmp))
 	{
-	  pos = read_point(tmp);
+	  pos = pos + read_point(tmp, {transf[2], transf[3]});
+
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
 	  else
@@ -226,6 +246,12 @@ polys_from_inkscape_path(const std::string& fname)
 	std::cout << "Unhandled SVG command: " << tmp << std::endl;
 	assert(false);
       }
+    }
+
+    if (!cur_pe.empty() && dist(cur_pe[cur_pe.size()-1], cur_pe[0]) <= EPSILON)
+    {
+      cur_pe.pop_back();
+      std::cout << "Removed duplicated last point" << std::endl;
     }
 
     assert(tmp == "z" || tmp == "Z");

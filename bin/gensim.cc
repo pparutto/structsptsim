@@ -277,12 +277,6 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  std::cout << "Running simulation" << std::endl;
-  sim->run();
-  sim->shift_trajs_coords({-100.0, -100.0});
-
-  save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
-
   if (p_opts.export_poly_txt)
   {
     MultiplePolygon* polys = dynamic_cast<MultiplePolygon*>(poly);
@@ -293,6 +287,7 @@ int main(int argc, char** argv)
        save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
        ++i;
      }
+    polys->shift_coords({100.0, 100.0});
   }
 
   if (p_opts.export_poly_mat)
@@ -313,7 +308,14 @@ int main(int argc, char** argv)
       save_box_matlab(p_opts.stop_reg, p_opts.outdir + "/stop_box.m",
 		      "stop_box");
     }
+    polys->shift_coords({100.0, 100.0});
   }
+
+  std::cout << "Running simulation" << std::endl;
+  sim->run();
+  sim->shift_trajs_coords({-100.0, -100.0});
+
+  save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
 
   if (!p_opts.noimg && p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {
