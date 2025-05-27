@@ -96,8 +96,6 @@ int main(int argc, char** argv)
     }
   }
 
-  p_opts.save_csv(p_opts.outdir + "/params.csv");
-
   std::cout << std::setprecision(15);
 
   std::cout << "Seed: " << p_opts.seed << std::endl;
@@ -106,6 +104,7 @@ int main(int argc, char** argv)
   std::cout << "Parsing polygon" << std::endl;
 
   Shape<2>* poly = nullptr;
+  Box<2> sim_reg;
   QuadTree* qt = nullptr;
   if (p_opts.use_poly)
   {
@@ -132,7 +131,7 @@ int main(int argc, char** argv)
     Box<2> bb = polys->bounding_box();
     if (p_opts.use_fov)
       bb = Box<2>({0, 0}, {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
-		     (p_opts.fov_size[1] - 1) * p_opts.pxsize});
+			   (p_opts.fov_size[1] - 1) * p_opts.pxsize});
 
     qt = new QuadTree(bb);
     qt->insert_segments(polys->segments(), 5); //make it a parameter
@@ -142,12 +141,19 @@ int main(int argc, char** argv)
   }
   else if (p_opts.use_fov)
   {
-    poly = new Box<2>({0, 0},
-		      {(p_opts.fov_size[0] - 1) * p_opts.pxsize,
-		       (p_opts.fov_size[1] - 1) * p_opts.pxsize});
-    poly->shift_coords({100.0, 100.0});
+    sim_reg = Box<2>({0, 0}, {p_opts.fov_size[0] - 1.0,
+			      p_opts.fov_size[1] - 1.0});
+    sim_reg.scale(p_opts.pxsize);
+    sim_reg.shift_coords({100.0, 100.0});
   }
 
+  //setup limit region for trajectories
+  if (p_opts.use_sim_reg)
+  {    
+    sim_reg = p_opts.sim_reg;
+    sim_reg.scale(p_opts.pxsize);
+    sim_reg.shift_coords({100.0, 100.0});
+  }
 
   TrajectoryStartGenerator<2>* start_gen = nullptr;
   if (p_opts.use_start_point)
@@ -162,8 +168,9 @@ int main(int argc, char** argv)
   }
   else if (p_opts.use_start_reg)
   {
+    p_opts.start_reg.scale(p_opts.pxsize);
     p_opts.start_reg.shift_coords({100.0, 100.0});
-    std::cout << "Start point generator: Box" << std::endl;
+    std::cout << "Start point generator: Box " << p_opts.start_reg;
     start_gen = new RandomBoxInPolyTrajectoryStartGenerator(mt, *poly, p_opts.start_reg);
   }
   else if (p_opts.use_poly)
@@ -217,11 +224,13 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  if (p_opts.use_fov)
+  if (p_opts.use_sim_reg || p_opts.use_fov)
   {
+       std::cout << "Trajectory end condition 2: exit region "
+		 << sim_reg;
     std::vector<TrajectoryEndCondition<2>*> conds;
     conds.push_back(traj_end_cond);
-    conds.push_back(new EscapeEndCondition<2>(*poly));
+    conds.push_back(new EscapeEndCondition<2>(sim_reg));
     traj_end_cond = new CompoundEndCondition<2>(conds);
   }
 
@@ -277,18 +286,13 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  if (p_opts.export_poly_txt)
-  {
-    MultiplePolygon* polys = dynamic_cast<MultiplePolygon*>(poly);
-    polys->shift_coords({-100.0, -100.0});
-    int i = 0;
-    for (const CompoundPolygon& poly: polys->polys())
-     {
-       save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
-       ++i;
-     }
-    polys->shift_coords({100.0, 100.0});
-  }
+  p_opts.save_csv(p_opts.outdir + "/params.csv");
+  
+  std::cout << "Running simulation" << std::endl;
+  sim->run();
+  sim->shift_trajs_coords({-100.0, -100.0});
+
+  save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
 
   if (p_opts.export_poly_mat)
   {
@@ -310,12 +314,18 @@ int main(int argc, char** argv)
     }
     polys->shift_coords({100.0, 100.0});
   }
-
-  std::cout << "Running simulation" << std::endl;
-  sim->run();
-  sim->shift_trajs_coords({-100.0, -100.0});
-
-  save_trajectories_csv<2>(p_opts.outdir + "/trajs.csv", sim->trajs());
+  
+  if (p_opts.export_poly_txt)
+  {
+    MultiplePolygon* polys = dynamic_cast<MultiplePolygon*>(poly);
+    polys->shift_coords({-100.0, -100.0});
+    int i = 0;
+    for (const CompoundPolygon& poly: polys->polys())
+     {
+       save_poly_txt(poly, p_opts.outdir + "/poly_" + std::to_string(i) + ".txt");
+       ++i;
+     }
+  }
 
   if (!p_opts.noimg && p_opts.tr_gen_type == TrajGenType::NFRAMES)
   {

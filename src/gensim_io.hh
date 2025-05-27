@@ -43,6 +43,9 @@ struct ProgramOptions
   bool use_fov = false;
   std::array<unsigned, 2> fov_size; //{width, height}
 
+  bool use_sim_reg = false;
+  Box<2> sim_reg; //{minx, maxx, miny, maxy}
+
   MotionType motion_type = MotionType::BROWNIAN;
   double D = NAN;
   std::string cdf_path;
@@ -56,11 +59,7 @@ struct ProgramOptions
 
   std::string outdir;
 
-  unsigned num_particles() const
-  {
-    return (unsigned) (this->fov_size[0] * this->fov_size[1] * this->spot_dens);
-  }
-
+  unsigned num_particles() const;
   void save_csv(const std::string& fname) const;
 };
 
@@ -81,6 +80,7 @@ struct ArgumentParserOptions
   TCLAP::ValueArg<unsigned> Ntrajs_arg;
   TCLAP::ValueArg<unsigned> Nframes_arg;
   TCLAP::ValueArg<std::string> fov_size_arg;
+  TCLAP::ValueArg<std::string> sim_reg_arg;
   TCLAP::ValueArg<double> spot_dens_arg;
   TCLAP::ValueArg<double> D_arg;
   TCLAP::ValueArg<std::string> ivel_cdf_arg;

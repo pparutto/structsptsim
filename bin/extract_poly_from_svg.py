@@ -35,7 +35,7 @@ for fname in [e for e in listdir(args.dir) if e.endswith(".svg")]:
 
     if isfile(out_fname):
         print("Error out file already exists: {}".format(out_fname))
-        sys.exit(1)
+        continue
 
     with open(join(args.dir, fname), 'r') as in_f, open(out_fname, 'w') as out_f:
         for line in in_f:

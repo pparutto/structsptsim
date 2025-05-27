@@ -1,7 +1,12 @@
-addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
+%addpath('/mnt/data/SPT_method/simu/fullcell/simus/6ms_50pts_D=3')
 
 %addpath('/tmp')
+%addpath('/tmp/aa/hexnet_25_100_poly.poly/2/1_1_0.0001_60000')
 
+
+addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=31_pxsize=0.024195525_poly.poly/1/1_15_0.0001_4000')
+%addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=42_pxsize=0.024195525_poly.poly/1/1_5_0.0001_12000')
+%addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=52_pxsize=0.024195525_poly.poly/1/1_10_0.0001_6000')
 
 p = [1187.5 219];
 
@@ -23,7 +28,7 @@ figure
 hold on
 %plot(bp(:,1), bp(:,2), 'k')
 for i=1:length(bp)
-    plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k')
+    plot(bp{i}(:,1), bp{i}(:,2), 'k')
     text(mean(bp{i}(:,1)), mean(bp{i}(:,2)), sprintf('%d', i))
 end
 for i=1:length(dp)

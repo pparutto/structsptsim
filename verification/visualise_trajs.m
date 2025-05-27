@@ -26,7 +26,10 @@ addpath('../external/plot2svg')
 
 %addpath('/mnt/data2/SPT_method/simu/ER/density2/C2-Sec61b_Halo-paJF646+400uMBSA_001.czi.tif_avg17.tif_musical_4_6_50frames_croped46pxs_avg_norm_gauss1.5px_Simple_Segmentation_binary_close1px_erode1px_erode1px_poly.poly/1/1_15_0.01_4000')
 
-addpath('/tmp/a/1_5_0.146_12000')
+%addpath('/tmp/a/1_5_0.146_12000')
+%addpath('/tmp/aa/hexnet_25_100_poly.poly/2/1_1_0.0001_60000')
+
+addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=31_pxsize=0.024195525_poly.poly/1/1_15_0.0001_4000')
 
 
 outdir = '/tmp';

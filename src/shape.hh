@@ -33,6 +33,7 @@ public:
   virtual bool inside(const Segment<N>& seg) const;
   virtual Box bounding_box() const override;
   virtual void shift_coords(const Point<N>& shifts);
+  void scale(double v);
 
   const Point<N>& min() const { return this->min_; }
   const Point<N>& max() const { return this->max_; }

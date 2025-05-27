@@ -26,7 +26,6 @@ ArgumentParserOptions::read_point(const std::string& str)
   return {x, y};
 }
 
-
 ArgumentParserOptions::ArgumentParserOptions()
   : noimg_arg("", "noimg", "Do not generate output img", false)
   , seed_arg("", "seed", "", false, 0, "Seed for random number generator")
@@ -42,6 +41,7 @@ ArgumentParserOptions::ArgumentParserOptions()
   , Ntrajs_arg("", "ntrajs", "", false, 0, "Number of trajectories")
   , Nframes_arg("", "nframes", "", false, 0, "Number of frames")
   , fov_size_arg("", "fov-size", "", false, "", "Width,Height of field of view in pixels")
+  , sim_reg_arg("", "sim-reg", "", false, "", "simulation square region (minx, miny, maxx, maxy) in pixels")
   , spot_dens_arg("", "spot-density", "", false, 0.0, "Spots / μm^2 / frame")
   , D_arg("", "motion-D", "", false, NAN, "Diffusion coefficient (μm²/s)")
   , ivel_cdf_arg("", "motion-cdf", "", false, "", "CSV file containing inst. vel. cdf")
@@ -69,6 +69,7 @@ ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
   cmd.add(this->Ntrajs_arg);
   cmd.add(this->Nframes_arg);
   cmd.add(this->fov_size_arg);
+  cmd.add(this->sim_reg_arg);
   cmd.add(this->spot_dens_arg);
   cmd.add(this->D_arg);
   cmd.add(this->ivel_cdf_arg);
@@ -125,6 +126,12 @@ ArgumentParserOptions::verify_command_line() const
   if (this->D_arg.isSet() && !this->dt_arg.isSet())
   {
     std::cerr << "ERROR: dt must be set when using motion-D" << std::endl;
+    assert(false);
+  }
+
+  if (this->sim_reg_arg.isSet() && this->start_box_arg.isSet())
+  {
+    std::cerr << "ERROR: sim_reg already sets start_box either re-code or remove the later" << std::endl;
     assert(false);
   }
 }
@@ -208,6 +215,14 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
     p_opts.fov_size = ArgumentParserOptions::read_fov_size(fov_size_arg.getValue());
   }
 
+  if (sim_reg_arg.isSet())
+  {
+    p_opts.use_sim_reg = true;
+    p_opts.sim_reg = parse_box(sim_reg_arg.getValue());
+    p_opts.use_start_reg = true;
+    p_opts.start_reg = parse_box(sim_reg_arg.getValue());
+  }
+
   if (empirical_tr_arg.isSet())
   {
     p_opts.tr_gen_type = TrajGenType::EMPIRICAL;
@@ -235,6 +250,14 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
   p_opts.outdir = outdir_arg.getValue();
 }
 
+unsigned
+ProgramOptions::num_particles() const
+{
+  if (this->use_sim_reg)
+    return (unsigned) (this->sim_reg.dims()[0] * this->sim_reg.dims()[1] * this->spot_dens);
+  else
+    return (unsigned) (this->fov_size[0] * this->fov_size[1] * this->spot_dens);
+}
 
 void
 ProgramOptions::save_csv(const std::string& fname) const
@@ -281,6 +304,9 @@ ProgramOptions::save_csv(const std::string& fname) const
     f << "TrajGenType, Empirical" << std::endl;
     f << "EmpiricalTrajsFile, " << this->empirical_trajs_file << std::endl;
   }
+
+  if (this->use_sim_reg)
+    f << "SimReg Pixels," << this->sim_reg;
 
   if (this->tr_len_type == TrajLenType::EXP)
   {

@@ -83,6 +83,16 @@ Box<N>::shift_coords(const Point<N>& shifts)
 
 template <size_t N>
 void
+Box<N>::scale(double v)
+{
+  this->min_ = this->min_ * v;
+  this->max_ = this->max_ * v;
+  for (size_t i = 0; i < N; ++i)
+    this->dims_[i] = this->max_[i] - this->min_[i];
+}
+
+template <size_t N>
+void
 Box<N>::set_min_v(double v, unsigned idx)
 {
   this->min_[idx] = v;

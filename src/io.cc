@@ -85,21 +85,40 @@ poly_from_csv_path(const std::string& fname)
   return Polygon(res);
 }
 
-bool is_letter(const std::string& s)
+bool is_letter(const char c)
 {
-  if (s.size() > 1)
-    return false;
-  return (s[0] >= 'a' && s[0] <= 'z') || (s[0] >= 'A' && s[0] <= 'Z');
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-Point<2> read_point(const std::string& s, const Point<2>& scale)
+Point<2> read_point(const std::string& s, std::stringstream& base_ss)
 {
   std::istringstream ss(s);
-  std::string tmp;
-  std::getline(ss, tmp, ',');
-  double a = std::stod(tmp) * scale[0];
-  std::getline(ss, tmp, ',');
-  double b = std::stod(tmp) * scale[1];
+
+  double a = NAN;
+  double b = NAN;
+  if (s.find(",") != std::string::npos)
+  {
+    std::string tmp;
+    std::getline(ss, tmp, ',');
+    a = std::stod(tmp);
+    std::getline(ss, tmp, ',');
+    b = std::stod(tmp);
+  }
+  else
+  {
+    a = std::stod(s);
+    std::string tmp;
+    std::getline(base_ss, tmp, ' ');
+    if (is_letter(tmp.back()))
+    {
+      base_ss.putback(' ');
+      base_ss.putback(tmp.back());
+      tmp.erase(tmp.size()-1, 1);
+    }
+
+    b = std::stod(tmp);
+  }
+
   return {a, b};
 }
 
@@ -150,8 +169,16 @@ polys_from_inkscape_path(const std::string& fname)
     PointEnsemble<2> cur_pe;
 
     std::string tmp;
-    std::istringstream ss(line);
+    std::stringstream ss(line);
+
     std::getline(ss, tmp, ' ');
+    if (tmp.size() != 1)
+    {
+      ss.putback(' ');
+      for (int j=tmp.size()-1; j > 0; --j)
+	ss.putback(tmp[j]);
+    }
+    tmp = tmp[0];
 
     while (tmp != "z" && tmp != "Z")
     {
@@ -161,14 +188,14 @@ polys_from_inkscape_path(const std::string& fname)
 	  assert(cur_pe.empty());
 
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
-	  pos = pos + read_point(tmp, {transf[2], transf[3]});
-	  //std::cout << cur_pe[cur_pe.size()-1] << " ; " << pos << " : " << dist(cur_pe[cur_pe.size()-1], pos) << std::endl;
+	  pos = pos + read_point(tmp, ss);
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
 	  else
 	    std::cout << "Skipping duplicated point" << std::endl;
+
 	  std::getline(ss, tmp, ' ');
 	}
       }
@@ -178,10 +205,9 @@ polys_from_inkscape_path(const std::string& fname)
 	  assert(cur_pe.empty());
 
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
-	  pos = pos + read_point(tmp, {transf[2], transf[3]});
-
+	  pos = read_point(tmp, ss);
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
 	  else
@@ -192,8 +218,15 @@ polys_from_inkscape_path(const std::string& fname)
       else if (tmp == "v")
       {
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
+	  if (is_letter(tmp.back()))
+	  {
+	    ss.putback(' ');
+	    ss.putback(tmp.back());
+	    tmp.erase(tmp.size()-1, 1);
+	  }
+
 	  pos = pos + (Point<2>) {0, std::stod(tmp)};
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
@@ -205,8 +238,15 @@ polys_from_inkscape_path(const std::string& fname)
       else if (tmp == "V")
       {
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
+	  if (is_letter(tmp.back()))
+	  {
+	    ss.putback(' ');
+	    ss.putback(tmp.back());
+	    tmp.erase(tmp.size()-1, 1);
+	  }
+
 	  pos = {pos[0], std::stod(tmp)};
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
@@ -218,8 +258,15 @@ polys_from_inkscape_path(const std::string& fname)
       else if (tmp == "h")
       {
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
+	  if (is_letter(tmp.back()))
+	  {
+	    ss.putback(' ');
+	    ss.putback(tmp.back());
+	    tmp.erase(tmp.size()-1, 1);
+	  }
+
 	  pos = pos + (Point<2>) {std::stod(tmp), 0};
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
@@ -231,8 +278,15 @@ polys_from_inkscape_path(const std::string& fname)
       else if (tmp == "H")
       {
 	std::getline(ss, tmp, ' ');
-	while (!is_letter(tmp))
+	while (!is_letter(tmp[0]))
 	{
+	  if (is_letter(tmp.back()))
+	  {
+	    ss.putback(' ');
+	    ss.putback(tmp.back());
+	    tmp.erase(tmp.size()-1, 1);
+	  }
+
 	  pos = {std::stod(tmp), pos[1]};
 	  if (cur_pe.empty() || dist(cur_pe[cur_pe.size()-1], pos) > EPSILON)
 	    cur_pe.push_back(pos);
@@ -246,6 +300,15 @@ polys_from_inkscape_path(const std::string& fname)
 	std::cout << "Unhandled SVG command: " << tmp << std::endl;
 	assert(false);
       }
+
+      if (tmp.size() != 1)
+      {
+	ss.putback(' ');
+	for (int j=tmp.size()-1; j > 0; --j)
+	  ss.putback(tmp[j]);
+      }
+      tmp = tmp[0];
+
     }
 
     if (!cur_pe.empty() && dist(cur_pe[cur_pe.size()-1], cur_pe[0]) <= EPSILON)
@@ -456,7 +519,7 @@ parse_box(const std::string& box_line)
 
   std::getline(ss, tmp, ',');
   double ll_x = std::stod(tmp);
-  std::getline(ss, tmp, ';');
+  std::getline(ss, tmp, ',');
   double ll_y = std::stod(tmp);
   std::getline(ss, tmp, ',');
   double tr_x = std::stod(tmp);
