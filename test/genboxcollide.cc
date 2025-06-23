@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   bcollider, log);
+		   bcollider, nullptr, log);
 
   SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
 

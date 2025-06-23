@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider, log);
+		   collider, nullptr, log);
 
   TrajectoryGenerator<2>* traj_gen = traj_gen_facto.get(0.0);
 

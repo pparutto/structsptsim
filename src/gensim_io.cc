@@ -26,6 +26,27 @@ ArgumentParserOptions::read_point(const std::string& str)
   return {x, y};
 }
 
+std::pair<std::array<double,2>, std::array<double,2> >
+ArgumentParserOptions::read_HMM(const std::string& str)
+{
+  std::istringstream ss(str);
+  std::string tmp;
+
+  std::array<double,2> Ds;
+  std::getline(ss, tmp, ',');
+  Ds[0] = std::stod(tmp);
+  std::getline(ss, tmp, ',');
+  Ds[1] = std::stod(tmp);
+
+  std::array<double,2> rates;
+  std::getline(ss, tmp, ',');
+  rates[0] = std::stod(tmp);
+  std::getline(ss, tmp, ',');
+  rates[1] = std::stod(tmp);
+
+  return std::make_pair(Ds, rates);
+}
+
 ArgumentParserOptions::ArgumentParserOptions()
   : noimg_arg("", "noimg", "Do not generate output img", false)
   , seed_arg("", "seed", "", false, 0, "Seed for random number generator")
@@ -44,6 +65,7 @@ ArgumentParserOptions::ArgumentParserOptions()
   , sim_reg_arg("", "sim-reg", "", false, "", "simulation square region (minx, miny, maxx, maxy) in pixels")
   , spot_dens_arg("", "spot-density", "", false, 0.0, "Spots / μm^2 / frame")
   , D_arg("", "motion-D", "", false, NAN, "Diffusion coefficient (μm²/s)")
+  , HMM_arg("", "motion-HMM", "", false, "", "HMM motion: D1,...,DN;t12,t13,...t1N,t21,t23,...,t2,N,...,tN1,...,tN(N-1)")
   , ivel_cdf_arg("", "motion-cdf", "", false, "", "CSV file containing inst. vel. cdf")
   , poly_arg("", "poly", "", false, "", "Path to polygon file")
   , dt_arg("", "dt", "", false, NAN, "Simulation timestep (s)")
@@ -72,6 +94,7 @@ ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
   cmd.add(this->sim_reg_arg);
   cmd.add(this->spot_dens_arg);
   cmd.add(this->D_arg);
+  cmd.add(this->HMM_arg);
   cmd.add(this->ivel_cdf_arg);
   cmd.add(this->poly_arg);
   cmd.add(this->dt_arg);
@@ -116,9 +139,9 @@ ArgumentParserOptions::verify_command_line() const
     assert(false);
   }
 
-  if (!(this->D_arg.isSet() ^ this->ivel_cdf_arg.isSet()))
+  if (!(this->D_arg.isSet() ^ this->ivel_cdf_arg.isSet() ^ this->HMM_arg.isSet()))
   {
-    std::cerr << "ERROR: either motion-D or motion-cdf must be set"
+    std::cerr << "ERROR: either motion-D, motion-cdf or motion-HMM must be set"
 	      << std::endl;
     assert(false);
   }
@@ -241,7 +264,18 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
   {
     p_opts.motion_type = MotionType::BROWNIAN;
     p_opts.D = D_arg.getValue();
+  }
+
+  if (dt_arg.isSet())
     p_opts.dt = dt_arg.getValue();
+
+  if (HMM_arg.isSet())
+  {
+    p_opts.motion_type = MotionType::HMM;
+    std::pair<std::array<double,2>, std::array<double,2> > tmp =
+      ArgumentParserOptions::read_HMM(HMM_arg.getValue());
+    p_opts.Ds = tmp.first;
+    p_opts.rates = tmp.second;
   }
 
   p_opts.DT = DT_arg.getValue();
@@ -283,6 +317,15 @@ ProgramOptions::save_csv(const std::string& fname) const
   {
     f << "MotionType, Distribution" << std::endl;
     f << "DistribFile, " << this->cdf_path << std::endl;
+  }
+  else if (this->motion_type == MotionType::HMM)
+  {
+    f << "MotionType, HMM" << std::endl;
+    f << "D1, " << std::to_string(this->Ds[0]) << std::endl;
+    f << "D2, " << std::to_string(this->Ds[1]) << std::endl;
+    f << "k_on, " << std::to_string(this->rates[0]) << std::endl;
+    f << "k_off, " << std::to_string(this->rates[1]) << std::endl;
+    f << "dt, " << std::to_string(this->dt) << std::endl;
   }
 
   if (this->tr_gen_type == TrajGenType::NTRAJS)

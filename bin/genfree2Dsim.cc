@@ -174,7 +174,7 @@ int main(int argc, char** argv)
 
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider, log);
+		   collider, nullptr, log);
 
   unsigned n_particles = (unsigned) width * height * density;
   std::cout << "Particles per frame: " << n_particles << std::endl;

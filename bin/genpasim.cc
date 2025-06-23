@@ -295,7 +295,7 @@ int main(int argc, char** argv)
 
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
-		   *collider, log);
+		   *collider, nullptr, log);
 
   unsigned mol_per_frame = (unsigned) ceil(prod_rate * DT);
   std::cout << "Molecules per frame: " << mol_per_frame << std::endl;

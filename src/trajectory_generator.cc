@@ -27,12 +27,15 @@ TrajectoryGenerator(TrajectoryStartGenerator<N>& traj_start,
 		    TrajectoryEndCondition<N>* traj_end,
 		    TrajectoryRecorder<N>* traj_rec,
 		    Collider<N>& collider,
+		    const Shape<N>* sim_reg,
 		    Logger* log)
   : traj_start_(traj_start)
   , motion_model_(motion_model)
   , traj_end_(traj_end)
   , traj_rec_(traj_rec)
   , collider_(collider)
+  , sim_reg_(sim_reg)
+  , done_(false)
   , log_(log)
 {
 }
@@ -89,7 +92,9 @@ template <size_t N>
 bool
 TrajectoryGenerator<N>::finished()
 {
-  return this->traj_end_->evaluate(this->traj_rec_->traj());
+  if (!this->done_)
+    this->done_ = this->traj_end_->evaluate(this->traj_rec_->traj());
+  return this->done_;
 }
 
 template <size_t N>
@@ -128,7 +133,11 @@ TrajectoryGenerator<N>::generate_step()
     }
   }
 
-  this->traj_rec_->record(p2);
+  //make sure to record only the points inside the simulation region
+  if (this->sim_reg_ == nullptr || this->sim_reg_->inside(p2))
+    this->traj_rec_->record(p2);
+  else
+    this->done_ = true;
 }
 
 template <size_t N>
@@ -175,12 +184,14 @@ TrajectoryGeneratorFactory(TrajectoryStartGenerator<N>& traj_start,
 			   TrajectoryEndConditionFactory<N>& traj_end_facto,
 			   TrajectoryRecorderFactory<N>& traj_rec_facto,
 			   Collider<N>& collider,
+			   const Shape<N>* sim_reg,
 			   Logger* log)
   : traj_start_(traj_start)
   , motion_model_(motion_model)
   , traj_end_facto_(traj_end_facto)
   , traj_rec_facto_(traj_rec_facto)
   , collider_(collider)
+  , sim_reg_(sim_reg)
   , log_(log)
 {
 }
@@ -192,7 +203,8 @@ TrajectoryGeneratorFactory<N>::get(double t0) const
   return new TrajectoryGenerator<N>(this->traj_start_, this->motion_model_,
 				    this->traj_end_facto_.get(),
 				    this->traj_rec_facto_.get(t0),
-				    this->collider_, this->log_);
+				    this->collider_, this->sim_reg_,
+				    this->log_);
 }
 
 template <size_t N>

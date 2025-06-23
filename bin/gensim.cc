@@ -28,7 +28,6 @@ void generate_tif_stack(const TrajectoryEnsemble<2>& trajs, unsigned width,
   unsigned short*** imgs =
     raw_image_simulator(length, width, height, pxsize, DT,
 			10000.0, 0.1, trajs);
-  //1000.0, 0.2
 
   TIFF* tif = TIFFOpen(outfile.c_str(), "w");
   for (unsigned k = 0; k < length; ++k)
@@ -105,6 +104,7 @@ int main(int argc, char** argv)
 
   Shape<2>* poly = nullptr;
   Box<2> sim_reg;
+  Shape<2>* sim_reg_ptr = nullptr;
   QuadTree* qt = nullptr;
   if (p_opts.use_poly)
   {
@@ -145,6 +145,7 @@ int main(int argc, char** argv)
 			      p_opts.fov_size[1] - 1.0});
     sim_reg.scale(p_opts.pxsize);
     sim_reg.shift_coords({100.0, 100.0});
+    poly = new Box<2> (sim_reg);
   }
 
   //setup limit region for trajectories
@@ -153,6 +154,7 @@ int main(int argc, char** argv)
     sim_reg = p_opts.sim_reg;
     sim_reg.scale(p_opts.pxsize);
     sim_reg.shift_coords({100.0, 100.0});
+    sim_reg_ptr = &sim_reg;
   }
 
   TrajectoryStartGenerator<2>* start_gen = nullptr;
@@ -186,7 +188,6 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-
   Motion<2>* motion = nullptr;
   CumDistribFunction* ivel_cdf = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
@@ -195,6 +196,11 @@ int main(int argc, char** argv)
   {
     ivel_cdf = new CumDistribFunction(mt, p_opts.cdf_path);
     motion = new EmpiricalMotion(mt, *ivel_cdf, p_opts.DT);
+  }
+  else if (p_opts.motion_type == MotionType::HMM)
+  {
+    motion = new HMM2DMotion(mt, p_opts.Ds, p_opts.rates, p_opts.dt);
+    std::cout << ((HMM2DMotion*) motion)->to_str() << std::endl;
   }
 
   TrajectoryEndCondition<2>* traj_end_cond = nullptr;
@@ -226,8 +232,8 @@ int main(int argc, char** argv)
 
   if (p_opts.use_sim_reg || p_opts.use_fov)
   {
-       std::cout << "Trajectory end condition 2: exit region "
-		 << sim_reg;
+    std::cout << "Trajectory end condition 2: exit region "
+	      << sim_reg;
     std::vector<TrajectoryEndCondition<2>*> conds;
     conds.push_back(traj_end_cond);
     conds.push_back(new EscapeEndCondition<2>(sim_reg));
@@ -235,12 +241,12 @@ int main(int argc, char** argv)
   }
 
   TrajectoryEndConditionFactory<2> traj_end_cond_facto(*traj_end_cond);
-
+  
   TrajectoryRecorder<2>* traj_rec = nullptr;
-  if (p_opts.motion_type == MotionType::BROWNIAN)
+  if (motion->subsample())
     traj_rec =
       new SubsampleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio);
-  else if (p_opts.motion_type == MotionType::DISTRIB)
+  else
     traj_rec = new FullTrajectoryRecorder<2>(0.0, p_opts.DT);
 
   TrajectoryRecorderFactory<2> traj_rec_facto(*traj_rec);
@@ -261,7 +267,7 @@ int main(int argc, char** argv)
   std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
     traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
-		   *collider, log);
+		   *collider, sim_reg_ptr, log);
 
   SimulationEndCondition<2>* end_sim = nullptr;
   Simulation<2>* sim = nullptr;
@@ -287,7 +293,7 @@ int main(int argc, char** argv)
     assert(false);
 
   p_opts.save_csv(p_opts.outdir + "/params.csv");
-  
+
   std::cout << "Running simulation" << std::endl;
   sim->run();
   sim->shift_trajs_coords({-100.0, -100.0});

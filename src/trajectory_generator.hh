@@ -36,6 +36,7 @@ public:
 		      TrajectoryEndCondition<N>* traj_end,
 		      TrajectoryRecorder<N>* traj_rec,
 		      Collider<N>& collider,
+		      const Shape<N>* sim_reg,
 		      Logger* log);
   ~TrajectoryGenerator();
 
@@ -55,6 +56,8 @@ protected:
   TrajectoryEndCondition<N>* traj_end_;
   TrajectoryRecorder<N>* traj_rec_;
   Collider<N>& collider_;
+  const Shape<N>* sim_reg_;
+  bool done_;
   Logger* log_;
 };
 
@@ -67,6 +70,7 @@ public:
 			     TrajectoryEndConditionFactory<N>& traj_end_facto,
 			     TrajectoryRecorderFactory<N>& traj_rec_facto,
 			     Collider<N>& collider,
+			     const Shape<N>* sim_reg,
 			     Logger* log);
 
   TrajectoryGenerator<N>* get(double t0) const;
@@ -80,6 +84,7 @@ protected:
   TrajectoryEndConditionFactory<N>& traj_end_facto_;
   TrajectoryRecorderFactory<N>& traj_rec_facto_;
   Collider<N>& collider_;
+  const Shape<N>* sim_reg_;
   Logger* log_;
 };
 

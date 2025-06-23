@@ -1755,7 +1755,8 @@ public:
     TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
     TrajectoryGeneratorFactory<2> traj_gen_facto(start_gen, motion,
 						 traj_end_cond_facto,
-						 traj_rec_facto, collider, log);
+						 traj_rec_facto, collider, nullptr,
+						 log);
 
     //NumberTrajectoriesSimulationEndCondition<2> end_sim(1);
     //SimulationTrajectory<2> sim(traj_gen_facto, end_sim);

@@ -28,6 +28,7 @@ public:
   virtual Point<N> step_euler(const Point<N>& p) override;
   virtual bool subsample() const override;
 
+  double D() const { return this->D_; }
   double dt() const { return this->dt_; }
 protected:
   std::mt19937_64& ng_;
@@ -53,6 +54,34 @@ protected:
   std::uniform_real_distribution<> randu_;
   CumDistribFunction& ivel_cdf_;
   double dt_;
+};
+
+//From
+// A Hidden Markov Model for Single Particle Tracks Quantifies Dynamic
+// Interactions between LFA-1 and the Actin Cytoskeleton
+// Raibatak Das, Christopher W. Cairo, Daniel Coombs
+// https://doi.org/10.1371/journal.pcbi.1000556
+class HMM2DMotion: public Motion<2>
+{
+public:
+  virtual ~HMM2DMotion() = default;
+  HMM2DMotion(std::mt19937_64& ng, const std::array<double,2>& Ds,
+	      const std::array<double, 2>& rates, double dt);
+
+  virtual Point<2> step_euler(const Point<2>& p) override;
+  virtual bool subsample() const override;
+
+  std::string to_str() const;
+
+  double dt() const { return this->dt_; }
+protected:
+  std::mt19937_64& ng_;
+  std::uniform_real_distribution<> randu_;
+  double dt_;
+  std::array<double,2> rates_;
+  std::vector<BrownianMotion<2> > bms_;
+  unsigned cur_state_;
+  std::array<std::array<double,2>,2> transi_;
 };
 
 #endif /// !MOTION_HH

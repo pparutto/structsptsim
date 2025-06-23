@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
   VoidLogger* log = new VoidLogger();
 
-  TrajectoryGenerator<3> tgen(start, bm, end, rec, ccollider, log);
+  TrajectoryGenerator<3> tgen(start, bm, end, rec, ccollider, nullptr, log);
 
 
   Trajectory<3> traj = tgen.generate();
