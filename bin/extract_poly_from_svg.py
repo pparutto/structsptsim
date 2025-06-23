@@ -30,12 +30,12 @@ def read_transform(s):
             res[2:4] = vals
     return res
 
-for fname in [e for e in listdir(args.dir) if e.endswith(".svg")]:
+for fname in [e for e in listdir(args.dir) if e.endswith("_poly.svg")]:
     out_fname = join(args.dir, fname.rstrip(".svg")) + ".poly"
 
     if isfile(out_fname):
         print("Error out file already exists: {}".format(out_fname))
-        continue
+        #continue
 
     with open(join(args.dir, fname), 'r') as in_f, open(out_fname, 'w') as out_f:
         for line in in_f:
@@ -44,14 +44,18 @@ for fname in [e for e in listdir(args.dir) if e.endswith(".svg")]:
                 transf = read_transform(line)
                 out_f.write("TRANSFORM {} {} {} {}\n".format(*transf))
             if line.startswith("d="):
+                out_f.write(line.lstrip("d=\"").rstrip("\"\n") + "\n")
+                continue
                 line = line.split('"')[1]
                 res = ""
                 coma = True
                 tmp = ""
+
                 for e in line.split(" "):
                     if e[0].isalpha():
                         res += e[0] + " "
                         e = e[1:]
+
                     if e[-1].isalpha():
                         tmp = e[-1]
                         e = e[:-1]
