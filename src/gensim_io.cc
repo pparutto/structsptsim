@@ -290,7 +290,9 @@ ProgramOptions::num_particles() const
   if (this->use_sim_reg)
     return (unsigned) (this->sim_reg.dims()[0] * this->sim_reg.dims()[1] * this->spot_dens);
   else
-    return (unsigned) (this->fov_size[0] * this->fov_size[1] * this->spot_dens);
+  {
+    return (unsigned) (this->fov_size[0] * this->fov_size[1] * pow(this->pxsize, 2) * this->spot_dens);
+  }
 }
 
 void

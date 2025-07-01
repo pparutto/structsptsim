@@ -104,6 +104,7 @@ int main(int argc, char** argv)
 
   Shape<2>* poly = nullptr;
   Box<2> sim_reg;
+  Box<2> fov;
   Shape<2>* sim_reg_ptr = nullptr;
   QuadTree* qt = nullptr;
   if (p_opts.use_poly)
@@ -230,7 +231,22 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  if (p_opts.use_sim_reg || p_opts.use_fov)
+  if (p_opts.use_fov && !p_opts.use_sim_reg)
+  {
+    fov = Box<2>({0, 0}, {p_opts.fov_size[0] - 1.0,
+			  p_opts.fov_size[1] - 1.0});
+    fov.scale(p_opts.pxsize);
+    fov.shift_coords({100.0, 100.0});
+
+    std::cout << "Trajectory end condition 2: exit region "
+	      << fov;
+    std::vector<TrajectoryEndCondition<2>*> conds;
+    conds.push_back(traj_end_cond);
+    conds.push_back(new EscapeEndCondition<2>(fov));
+    traj_end_cond = new CompoundEndCondition<2>(conds);
+  }
+
+  if (p_opts.use_sim_reg)
   {
     std::cout << "Trajectory end condition 2: exit region "
 	      << sim_reg;
