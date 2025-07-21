@@ -62,13 +62,13 @@ NoneCollider<N>::outside(const Point<N>& p) const
 }
 
 template <size_t N>
-bool
+unsigned
 NoneCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
 			 Point<N>& res) const
 {
   (void) p1;
   res = p2;
-  return false;
+  return 0;
 }
 
 template <size_t N>
@@ -97,7 +97,7 @@ BoxCollider<N>::outside(const Point<N>& p) const
 }
 
 template <size_t N>
-bool
+unsigned
 BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
 			Point<N>& res) const
 {
@@ -106,10 +106,10 @@ BoxCollider<N>::collide(const Point<N>& p1, const Point<N>& p2,
 
   Point<N> min = this->box_.min();
   Point<N> max = this->box_.max();
-  bool collided = false;
+  unsigned collided = 0;
   while (this->outside(res))
   {
-    collided = true;
+    ++collided;
     for (size_t i = 0; i < N; ++i)
     {
       if (p2[i] > max[i])
@@ -144,25 +144,18 @@ CylinderCollider::outside(const Point<3>& p) const
   return !this->c_.inside(p);
 }
 
-bool
+unsigned
 CylinderCollider::collide(const Point<3>& p1, const Point<3>& p2,
 		     Point<3>& res) const
 {
   assert(this->c_.inside(p1));
   Segment<3> s1(p1, p2);
   Point<3> inter_p = null_point<3>();
-  bool collided = false;
-
-  // if (!this->c_.inside(p2))
-  //   assert(this->c_.intersect(s1, inter_p));
+  unsigned collided = false;
   while (this->c_.intersect(s1, inter_p))
   {
-    collided = true;
+    ++collided;
     Vec<3> N = this->c_.normal(inter_p);
-    // double s = (N[0] * (s1.p2()[0] - inter_p[0]) +
-    // 		N[1] * (s1.p2()[1] - inter_p[1]) +
-    // 		N[2] * (s1.p2()[2] - inter_p[2]));
-    // res = s1.p2() - N * (2 * s);
 
     Vec<3> v = this->c_.base().vector();
     double t0 = (dot(s1.p2(), v) - dot(inter_p, v)) / dot(v, v);
@@ -222,7 +215,7 @@ PolygonCollider::outside(const Point<2>& p) const
 
 //In this case, we would need to change the function to consider it
 //only the first time
-bool
+unsigned
 PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
 			 Point<2>& res) const
 {
@@ -236,7 +229,7 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
   Point<2> inter_p = null_point<2>();
   Segment<2> inter_s = Segment<2>::null();
   Segment<2> prev_s = Segment<2>::null();
-  bool collided = false;
+  unsigned collided = false;
   int cnt = 0;
   std::vector<Segment<2> > history;
 
@@ -252,7 +245,7 @@ PolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
     pts_eq.push_back(prev_s == inter_s);
     inter_ps.push_back(inter_p);
     inter_ss.push_back(inter_s);
-    collided = true;
+    ++collided;
     prev_s = inter_s;
     p = inter_p;
     tmp = p;
@@ -303,19 +296,16 @@ MultiplePolygonCollider::outside(const Point<2>& p) const
   return true;
 }
 
-bool
+unsigned
 MultiplePolygonCollider::collide(const Point<2>& p1, const Point<2>& p2,
 				 Point<2>& res) const
 {
-  //Segment<2> inter_s = Segment<2>::null();
-  //return this->qt_->intersect(Segment<2>(p1, p2), res, inter_s);
-
   res = p2;
   for (const PolygonCollider& coll: this->colliders_)
     if (coll.poly().inside(p1) && coll.collide(p1, p2, res))
-      return true;
+      return 1;
 
-  return false;
+  return 0;
 }
 
 void
@@ -343,7 +333,7 @@ QuadTreeCollider::outside(const Point<2>& p) const
   return !this->polys_.inside(p);
 }
 
-bool
+unsigned
 QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
 			  Point<2>& res) const
 {
@@ -357,13 +347,13 @@ QuadTreeCollider::collide(const Point<2>& p1, const Point<2>& p2,
   Point<2> inter_p = null_point<2>();
   Segment<2> inter_s = Segment<2>::null();
   Segment<2> prev_s = Segment<2>::null();
-  bool collided = false;
+  unsigned collided = false;
 
   unsigned cnt = 0;
   //segment cannot collide with the previously collided polygon segment
   while (this->qt_->intersect(s1, inter_p, inter_s) && !(prev_s == inter_s))
   {
-    collided = true;
+    ++collided;
     prev_s = inter_s;
     p = inter_p;
     tmp = p;

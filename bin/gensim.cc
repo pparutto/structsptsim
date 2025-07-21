@@ -265,6 +265,9 @@ int main(int argc, char** argv)
   else
     traj_rec = new FullTrajectoryRecorder<2>(0.0, p_opts.DT);
 
+  if (p_opts.log_n_coll)
+    traj_rec = new CollTrajectoryRecorder(traj_rec);
+
   TrajectoryRecorderFactory<2> traj_rec_facto(*traj_rec);
 
 
@@ -277,8 +280,17 @@ int main(int argc, char** argv)
     collider = new NoneCollider<2>();
 
   //BufferLogger* log = new BufferLogger();
-  std::ofstream log_ofs(p_opts.outdir + "/errors");
-  Logger* log = new DirectFileLogger(log_ofs);
+
+  Logger* log = nullptr;
+  std::ofstream log_ofs;
+  if (p_opts.log_n_coll)
+    log = new CollLogger();
+  else
+  {
+    log_ofs = std::ofstream(p_opts.outdir + "/errors");
+    log = new DirectFileLogger(log_ofs);
+  }
+  
 
   std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
@@ -335,6 +347,15 @@ int main(int argc, char** argv)
 		      "stop_box");
     }
     polys->shift_coords({100.0, 100.0});
+  }
+
+  if (p_opts.log_n_coll)
+  {
+    CollLogger* colllog = dynamic_cast<CollLogger*>(log);
+    std::ofstream coll_ofs(p_opts.outdir + "/ncolls");
+    for (std::string ncol: colllog->ncoll_log())
+      coll_ofs << ncol << std::endl;
+    coll_ofs.close();
   }
   
   if (p_opts.export_poly_txt)

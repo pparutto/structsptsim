@@ -35,8 +35,9 @@ public:
   virtual ~Collider();
 
   virtual bool outside(const Point<N>& p) const = 0;
-  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
-		       Point<N>& res) const = 0;
+  //return number of collisions
+  virtual unsigned collide(const Point<N>& p1, const Point<N>& p2,
+			   Point<N>& res) const = 0;
   virtual void who_am_I(std::ostream& os) const = 0;
 };
 
@@ -48,8 +49,8 @@ public:
   virtual ~NoneCollider();
 
   virtual bool outside(const Point<N>& p) const override;
-  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
-		       Point<N>& res) const override;
+  virtual unsigned collide(const Point<N>& p1, const Point<N>& p2,
+			   Point<N>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 };
 
@@ -61,8 +62,8 @@ public:
   virtual ~BoxCollider();
 
   virtual bool outside(const Point<N>& p) const override;
-  virtual bool collide(const Point<N>& p1, const Point<N>& p2,
-		       Point<N>& res) const override;
+  virtual unsigned collide(const Point<N>& p1, const Point<N>& p2,
+			   Point<N>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   Box<N> box_;
@@ -75,8 +76,8 @@ public:
   virtual ~CylinderCollider();
 
   virtual bool outside(const Point<3>& p) const override;
-  virtual bool collide(const Point<3>& p1, const Point<3>& p2,
-		       Point<3>& res) const override;
+  virtual unsigned collide(const Point<3>& p1, const Point<3>& p2,
+			   Point<3>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   Cylinder c_;
@@ -90,8 +91,8 @@ public:
   virtual ~PolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
-  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
-		       Point<2>& res) const override;
+  virtual unsigned collide(const Point<2>& p1, const Point<2>& p2,
+			   Point<2>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 
   const Polygon& poly() const { return this->poly_; };
@@ -107,8 +108,8 @@ public:
   virtual ~PolygonCollider3D();
 
   virtual bool outside(const Point<3>& p) const override;
-  virtual bool collide(const Point<3>& p1, const Point<3>& p2,
-		       Point<3>& res) const override;
+  virtual unsigned collide(const Point<3>& p1, const Point<3>& p2,
+			   Point<3>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   const Polygon3D& poly_;
@@ -121,8 +122,8 @@ public:
   virtual ~MultiplePolygonCollider();
 
   virtual bool outside(const Point<2>& p) const override;
-  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
-		       Point<2>& res) const override;
+  virtual unsigned collide(const Point<2>& p1, const Point<2>& p2,
+			   Point<2>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   std::vector<PolygonCollider> colliders_;
@@ -136,8 +137,8 @@ public:
   virtual ~QuadTreeCollider();
 
   virtual bool outside(const Point<2>& p) const override;
-  virtual bool collide(const Point<2>& p1, const Point<2>& p2,
-		       Point<2>& res) const override;
+  virtual unsigned collide(const Point<2>& p1, const Point<2>& p2,
+			   Point<2>& res) const override;
   virtual void who_am_I(std::ostream& os) const override;
 protected:
   const MultiplePolygon& polys_;

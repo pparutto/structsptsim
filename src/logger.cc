@@ -44,3 +44,18 @@ DirectFileLogger::write(const std::string& str)
   this->ofs_ << str << std::endl;
   this->ofs_.flush();
 }
+
+CollLogger::CollLogger()
+  : log_()
+{
+}
+
+CollLogger::~CollLogger()
+{
+}
+
+void
+CollLogger::write(const std::string& str)
+{
+  this->log_.push_back(str);
+}

@@ -77,7 +77,7 @@ TrajectoryGenerator<N>::init()
 
   if (this->collider_.outside(p))
     throw std::runtime_error("Failed to generate a point in polygon");
-
+  
   this->traj_rec_->record(p);
 }
 
@@ -93,7 +93,10 @@ bool
 TrajectoryGenerator<N>::finished()
 {
   if (!this->done_)
+  {
     this->done_ = this->traj_end_->evaluate(this->traj_rec_->traj());
+    this->log_->write("@");
+  }
   return this->done_;
 }
 
@@ -109,13 +112,14 @@ TrajectoryGenerator<N>::generate_step()
   unsigned cnt = 0;
   bool retry = true;
   CollisionException<N> last_e = CollisionException<N> ();
+  unsigned n_collided = 0;
   while (retry)
   {
     p2 = this->motion_model_.step_euler(p1);
 
     try
     {
-      this->collider_.collide(p1, p2, p2);
+      n_collided = this->collider_.collide(p1, p2, p2);
       retry = false;
     }
     catch (CollisionException<N>& e)
@@ -135,7 +139,11 @@ TrajectoryGenerator<N>::generate_step()
 
   //make sure to record only the points inside the simulation region
   if (this->sim_reg_ == nullptr || this->sim_reg_->inside(p2))
+  {
     this->traj_rec_->record(p2);
+    this->traj_rec_->record_ncoll(n_collided);
+    this->log_->write(std::to_string(n_collided));
+  }
   else
     this->done_ = true;
 }
@@ -166,7 +174,7 @@ TrajectoryGenerator<N>::generate()
       ++cpt;
     }
   }
-
+ 
   return this->get();
 }
 

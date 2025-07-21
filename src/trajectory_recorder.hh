@@ -14,11 +14,12 @@ public:
 
   virtual TrajectoryRecorder<N>* clone_reset(double t0) const = 0;
   virtual void record(const Point<N>& p) = 0;
+  virtual void record_ncoll(unsigned ncoll) = 0;
   virtual TimedPoint<N> last_simu_point() const = 0;;
 
   TimedPoint<N> last_rec_point() const;
 
-  const Trajectory<N>& traj() const { return this->traj_; }
+  virtual const Trajectory<N>& traj() const { return this->traj_; }
 
 protected:
   double t0_;
@@ -35,6 +36,7 @@ public:
 
   virtual FullTrajectoryRecorder* clone_reset(double t0) const;
   virtual void record(const Point<N>& p) override;
+  virtual void record_ncoll(unsigned ncoll) override { (void) ncoll; };
   virtual TimedPoint<N> last_simu_point() const;
 };
 
@@ -46,12 +48,33 @@ public:
 
   virtual SubsampleTrajectoryRecorder<N>* clone_reset(double t0) const;
   virtual void record(const Point<N>& p) override;
+  virtual void record_ncoll(unsigned ncoll) override { (void) ncoll; };
   virtual TimedPoint<N> last_simu_point() const;
 protected:
   unsigned step_;
   unsigned cnt_;
   TimedPoint<N> last_simu_pt_;
 };
+
+template <size_t N>
+class CollTrajectoryRecorder: public TrajectoryRecorder<N>
+{
+public:
+  CollTrajectoryRecorder(TrajectoryRecorder<N>* trec);
+  ~CollTrajectoryRecorder();
+  
+  virtual CollTrajectoryRecorder<N>* clone_reset(double t0) const;
+  virtual void record(const Point<N>& p) override;
+  virtual void record_ncoll(unsigned ncoll) override;
+  virtual TimedPoint<N> last_simu_point() const;
+
+  virtual const Trajectory<N>& traj() const override;
+  const std::vector<unsigned>& ncolls() const { return this->ncolls_; };
+protected:
+  TrajectoryRecorder<N>* trec_;
+  std::vector<unsigned> ncolls_;
+};
+
 
 template <size_t N>
 class TrajectoryRecorderFactory

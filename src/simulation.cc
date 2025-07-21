@@ -134,7 +134,7 @@ SimulationDensity<N>::run()
 	to_del.push_back(it);
 
     for (typename std::list<TrajectoryGenerator<N>*>::iterator del: to_del)
-    {
+    {      
       this->trajs_.push_back((*del)->get());
       delete (*del);
       alive_trajs.erase(del);

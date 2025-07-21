@@ -89,6 +89,57 @@ SubsampleTrajectoryRecorder<N>::last_simu_point() const
   return this->last_simu_pt_;
 }
 
+
+template <size_t N>
+CollTrajectoryRecorder<N>::
+CollTrajectoryRecorder(TrajectoryRecorder<N>* trec)
+  : TrajectoryRecorder<N>(0, 0)
+  , trec_(trec)
+  , ncolls_(0)
+{
+}
+
+template <size_t N>
+CollTrajectoryRecorder<N>::~CollTrajectoryRecorder()
+{
+  delete this->trec_;
+}
+
+template <size_t N>
+CollTrajectoryRecorder<N>*
+CollTrajectoryRecorder<N>::clone_reset(double t0) const
+{
+  return new CollTrajectoryRecorder<N> (this->trec_->clone_reset(t0));
+}
+
+template <size_t N>
+void
+CollTrajectoryRecorder<N>::record(const Point<N>& p)
+{
+  return this->trec_->record(p);
+}
+
+template <size_t N>
+void
+CollTrajectoryRecorder<N>::record_ncoll(unsigned ncoll)
+{
+  this->ncolls_.push_back(ncoll);
+}
+
+template <size_t N>
+TimedPoint<N>
+CollTrajectoryRecorder<N>::last_simu_point() const
+{
+  return this->trec_->last_simu_point();
+}
+
+template <size_t N>
+const Trajectory<N>&
+CollTrajectoryRecorder<N>::traj() const
+{
+  return this->trec_->traj();
+}
+
 template <size_t N>
 TrajectoryRecorderFactory<N>::
 TrajectoryRecorderFactory(TrajectoryRecorder<N>& recorder_template)
@@ -105,6 +156,7 @@ TrajectoryRecorderFactory<N>::get(double t0)
 
 template class FullTrajectoryRecorder<2>;
 template class SubsampleTrajectoryRecorder<2>;
+template class CollTrajectoryRecorder<2>;
 template class TrajectoryRecorderFactory<2>;
 
 template class FullTrajectoryRecorder<3>;

@@ -49,6 +49,7 @@ ArgumentParserOptions::read_HMM(const std::string& str)
 
 ArgumentParserOptions::ArgumentParserOptions()
   : noimg_arg("", "noimg", "Do not generate output img", false)
+  , logncoll_arg("", "logncoll", "log number of collisions", false)
   , seed_arg("", "seed", "", false, 0, "Seed for random number generator")
   , export_poly_txt_arg("", "export-poly-txt", "Export polygon geometry as text file", false)
   , export_poly_mat_arg("", "export-poly-mat", "Export polygon geometry as malab file", false)
@@ -78,6 +79,7 @@ void
 ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
 {
   cmd.add(this->noimg_arg);
+  cmd.add(this->logncoll_arg);
   cmd.add(this->seed_arg);
   cmd.add(this->export_poly_txt_arg);
   cmd.add(this->export_poly_mat_arg);
@@ -164,6 +166,9 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
 {
   if (this->noimg_arg.isSet())
     p_opts.noimg = true;
+
+  if (this->logncoll_arg.isSet())
+    p_opts.log_n_coll = true;
 
   if (this->seed_arg.isSet())
     p_opts.seed = seed_arg.getValue();
