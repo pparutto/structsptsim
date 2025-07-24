@@ -29,8 +29,31 @@ addpath('../external/plot2svg')
 %addpath('/tmp/a/1_5_0.146_12000')
 %addpath('/tmp/aa/hexnet_25_100_poly.poly/2/1_1_0.0001_60000')
 
-addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=31_pxsize=0.024195525_poly.poly/1/1_15_0.0001_4000')
+%addpath('/mnt/data2/SPT_method/simu/lines/sim/struct_line_dist=31_pxsize=0.024195525_poly.poly/1/1_15_0.0001_4000')
 
+%addpath('/tmp/testotomake/')
+
+%addpath('/tmp/aa')
+%addpath('/tmp/bb')
+
+%addpath('/mnt/data4/SPT_method_moved_for_space/yutong_240123/240123_Yutong_dATL_20ms/cell6/sim/C1-cell6_MMStack_Pos0_c.ome.tif_avg51_FRAME2252_usharp2px_0.8_blur0.5px_Simple_Segmentation_bin_erodecric1px_adj_poly.poly/1/1_30_1_2000')
+
+%addpath('/tmp/aa/C2-Sec61b_Halo-paJF646+400uMBSA_001.czi_avg17_musical_4_6_50frames_croped46pxs_avg_norm_gauss1.5px_bin_close1px_erode1px_erode1px_dil_dil_poly.poly/1/1_1_0.25_100/')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.25_1_5_0.25_12000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.5_1_5_0.25_12000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.75_1_5_0.25_12000')
+%addpath('/mnt/data2/SPT_method/simu/freespace/density3/sim/1/1_5_0.25_12000')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.25_1_1_0.0001_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.75_1_1_0.0001_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.5_1_1_0.0001_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace/density3/sim/1/1_1_0.0001_60000')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.25_1_5_0.0001_12000')
+%addpath('/mnt/data2/SPT_method/simu/freespace/density3/sim/1/1_20_1_3000')
+
+addpath('/tmp/titi/0.2_0.8_1_60000')
 
 outdir = '/tmp';
 %outdir = '/tmp/simu_fullcell';
@@ -69,6 +92,54 @@ if exist('stop_box.m', 'file') == 2
 
 tab = dlmread('trajs.csv', ',');
 %tab = zeros(0,5);
+
+
+%im = imread('/mnt/data4/SPT_method_moved_for_space/yutong_240123/240123_Yutong_dATL_20ms/cell6/sim/cell6_MMStack_Pos0_c.ome.tif_avg51_FRAME2252_usharp2px_0.8_blur0.5px_Simple_Segmentation_bin_erodecric1px_adj_poly.poly.tif_stabN=1.tif');
+
+figure%('Visible', 'off')
+hold on
+%imagesc(im, 'XData', (1:size(im,1))*0.0645 - 0.0645 / 2, 'YData', (1:size(im,2))*0.0645 - 0.0645 / 2)
+plot(tab(:,3), tab(:,4), '.b');
+for i=1:length(bp)
+    plot(bp{i}([1:size(bp{i}, 1) 1],1), bp{i}([1:size(bp{i}, 1) 1],2), 'k', 'LineWidth', 2)
+
+    %%show normals
+    for kk=1:(size(bp{i}, 1)-1)
+        p = bp{i}(kk,:) + (bp{i}(kk+1,:) - bp{i}(kk,:)) / 2;
+        v = bp{i}(kk+1,:) - bp{i}(kk,:);
+        n = sqrt(sum(v.^2));
+        norm =  [-v(2) / n, v(1) / n];
+        %plot(p(1), p(2), 'xr')
+        plot([p(1) p(1) + norm(1) * 0.005], [p(2) p(2) + norm(2) * 0.005], 'm')
+    end
+    for j=1:length(dp{i})
+        plot(dp{i}{j}([1:size(dp{i}{j}, 1) 1], 1), dp{i}{j}([1:size(dp{i}{j}, 1) 1], 2), 'r', 'LineWidth', 2)
+        %%show normals
+        %             for kk=1:(size(dp{i}{j})-1)
+        %                 p = dp{i}{j}(kk,:) + (dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:)) / 2;
+        %                 v = dp{i}{j}(kk+1,:) - dp{i}{j}(kk,:);
+        %                 n = sqrt(sum(v.^2));
+        %                 norm =  [-v(2) / n, v(1) / n];
+        %                 plot([p(1) p(1) + norm(1) * 0.1], [p(2) p(2) + norm(2) * 0.1], 'b')
+        %             end
+    end
+end
+
+if ~isempty(start_b)
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(1,2), 'r', 'LineWidth', 2)
+    plot([start_b(1,1), start_b(2,1)], [1 1] * start_b(2,2), 'r', 'LineWidth', 2)
+    plot([1 1] * start_b(1,1), [start_b(1,2), start_b(2,2)], 'r', 'LineWidth', 2)
+    plot([1 1] * start_b(2,1), [start_b(1,2), start_b(2,2)], 'r', 'LineWidth', 2)
+end
+if ~isempty(stop_b)
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(1,2), 'm', 'LineWidth', 2)
+    plot([stop_b(1,1), stop_b(2,1)], [1 1] * stop_b(2,2), 'm', 'LineWidth', 2)
+    plot([1 1] * stop_b(1,1), [stop_b(1,2), stop_b(2,2)], 'm', 'LineWidth', 2)
+    plot([1 1] * stop_b(2,1), [stop_b(1,2), stop_b(2,2)], 'm', 'LineWidth', 2)
+end
+hold off
+daspect([1 1 1])
+
 
 figure%('Visible', 'off')
 hold on
@@ -189,5 +260,25 @@ for k=unique(tab(:,1))'
     tr = tab(tab(:,1) == k, :);
     disps = [disps; sqrt(sum((tr(2:end, 3:4) - tr(1:(end-1), 3:4)).^2, 2))];
 end
+
 figure
-plot(zeros(length(disps), 1), disps, 'x')
+hist(disps, 100)
+
+ts = unique(tab(:,2));
+
+
+tlens = arrayfun(@(i) sum(tab(:,1) == i), unique(tab(:,1)));
+figure
+hist(tlens, 1:80)
+
+figure
+stairs(ts, arrayfun(@(i) sum(tab(:,2)==ts(i)), 1:length(ts)))
+
+avg_disps = [];
+for i=unique(tab(:,1))'
+    tr = tab(tab(:,1) == i, :);
+    avg_disps = [avg_disps; mean(sqrt(sum((tr(2:end, 3:4) - tr(1:(end-1), 3:4)).^2, 2)))];
+end
+
+figure
+hist(avg_disps, 0.005:0.01:1)

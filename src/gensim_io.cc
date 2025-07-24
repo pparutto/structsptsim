@@ -47,6 +47,24 @@ ArgumentParserOptions::read_HMM(const std::string& str)
   return std::make_pair(Ds, rates);
 }
 
+std::array<double,3>
+ArgumentParserOptions::read_mixed(const std::string& str)
+{
+  std::array<double, 3> res;
+  std::istringstream ss(str);
+  std::string tmp;
+
+  std::getline(ss, tmp, ',');
+  res[0] = std::stod(tmp);
+  std::getline(ss, tmp, ',');
+  res[1] = std::stod(tmp);
+  std::getline(ss, tmp, ',');
+  res[2] = std::stod(tmp);
+
+  return res;
+}
+
+
 ArgumentParserOptions::ArgumentParserOptions()
   : noimg_arg("", "noimg", "Do not generate output img", false)
   , logncoll_arg("", "logncoll", "log number of collisions", false)
@@ -67,6 +85,7 @@ ArgumentParserOptions::ArgumentParserOptions()
   , spot_dens_arg("", "spot-density", "", false, 0.0, "Spots / μm^2 / frame")
   , D_arg("", "motion-D", "", false, NAN, "Diffusion coefficient (μm²/s)")
   , HMM_arg("", "motion-HMM", "", false, "", "HMM motion: D1,...,DN;t12,t13,...t1N,t21,t23,...,t2,N,...,tN1,...,tN(N-1)")
+  , mixed_arg("", "mixed-D", "", false, "", "D1,D2,p; D1,D2: Diff. coeffs. (μm²/s), P: D1 over D2 fraction")
   , ivel_cdf_arg("", "motion-cdf", "", false, "", "CSV file containing inst. vel. cdf")
   , poly_arg("", "poly", "", false, "", "Path to polygon file")
   , dt_arg("", "dt", "", false, NAN, "Simulation timestep (s)")
@@ -97,6 +116,7 @@ ArgumentParserOptions::add_arguments(TCLAP::CmdLine& cmd)
   cmd.add(this->spot_dens_arg);
   cmd.add(this->D_arg);
   cmd.add(this->HMM_arg);
+  cmd.add(this->mixed_arg);
   cmd.add(this->ivel_cdf_arg);
   cmd.add(this->poly_arg);
   cmd.add(this->dt_arg);
@@ -141,14 +161,15 @@ ArgumentParserOptions::verify_command_line() const
     assert(false);
   }
 
-  if (!(this->D_arg.isSet() ^ this->ivel_cdf_arg.isSet() ^ this->HMM_arg.isSet()))
+  if (!(this->D_arg.isSet() ^ this->ivel_cdf_arg.isSet() ^
+	this->HMM_arg.isSet() ^ this->mixed_arg.isSet()))
   {
-    std::cerr << "ERROR: either motion-D, motion-cdf or motion-HMM must be set"
+    std::cerr << "ERROR: either motion-D, motion-cdf, motion-HMM or mixed-D must be set"
 	      << std::endl;
     assert(false);
   }
 
-  if (this->D_arg.isSet() && !this->dt_arg.isSet())
+  if ((this->D_arg.isSet() || this->HMM_arg.isSet() || this->mixed_arg.isSet()) && !this->dt_arg.isSet())
   {
     std::cerr << "ERROR: dt must be set when using motion-D" << std::endl;
     assert(false);
@@ -283,6 +304,14 @@ ArgumentParserOptions::fill_program_options(ProgramOptions& p_opts)
     p_opts.rates = tmp.second;
   }
 
+  if (mixed_arg.isSet())
+  {
+    p_opts.motion_type = MotionType::MIXED;
+    std::array<double, 3> tmp = ArgumentParserOptions::read_mixed(mixed_arg.getValue());
+    p_opts.Ds = {tmp[0], tmp[1]};
+    p_opts.motion_p = tmp[2]; 
+  }
+
   p_opts.DT = DT_arg.getValue();
   p_opts.t_ratio = (unsigned) round(p_opts.DT / p_opts.dt);
 
@@ -332,6 +361,14 @@ ProgramOptions::save_csv(const std::string& fname) const
     f << "D2, " << std::to_string(this->Ds[1]) << std::endl;
     f << "k_on, " << std::to_string(this->rates[0]) << std::endl;
     f << "k_off, " << std::to_string(this->rates[1]) << std::endl;
+    f << "dt, " << std::to_string(this->dt) << std::endl;
+  }
+  else if (this->motion_type == MotionType::MIXED)
+  {
+    f << "MotionType, Mixed" << std::endl;
+    f << "D1, " << std::to_string(this->Ds[0]) << std::endl;
+    f << "D2, " << std::to_string(this->Ds[1]) << std::endl;
+    f << "p, " << std::to_string(this->motion_p) << std::endl;
     f << "dt, " << std::to_string(this->dt) << std::endl;
   }
 

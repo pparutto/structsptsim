@@ -5,7 +5,7 @@
 
 # include "io.hh"
 
-enum MotionType {DISTRIB, BROWNIAN, HMM};
+enum MotionType {DISTRIB, BROWNIAN, HMM, MIXED};
 enum TrajLenType {FIXED, EXP, REG};
 enum TrajGenType {NTRAJS, NFRAMES, EMPIRICAL};
 
@@ -53,6 +53,7 @@ struct ProgramOptions
 
   std::array<double,2> Ds;
   std::array<double,2> rates;
+  double motion_p;
   
   bool use_start_reg = false;
   Box<2> start_reg;
@@ -89,6 +90,7 @@ struct ArgumentParserOptions
   TCLAP::ValueArg<double> spot_dens_arg;
   TCLAP::ValueArg<double> D_arg;
   TCLAP::ValueArg<std::string> HMM_arg;
+  TCLAP::ValueArg<std::string> mixed_arg;
   TCLAP::ValueArg<std::string> ivel_cdf_arg;
   TCLAP::ValueArg<std::string> poly_arg;
   TCLAP::ValueArg<double> dt_arg;
@@ -99,6 +101,9 @@ struct ArgumentParserOptions
   static Point<2> read_point(const std::string& str);
   static std::pair<std::array<double,2>, std::array<double,2> >
   read_HMM(const std::string& str);
+
+  std::array<double, 3>
+  read_mixed(const std::string& str);
   
   ArgumentParserOptions();
   void add_arguments(TCLAP::CmdLine& cmd);

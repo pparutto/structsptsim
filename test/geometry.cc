@@ -1749,14 +1749,18 @@ public:
 
     VoidLogger* log = new VoidLogger();
 
+    std::vector<Motion<2>*> motions;
+    motions.push_back(new BrownianMotion<2> (ng, D, dt));
+    std::vector<double> motions_ps;
+  
     BrownianMotion<2> motion(ng, D, dt);
     //FullTrajectoryRecorder<2> traj_rec(0.0, DT);
     SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
     TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
-    TrajectoryGeneratorFactory<2> traj_gen_facto(start_gen, motion,
+    TrajectoryGeneratorFactory<2> traj_gen_facto(start_gen, motions, motions_ps,
 						 traj_end_cond_facto,
 						 traj_rec_facto, collider, nullptr,
-						 log);
+						 log, ng);
 
     //NumberTrajectoriesSimulationEndCondition<2> end_sim(1);
     //SimulationTrajectory<2> sim(traj_gen_facto, end_sim);

@@ -66,26 +66,31 @@ class TrajectoryGeneratorFactory
 {
 public:
   TrajectoryGeneratorFactory(TrajectoryStartGenerator<N>& traj_start,
-			     Motion<N>& motion_model,
+			     const std::vector<Motion<N>*>& motion_models,
+			     const std::vector<double>& motion_ps,
 			     TrajectoryEndConditionFactory<N>& traj_end_facto,
 			     TrajectoryRecorderFactory<N>& traj_rec_facto,
 			     Collider<N>& collider,
 			     const Shape<N>* sim_reg,
-			     Logger* log);
+			     Logger* log,
+			     std::mt19937_64& ng_);
 
-  TrajectoryGenerator<N>* get(double t0) const;
+  TrajectoryGenerator<N>* get(double t0);
 
   TrajectoryStartGenerator<N>& traj_start();
   TrajectoryEndConditionFactory<N>& traj_end_facto();
 
 protected:
   TrajectoryStartGenerator<N>& traj_start_;
-  Motion<N>& motion_model_;
+  std::vector<Motion<N>*> motion_models_;
+  std::vector<double> motion_ps_;
   TrajectoryEndConditionFactory<N>& traj_end_facto_;
   TrajectoryRecorderFactory<N>& traj_rec_facto_;
   Collider<N>& collider_;
   const Shape<N>* sim_reg_;
   Logger* log_;
+  std::mt19937_64& ng_;
+  std::uniform_real_distribution<> randu_;
 };
 
 

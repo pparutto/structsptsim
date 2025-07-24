@@ -252,8 +252,8 @@ int main(int argc, char** argv)
   TrajectoryStartGenerator<2>* start_gen =
     new RandomBoxInPolyTrajectoryStartGenerator(mt, *poly, start_reg);
 
-  Motion<2>* motion =
-    new BrownianMotion<2>(mt, D, dt);
+  std::vector<Motion<2>*> motions;
+  motions.push_back(new BrownianMotion<2>(mt, D, dt));
 
   if (!nokill)
     std::cout << "Trajectory end condition: exponential npts (lambda="
@@ -293,9 +293,10 @@ int main(int argc, char** argv)
   std::ofstream log_ofs(outdir + "/errors");
   Logger* log = new DirectFileLogger(log_ofs);
 
+  std::vector<double> motions_ps;
   TrajectoryGeneratorFactory<2>
-    traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
-		   *collider, nullptr, log);
+    traj_gen_facto(*start_gen, motions, motions_ps, traj_end_cond_facto,
+		   traj_rec_facto, *collider, nullptr, log, mt);
 
   unsigned mol_per_frame = (unsigned) ceil(prod_rate * DT);
   std::cout << "Molecules per frame: " << mol_per_frame << std::endl;
@@ -365,7 +366,7 @@ int main(int argc, char** argv)
   delete collider;
   delete start_gen;
   delete traj_rec;
-  delete motion;
+  delete motions[0];
 
   std::cout << "DONE" << std::endl;
 }

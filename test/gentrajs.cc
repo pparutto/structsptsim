@@ -19,8 +19,10 @@ int main(int argc, char** argv)
   NumberPointsEndCondition<2> end_cond(5);
   TrajectoryEndConditionFactory<2> traj_end_cond_facto(end_cond);
 
-  BrownianMotion<2> bm(mt, D, dt);
-
+  std::vector<Motion<2>*> motions;
+  motions.push_back(new BrownianMotion<2> (mt, D, dt));
+  std::vector<double> motions_ps;
+  
   FullTrajectoryRecorder<2> traj_rec(0.0, dt);
   TrajectoryRecorderFactory<2> traj_rec_facto(traj_rec);
 
@@ -29,8 +31,8 @@ int main(int argc, char** argv)
   VoidLogger* log = new VoidLogger();
 
   TrajectoryGeneratorFactory<2>
-    traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider, nullptr, log);
+    traj_gen_facto(start_gen, motions, motions_ps, traj_end_cond_facto, traj_rec_facto,
+		   collider, nullptr, log, mt);
 
   TrajectoryGenerator<2>* traj_gen = traj_gen_facto.get(0.0);
 

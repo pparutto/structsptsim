@@ -111,7 +111,8 @@ int main(int argc, char** argv)
   NumberPointsEndCondition<2> end_cond(Npts);
   TrajectoryEndConditionFactory<2> traj_end_cond_facto(end_cond);
 
-  BrownianMotion<2> bm(mt, D, dt);
+  std::vector<Motion<2>*> motions;
+  motions.push_back(new BrownianMotion<2> (mt, D, dt));
 
   unsigned t_ratio = (unsigned) (DT / dt);
   SubsampleTrajectoryRecorder<2> traj_rec(0.0, DT, t_ratio);
@@ -123,9 +124,10 @@ int main(int argc, char** argv)
 
   BufferLogger* log = new BufferLogger();
 
+  std::vector<double> motions_ps;
   TrajectoryGeneratorFactory<2>
-    traj_gen_facto(start_gen, bm, traj_end_cond_facto, traj_rec_facto,
-		   collider, nullptr, log);
+    traj_gen_facto(start_gen, motions, motions_ps, traj_end_cond_facto, traj_rec_facto,
+		   collider, nullptr, log, mt);
 
   SimulationTrajectory<2> sim(traj_gen_facto, end_sim);
 

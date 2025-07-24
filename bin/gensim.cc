@@ -189,19 +189,28 @@ int main(int argc, char** argv)
   else
     assert(false);
 
-  Motion<2>* motion = nullptr;
+  std::vector<Motion<2>*> motions;
+  std::vector<double> motions_ps;
   CumDistribFunction* ivel_cdf = nullptr;
   if (p_opts.motion_type == MotionType::BROWNIAN)
-    motion = new BrownianMotion<2>(mt, p_opts.D, p_opts.dt);
+    motions.push_back(new BrownianMotion<2>(mt, p_opts.D, p_opts.dt));
   else if (p_opts.motion_type == MotionType::DISTRIB)
   {
     ivel_cdf = new CumDistribFunction(mt, p_opts.cdf_path);
-    motion = new EmpiricalMotion(mt, *ivel_cdf, p_opts.DT);
+    motions.push_back(new EmpiricalMotion(mt, *ivel_cdf, p_opts.DT));
   }
   else if (p_opts.motion_type == MotionType::HMM)
   {
-    motion = new HMM2DMotion(mt, p_opts.Ds, p_opts.rates, p_opts.dt);
-    std::cout << ((HMM2DMotion*) motion)->to_str() << std::endl;
+    std::cout << ((HMM2DMotion*) motions[0])->to_str() << std::endl;
+    motions.push_back(new HMM2DMotion(mt, p_opts.Ds, p_opts.rates, p_opts.dt));
+  }
+  else if (p_opts.motion_type == MotionType::MIXED)
+  {
+    std::cout << "Mixed motion D1=" << p_opts.Ds[0] << " D2="
+	      << p_opts.Ds[1] << " p=" << p_opts.motion_p << std::endl;
+    motions.push_back(new BrownianMotion<2>(mt, p_opts.Ds[0], p_opts.dt));
+    motions.push_back(new BrownianMotion<2>(mt, p_opts.Ds[1], p_opts.dt));
+    motions_ps.push_back(p_opts.motion_p);
   }
 
   TrajectoryEndCondition<2>* traj_end_cond = nullptr;
@@ -259,7 +268,7 @@ int main(int argc, char** argv)
   TrajectoryEndConditionFactory<2> traj_end_cond_facto(*traj_end_cond);
   
   TrajectoryRecorder<2>* traj_rec = nullptr;
-  if (motion->subsample())
+  if (motions[0]->subsample())
     traj_rec =
       new SubsampleTrajectoryRecorder<2>(0.0, p_opts.DT, p_opts.t_ratio);
   else
@@ -294,8 +303,8 @@ int main(int argc, char** argv)
 
   std::cout << "Collider: "; collider->who_am_I(std::cout);
   TrajectoryGeneratorFactory<2>
-    traj_gen_facto(*start_gen, *motion, traj_end_cond_facto, traj_rec_facto,
-		   *collider, sim_reg_ptr, log);
+    traj_gen_facto(*start_gen, motions, motions_ps, traj_end_cond_facto, traj_rec_facto,
+		   *collider, sim_reg_ptr, log, mt);
 
   SimulationEndCondition<2>* end_sim = nullptr;
   Simulation<2>* sim = nullptr;
@@ -404,7 +413,8 @@ int main(int argc, char** argv)
   delete sim;
   delete end_sim;
   delete ivel_cdf;
-  delete motion;
+  for (unsigned i = 0; i < motions.size(); ++i)
+    delete motions[i];
 
   std::cout << "DONE" << std::endl;
 }

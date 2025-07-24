@@ -188,27 +188,45 @@ TrajectoryGenerator<N>::subsample() const
 template <size_t N>
 TrajectoryGeneratorFactory<N>::
 TrajectoryGeneratorFactory(TrajectoryStartGenerator<N>& traj_start,
-			   Motion<N>& motion_model,
+			   const std::vector<Motion<N>*>& motion_models,
+			   const std::vector<double>& motion_ps,
 			   TrajectoryEndConditionFactory<N>& traj_end_facto,
 			   TrajectoryRecorderFactory<N>& traj_rec_facto,
 			   Collider<N>& collider,
 			   const Shape<N>* sim_reg,
-			   Logger* log)
+			   Logger* log,
+			   std::mt19937_64& ng)
   : traj_start_(traj_start)
-  , motion_model_(motion_model)
+  , motion_models_(motion_models)
+  , motion_ps_(motion_ps)
   , traj_end_facto_(traj_end_facto)
   , traj_rec_facto_(traj_rec_facto)
   , collider_(collider)
   , sim_reg_(sim_reg)
   , log_(log)
+  , ng_(ng)
+  , randu_()
 {
 }
 
 template <size_t N>
 TrajectoryGenerator<N>*
-TrajectoryGeneratorFactory<N>::get(double t0) const
+TrajectoryGeneratorFactory<N>::get(double t0)
 {
-  return new TrajectoryGenerator<N>(this->traj_start_, this->motion_model_,
+  unsigned mot_idx = 0;
+  if (this->motion_models_.size() == 2)
+  {
+    double p = this->randu_(this->ng_);
+    if (p >= this->motion_ps_[0])
+      mot_idx = 1;
+  }
+  else
+  {
+    std::cout << "Trajectory generator: Unhandled case too many motion to simulate" << std::endl;
+    assert(0);
+  }
+
+  return new TrajectoryGenerator<N>(this->traj_start_, *(this->motion_models_[mot_idx]),
 				    this->traj_end_facto_.get(),
 				    this->traj_rec_facto_.get(t0),
 				    this->collider_, this->sim_reg_,
