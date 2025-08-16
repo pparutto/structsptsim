@@ -47,6 +47,7 @@ public:
   Trajectory<N> get();
 
   Trajectory<N> generate();
+  bool has_generated() const;
 
   bool subsample() const;
 
@@ -58,6 +59,7 @@ protected:
   Collider<N>& collider_;
   const Shape<N>* sim_reg_;
   bool done_;
+  bool has_gen_;
   Logger* log_;
 };
 

@@ -18,6 +18,7 @@ public:
   virtual TimedPoint<N> last_simu_point() const = 0;;
 
   TimedPoint<N> last_rec_point() const;
+  bool has_generated() { return this->has_gen_; };
 
   virtual const Trajectory<N>& traj() const { return this->traj_; }
 
@@ -25,6 +26,7 @@ protected:
   double t0_;
   double DT_;
   Trajectory<N> traj_;
+  bool has_gen_;
 };
 
 template <size_t N>
@@ -62,11 +64,13 @@ class CollTrajectoryRecorder: public TrajectoryRecorder<N>
 public:
   CollTrajectoryRecorder(TrajectoryRecorder<N>* trec);
   ~CollTrajectoryRecorder();
-  
+
   virtual CollTrajectoryRecorder<N>* clone_reset(double t0) const;
   virtual void record(const Point<N>& p) override;
   virtual void record_ncoll(unsigned ncoll) override;
   virtual TimedPoint<N> last_simu_point() const;
+
+  bool has_generated() const;
 
   virtual const Trajectory<N>& traj() const override;
   const std::vector<unsigned>& ncolls() const { return this->ncolls_; };

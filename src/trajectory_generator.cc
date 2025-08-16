@@ -36,6 +36,7 @@ TrajectoryGenerator(TrajectoryStartGenerator<N>& traj_start,
   , collider_(collider)
   , sim_reg_(sim_reg)
   , done_(false)
+  , has_gen_(false)
   , log_(log)
 {
 }
@@ -77,7 +78,8 @@ TrajectoryGenerator<N>::init()
 
   if (this->collider_.outside(p))
     throw std::runtime_error("Failed to generate a point in polygon");
-  
+
+  this->has_gen_ = true;
   this->traj_rec_->record(p);
 }
 
@@ -105,6 +107,8 @@ void
 TrajectoryGenerator<N>::generate_step()
 {
   assert(!this->traj_rec_->traj().empty());
+  assert(!this->done_);
+  this->has_gen_ = false;
 
   Point<N> p1 = to_point<N>(this->traj_rec_->last_simu_point());
   Point<N> p2;
@@ -137,15 +141,31 @@ TrajectoryGenerator<N>::generate_step()
     }
   }
 
-  //make sure to record only the points inside the simulation region
-  if (this->sim_reg_ == nullptr || this->sim_reg_->inside(p2))
-  {
-    this->traj_rec_->record(p2);
-    this->traj_rec_->record_ncoll(n_collided);
-    this->log_->write(std::to_string(n_collided));
-  }
-  else
-    this->done_ = true;
+  this->traj_rec_->record(p2);
+  this->traj_rec_->record_ncoll(n_collided);
+  this->log_->write(std::to_string(n_collided));
+  this->has_gen_ = true;
+
+  // //make sure to record only the points inside the simulation region
+  // if (this->sim_reg_ == nullptr || this->sim_reg_->inside(p2))
+  // {
+  //   this->traj_rec_->record(p2);
+  //   this->traj_rec_->record_ncoll(n_collided);
+  //   this->log_->write(std::to_string(n_collided));
+  //   this->has_gen_ = true;
+  // }
+  // else
+  // {
+  //   this->log_->write("@");
+  //   this->done_ = true;
+  // }
+}
+
+template <size_t N>
+bool
+TrajectoryGenerator<N>::has_generated() const
+{
+  return this->has_gen_ && this->traj_rec_->has_generated();
 }
 
 template <size_t N>
@@ -174,7 +194,7 @@ TrajectoryGenerator<N>::generate()
       ++cpt;
     }
   }
- 
+
   return this->get();
 }
 
@@ -220,7 +240,7 @@ TrajectoryGeneratorFactory<N>::get(double t0)
     if (p >= this->motion_ps_[0])
       mot_idx = 1;
   }
-  else
+  else if (this->motion_models_.size() > 2)
   {
     std::cout << "Trajectory generator: Unhandled case too many motion to simulate" << std::endl;
     assert(0);

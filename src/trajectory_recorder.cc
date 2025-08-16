@@ -10,6 +10,7 @@ TrajectoryRecorder(double t0, double DT)
   : t0_(t0)
   , DT_(DT)
   , traj_()
+  , has_gen_(false)
 {
 }
 
@@ -20,11 +21,19 @@ TrajectoryRecorder<N>::last_rec_point() const
   return this->traj_[this->traj_.size()-1];
 }
 
+// template <size_t N>
+// bool
+// TrajectoryRecorder<N>::has_generated() const
+// {
+//   return this->has_gen_;
+// }
+
 template <size_t N>
 FullTrajectoryRecorder<N>::
 FullTrajectoryRecorder(double t0, double DT)
   : TrajectoryRecorder<N>(t0, DT)
 {
+  this->has_gen_ = true;
 }
 
 template <size_t N>
@@ -78,7 +87,13 @@ SubsampleTrajectoryRecorder<N>::record(const Point<N>& p)
   //we need the last simu point in the collider
   this->last_simu_pt_ = tp;
   if (this->cnt_ % this->step_ == 0)
+  {
     this->traj_.push_back(tp);
+    this->has_gen_ = true;
+  }
+  else
+    this->has_gen_ = false;
+
   ++this->cnt_;
 }
 
@@ -138,6 +153,13 @@ const Trajectory<N>&
 CollTrajectoryRecorder<N>::traj() const
 {
   return this->trec_->traj();
+}
+
+template <size_t N>
+bool
+CollTrajectoryRecorder<N>::has_generated() const
+{
+  return this->trec_->has_generated();
 }
 
 template <size_t N>

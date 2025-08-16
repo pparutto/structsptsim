@@ -53,7 +53,29 @@ addpath('../external/plot2svg')
 %addpath('/mnt/data2/SPT_method/simu/freespace_fbm2/density/1/0.25_1_5_0.0001_12000')
 %addpath('/mnt/data2/SPT_method/simu/freespace/density3/sim/1/1_20_1_3000')
 
-addpath('/tmp/titi/0.2_0.8_1_60000')
+%addpath('/tmp/titi/0.2_0.8_1_60000')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/1_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.75_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.5_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.25_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0_0.1_3.82_1_60000')
+
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/1_0.1_3.82_5_12000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/1_0.1_3.82_10_6000')
+addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/1_0.1_3.82_20_3000')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.75_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.5_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0.25_0.1_3.82_1_60000')
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/0_0.1_3.82_1_60000')
+
+%addpath('/tmp/1/1_5_0.01_12000')
+
+%addpath('/mnt/data2/SPT_method/simu/freespace_mixed/1/1_0.1_3.82_1_60000')
+
+
 
 outdir = '/tmp';
 %outdir = '/tmp/simu_fullcell';
@@ -264,6 +286,9 @@ end
 figure
 hist(disps, 100)
 
+DT = 0.01;
+tab(:,2) = round(tab(:,2) / DT);
+%tab(:,2) = round(tab(:,2), 2);
 ts = unique(tab(:,2));
 
 
@@ -273,11 +298,18 @@ hist(tlens, 1:80)
 
 figure
 stairs(ts, arrayfun(@(i) sum(tab(:,2)==ts(i)), 1:length(ts)))
+xlim([0 max(ts)])
 
 avg_disps = [];
 for i=unique(tab(:,1))'
     tr = tab(tab(:,1) == i, :);
     avg_disps = [avg_disps; mean(sqrt(sum((tr(2:end, 3:4) - tr(1:(end-1), 3:4)).^2, 2)))];
+end
+
+
+missing = 0;
+for i=unique(tab(:,2))'
+    missing = missing + 5 - sum(tab(:,2) == i);
 end
 
 figure
